@@ -129,9 +129,12 @@ const light = new THREE.AmbientLight(0xffffff);
 light.translateY(5);
 scene.add(light);
 
+let villaHouse;
+
 // Load the maze model
 const loader = new GLTFLoader();
 loader.load('models/villaHouse.glb', function (gltf) {
+    villaHouse = gltf.scene;
     gltf.scene.position.set(0, 0, -8);
     gltf.scene.scale.set(1, 1, 1);
     scene.add(gltf.scene);
@@ -141,12 +144,32 @@ loader.load('models/villaHouse.glb', function (gltf) {
 
 // Animation function
 var cameraPosition;
+
+// Add these variables at the beginning of your code
+const raycaster = new THREE.Raycaster(undefined, undefined, 0, undefined);
+const raycastDirection = new THREE.Vector3(); // The direction of the ray
+
+const rayLineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 }); // Red color for the ray line
+const rayLineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0, -10)]); // Set the initial points of the ray line
+const rayLine = new THREE.Line(rayLineGeometry, rayLineMaterial);
+scene.add(rayLine);
+
+
+
 function animate() {
     requestAnimationFrame(animate);
 
     if (mixer) mixer.update(0.016);
 
     updateMovement();
+
+    // Update the raycaster position and direction based on the soldier's front
+    soldier.getWorldPosition(raycaster.ray.origin);
+    soldier.getWorldDirection(raycastDirection);
+    raycaster.ray.direction.copy(raycastDirection);
+
+    // Update the ray line's position
+    rayLine.geometry.setFromPoints([raycaster.ray.origin, raycaster.ray.origin.clone().addScaledVector(raycaster.ray.direction, -10)]);
 
     camera.position.x = soldier.position.x;
     camera.position.z = soldier.position.z + 2;
