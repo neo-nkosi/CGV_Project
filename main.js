@@ -190,6 +190,13 @@ function animate() {
         const intersectionPoint = intersects[0].point;
         sphere.position.copy(intersectionPoint); // Position the sphere at the intersection point
         sphere.visible = true; // Make the sphere visible
+        const collisionPoint = intersects[0].point;
+        const distance = soldier.position.distanceTo(collisionPoint);
+        const collisionThreshold = 0.4;
+
+        if (distance < collisionThreshold) {
+            console.log("colliding");
+        }
     } else {
         sphere.visible = false; // Hide the sphere when not intersecting
     }
