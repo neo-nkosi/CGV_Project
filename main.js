@@ -225,6 +225,7 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
 }
 
 
+let verticalVelocity = 0;
 
 function updateMovement() {
     var moveDistance = 0.015;
@@ -270,10 +271,11 @@ function updateMovement() {
         // Calculate the potential new position
         const newPositionX = soldier.position.x + moveX;
         const newPositionZ = soldier.position.z + moveZ;
+        const newPositionY = soldier.position.y + verticalVelocity;
 
-        // Check for collisions with the villaHouse
+        // Check for collisions with the villaHouse in all dimensions
         const collisionThreshold = 0.1;
-        const collisionPoint = new THREE.Vector3(newPositionX, 0, newPositionZ);
+        const collisionPoint = new THREE.Vector3(newPositionX, newPositionY, newPositionZ);
         const intersects = raycaster.intersectObject(villaHouse, true);
 
         if (intersects.length > 0) {
@@ -287,6 +289,7 @@ function updateMovement() {
 
         if (canMove) {
             soldier.position.x = newPositionX;
+            soldier.position.y = newPositionY;
             soldier.position.z = newPositionZ;
         }
     } else {
@@ -296,6 +299,24 @@ function updateMovement() {
             currentAnimationAction = animations[currentAnimation];
             currentAnimationAction.reset().fadeIn(0.5).play();
         }
+    }
+
+    // Jumping logic
+    const jumpSpeed = 0.06; // Adjust the jump speed as needed
+    const gravity = 0.005; // Adjust the gravity as needed
+
+    if (keyState[32] && soldier.position.y === 0) { // Spacebar is pressed and the character is on the ground
+        verticalVelocity = jumpSpeed; // Set the vertical velocity to make the character jump
+    } else {
+        verticalVelocity -= gravity; // Apply gravity to the vertical velocity
+    }
+
+    soldier.position.y += verticalVelocity; // Update the character's vertical position
+
+    // Ensure the character doesn't fall below the ground
+    if (soldier.position.y < 0) {
+        soldier.position.y = 0;
+        verticalVelocity = 0; // Reset the vertical velocity when on the ground
     }
 
     orbitControls.target.copy(soldier.position);
