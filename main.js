@@ -228,6 +228,7 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
 
 function updateMovement() {
     var moveDistance = 0.015;
+    let canMove = true; // Flag to check if the character can move
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
@@ -265,8 +266,30 @@ function updateMovement() {
                 currentAnimationAction.reset().fadeIn(0.5).play();
             }
         }
-    } else {
 
+        // Calculate the potential new position
+        const newPositionX = soldier.position.x + moveX;
+        const newPositionZ = soldier.position.z + moveZ;
+
+        // Check for collisions with the villaHouse
+        const collisionThreshold = 0.1;
+        const collisionPoint = new THREE.Vector3(newPositionX, 0, newPositionZ);
+        const intersects = raycaster.intersectObject(villaHouse, true);
+
+        if (intersects.length > 0) {
+            const intersectionPoint = intersects[0].point;
+            const distance = intersectionPoint.distanceTo(collisionPoint);
+
+            if (distance < collisionThreshold) {
+                canMove = false; // Collision detected, prevent movement
+            }
+        }
+
+        if (canMove) {
+            soldier.position.x = newPositionX;
+            soldier.position.z = newPositionZ;
+        }
+    } else {
         if (currentAnimation !== 'Idle'){
             currentAnimationAction.fadeOut(0.6);
             currentAnimation = 'Idle';
@@ -274,10 +297,10 @@ function updateMovement() {
             currentAnimationAction.reset().fadeIn(0.5).play();
         }
     }
-    soldier.position.x += moveX;
-    soldier.position.z += moveZ;
+
     orbitControls.target.copy(soldier.position);
 }
+
 
 // Start animation
 animate();
