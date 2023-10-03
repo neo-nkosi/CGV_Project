@@ -154,6 +154,11 @@ const rayLineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vect
 const rayLine = new THREE.Line(rayLineGeometry, rayLineMaterial);
 scene.add(rayLine);
 
+// Define material and geometry for the sphere
+const sphereGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+scene.add(sphere);
 
 
 function animate() {
@@ -170,6 +175,24 @@ function animate() {
 
     // Update the ray line's position
     rayLine.geometry.setFromPoints([raycaster.ray.origin, raycaster.ray.origin.clone().addScaledVector(raycaster.ray.direction, -10)]);
+
+    // Update the raycaster position and direction based on the soldier's front
+    raycaster.ray.origin.copy(soldier.position);
+    // Calculate the direction vector based on the soldier's rotation
+    const direction = new THREE.Vector3(0, 0, -1); // Default direction (in front of the soldier)
+    direction.applyQuaternion(soldier.quaternion); // Apply soldier's rotation
+
+    raycaster.ray.direction.copy(direction);
+
+    const intersects = raycaster.intersectObject(villaHouse, true);
+
+    if (intersects.length > 0) {
+        const intersectionPoint = intersects[0].point;
+        sphere.position.copy(intersectionPoint); // Position the sphere at the intersection point
+        sphere.visible = true; // Make the sphere visible
+    } else {
+        sphere.visible = false; // Hide the sphere when not intersecting
+    }
 
     camera.position.x = soldier.position.x;
     camera.position.z = soldier.position.z + 2;
