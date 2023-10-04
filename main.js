@@ -168,6 +168,9 @@ scene.add(downRayLine);
 const downSphere = new THREE.Mesh(sphereGeometry, sphereMaterial); // Reuse the red material
 scene.add(downSphere);
 
+const middleRaycaster = new THREE.Raycaster(undefined, undefined, 0, undefined);
+const middleRaycastDirection = new THREE.Vector3(); // The direction of the ray
+
 let isOnGround = false;
 let isJumping = false; // This will tell us if the character has initiated a jump
 
@@ -183,6 +186,11 @@ function animate() {
     soldier.getWorldDirection(raycastDirection);
     raycaster.ray.direction.copy(raycastDirection);
 
+    // Update the MiddleRaycaster position and direction based on the soldier's front
+    soldier.getWorldPosition(middleRaycaster.ray.origin);
+    soldier.getWorldDirection(middleRaycastDirection);
+    middleRaycaster.ray.direction.copy(middleRaycastDirection);
+
     // Update the ray line's position
     rayLine.geometry.setFromPoints([raycaster.ray.origin, raycaster.ray.origin.clone().addScaledVector(raycaster.ray.direction, -10)]);
 
@@ -196,24 +204,53 @@ function animate() {
 
     const intersects = raycaster.intersectObject(villaHouse, true);
 
-    if (intersects.length > 0) {
-        const intersectionPoint = intersects[0].point;
-        sphere.position.copy(intersectionPoint); // Position the sphere at the intersection point
-        sphere.visible = true; // Make the sphere visible
-        const collisionPoint = intersects[0].point;
-        const distance = soldier.position.distanceTo(collisionPoint);
-        const collisionThreshold = 0.4;
-
-        if (distance < collisionThreshold) {
-            console.log("colliding");
-        }
-    } else {
-        sphere.visible = false; // Hide the sphere when not intersecting
-    }
+    // Update the middleRaycaster position and direction based on the soldier's front
+    const midBodyPosition = soldier.position.clone().add(new THREE.Vector3(0, 0.2, 0)); // roughly middle of a human body
+    middleRaycaster.ray.origin.copy(midBodyPosition);
+    middleRaycaster.ray.direction.copy(direction);
 
     // Update the downward raycaster position and direction
     soldier.getWorldPosition(downRaycaster.ray.origin);
     downRaycaster.ray.direction.copy(downRayDirection);
+
+    const midIntersects = middleRaycaster.intersectObject(villaHouse, true);
+
+    if (keyState[87] || keyState[83] || keyState[65] || keyState[68] || keyState[38] || keyState[40] || keyState[37] || keyState[39]) {  // Check if any forward key is pressed
+        if (intersects.length > 0) {
+            const intersectionPoint = intersects[0].point;
+            sphere.position.copy(intersectionPoint);
+            sphere.visible = true;
+            const collisionPoint = intersects[0].point;
+            const distance = soldier.position.distanceTo(collisionPoint);
+            const collisionThreshold = 0.2;
+
+            if (distance < collisionThreshold) {
+                console.log("colliding");
+                canMove = false;
+            } else {
+                canMove = true;
+            }
+        }else if (midIntersects.length > 0) {
+            const intersectionPoint = midIntersects[0].point;
+            sphere.position.copy(intersectionPoint);
+            sphere.visible = true;
+            const collisionPoint = midIntersects[0].point;
+            const distance = midBodyPosition.distanceTo(collisionPoint);
+            const collisionThreshold = 0.2;
+
+            if (distance < collisionThreshold) {
+                console.log("colliding");
+                canMove = false;
+            } else {
+                canMove = true;
+            }
+        } else {
+            sphere.visible = false;
+            canMove = true;
+        }
+    }
+
+
 
 // Update the downward ray line's position
     downRayLine.geometry.setFromPoints([downRaycaster.ray.origin, downRaycaster.ray.origin.clone().addScaledVector(downRaycaster.ray.direction, -10)]);
@@ -270,10 +307,9 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
 
 let verticalVelocity = 0;
 
-
+let canMove = true;
 function updateMovement() {
     var moveDistance = 0.015;
-    let canMove = true; // Flag to check if the character can move
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
