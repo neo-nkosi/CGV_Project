@@ -168,7 +168,8 @@ scene.add(downRayLine);
 const downSphere = new THREE.Mesh(sphereGeometry, sphereMaterial); // Reuse the red material
 scene.add(downSphere);
 
-
+let isOnGround = false;
+let isJumping = false; // This will tell us if the character has initiated a jump
 
 function animate() {
     requestAnimationFrame(animate);
@@ -218,20 +219,29 @@ function animate() {
     downRayLine.geometry.setFromPoints([downRaycaster.ray.origin, downRaycaster.ray.origin.clone().addScaledVector(downRaycaster.ray.direction, -10)]);
 
     const downIntersects = downRaycaster.intersectObject(villaHouse, true);
+    if (!isJumping) {
+        // Existing logic
+        if (downIntersects.length > 0) {
+            const downIntersectionPoint = downIntersects[0].point;
+            downSphere.position.copy(downIntersectionPoint);
+            downSphere.visible = true;
+            const collisionPointDown = downIntersects[0].point;
+            const distance = soldier.position.distanceTo(collisionPointDown);
+            const collisionThreshold = 0.2;
 
-    if (downIntersects.length > 0) {
-        const downIntersectionPoint = downIntersects[0].point;
-        downSphere.position.copy(downIntersectionPoint); // Position the sphere at the intersection point
-        downSphere.visible = true; // Make the sphere visible
-        const collisionPointDown = downIntersects[0].point;
-        const distance = soldier.position.distanceTo(collisionPointDown);
-        const collisionThreshold = 0.05;  // Adjust this value as per your needs
-
-        if (distance < collisionThreshold) {
-            console.log("colliding downward");
+            if (distance < collisionThreshold) {
+                console.log("colliding downward");
+                soldier.position.y = downIntersects[0].point.y + 0.05;
+                verticalVelocity = 0;
+                isOnGround = true;
+            } else {
+                isOnGround = false;
+            }
+        } else {
+            downSphere.visible = false;
+            isOnGround = false;
+            verticalVelocity -= 0.005;
         }
-    } else {
-        downSphere.visible = false; // Hide the sphere when not intersecting
     }
 
     camera.position.x = soldier.position.x;
@@ -259,6 +269,7 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
 
 
 let verticalVelocity = 0;
+
 
 function updateMovement() {
     var moveDistance = 0.015;
@@ -338,18 +349,24 @@ function updateMovement() {
     const jumpSpeed = 0.06; // Adjust the jump speed as needed
     const gravity = 0.005; // Adjust the gravity as needed
 
-    if (keyState[32] && soldier.position.y === 0) { // Spacebar is pressed and the character is on the ground
+    if (keyState[32] && isOnGround) { // Spacebar is pressed and the character is on the ground
         verticalVelocity = jumpSpeed; // Set the vertical velocity to make the character jump
-    } else {
-        verticalVelocity -= gravity; // Apply gravity to the vertical velocity
+        isOnGround = false;
+        isJumping = true; // Character has initiated a jump
+    }
+
+    if (!isOnGround) {
+        verticalVelocity -= gravity; // Apply gravity if the character is not on the ground
     }
 
     soldier.position.y += verticalVelocity; // Update the character's vertical position
 
-    // Ensure the character doesn't fall below the ground
-    if (soldier.position.y < 0) {
-        soldier.position.y = 0;
-        verticalVelocity = 0; // Reset the vertical velocity when on the ground
+    // After the jump has initiated, allow a brief period before checking downward collisions
+    // This ensures the character can rise off the ground before collision is checked
+    if (isJumping) {
+        setTimeout(() => {
+            isJumping = false; // Reset after allowing some time
+        }, 150); // Adjust this time based on your needs
     }
 
     orbitControls.target.copy(soldier.position);
