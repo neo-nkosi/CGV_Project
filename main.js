@@ -156,6 +156,19 @@ const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 scene.add(sphere);
 
+// Add these variables at the beginning of your code
+const downRaycaster = new THREE.Raycaster(undefined, undefined, 0, undefined);
+const downRayDirection = new THREE.Vector3(0, -1, 0); // Pointing straight down
+
+// Visualization for the downward ray
+const downRayLineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, -10, 0)]);
+const downRayLine = new THREE.Line(downRayLineGeometry, rayLineMaterial); // Reuse the red material
+scene.add(downRayLine);
+
+const downSphere = new THREE.Mesh(sphereGeometry, sphereMaterial); // Reuse the red material
+scene.add(downSphere);
+
+
 
 function animate() {
     requestAnimationFrame(animate);
@@ -195,6 +208,30 @@ function animate() {
         }
     } else {
         sphere.visible = false; // Hide the sphere when not intersecting
+    }
+
+    // Update the downward raycaster position and direction
+    soldier.getWorldPosition(downRaycaster.ray.origin);
+    downRaycaster.ray.direction.copy(downRayDirection);
+
+// Update the downward ray line's position
+    downRayLine.geometry.setFromPoints([downRaycaster.ray.origin, downRaycaster.ray.origin.clone().addScaledVector(downRaycaster.ray.direction, -10)]);
+
+    const downIntersects = downRaycaster.intersectObject(villaHouse, true);
+
+    if (downIntersects.length > 0) {
+        const downIntersectionPoint = downIntersects[0].point;
+        downSphere.position.copy(downIntersectionPoint); // Position the sphere at the intersection point
+        downSphere.visible = true; // Make the sphere visible
+        const collisionPoint = downIntersects[0].point;
+        const distance = soldier.position.distanceTo(collisionPoint);
+        const collisionThreshold = 0.4;  // Adjust this value as per your needs
+
+        if (distance < collisionThreshold) {
+            console.log("colliding downward");
+        }
+    } else {
+        downSphere.visible = false; // Hide the sphere when not intersecting
     }
 
     camera.position.x = soldier.position.x;
