@@ -102,12 +102,6 @@ soldierLoader.load('models/Soldier.glb', function (gltf) {
 const textureLoader = new THREE.TextureLoader();
 const floorTexture = textureLoader.load('textures/floor.jpg');
 
-// Land Geometry
-const landGeometry = new THREE.PlaneGeometry(50, 50, 50, 50);
-const landMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
-const land = new THREE.Mesh(landGeometry, landMaterial);
-land.rotation.x = -Math.PI / 2; // Rotate the plane to horizontal
-scene.add(land);
 
 // Create walls
 const wallTexture = textureLoader.load('textures/wall.png');
@@ -117,12 +111,6 @@ const wall = new THREE.Mesh(wallGeometry, wallMaterial);
 wall.position.set(3, 0, 0);
 scene.add(wall);
 
-// Create floor
-const floorGeometry = new THREE.BoxGeometry(10, 1, 10);
-const floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
-const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.position.y = -1;
-scene.add(floor);
 
 // Light
 const light = new THREE.AmbientLight(0xffffff);
@@ -138,6 +126,14 @@ loader.load('models/villaHouse.glb', function (gltf) {
     gltf.scene.position.set(0, 0, -8);
     gltf.scene.scale.set(1, 1, 1);
     scene.add(gltf.scene);
+    // Find the child named "floor" and set its material to use the floorTexture
+    const floor = villaHouse.getObjectByName("floor");
+    if (floor) {
+        floor.material = new THREE.MeshBasicMaterial({color: 0xffffff});
+    } else {
+        console.warn('Floor not found in the villaHouse model.');
+    }
+
 }, undefined, function (error) {
     console.error(error);
 });
