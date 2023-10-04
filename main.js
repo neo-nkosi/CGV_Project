@@ -223,9 +223,9 @@ function animate() {
         const downIntersectionPoint = downIntersects[0].point;
         downSphere.position.copy(downIntersectionPoint); // Position the sphere at the intersection point
         downSphere.visible = true; // Make the sphere visible
-        const collisionPoint = downIntersects[0].point;
-        const distance = soldier.position.distanceTo(collisionPoint);
-        const collisionThreshold = 0.4;  // Adjust this value as per your needs
+        const collisionPointDown = downIntersects[0].point;
+        const distance = soldier.position.distanceTo(collisionPointDown);
+        const collisionThreshold = 0.05;  // Adjust this value as per your needs
 
         if (distance < collisionThreshold) {
             console.log("colliding downward");
