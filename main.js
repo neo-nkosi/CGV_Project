@@ -164,37 +164,40 @@ loader.load('models/villaHouse.glb', function (gltf) {
     console.error(error);
 });
 
-const iconLoader = new GLTFLoader();
-
 let coin;
 let coinBoxHelper;
 let coinDummyMesh;
 let coinYOffset;
 
-iconLoader.load('models/coin.glb', function (gltf) {
-    coin= gltf.scene;
-    coin.position.set(1, 0.3, 0);
-    coin.scale.set(0.02, 0.02, 0.02);
-    scene.add(gltf.scene);
+function createCoin() {
+    const iconLoader = new GLTFLoader();
 
-    // Create a dummy mesh for the coin's BoxHelper
-    let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2); // Adjust the size as necessary
-    coinDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(iconBoxSize.x, iconBoxSize.y, iconBoxSize.z));
+    iconLoader.load('models/coin.glb', function (gltf) {
+        coin= gltf.scene;
+        coin.position.set(1, 0.3, 0);
+        coin.scale.set(0.02, 0.02, 0.02);
+        scene.add(gltf.scene);
 
-    // Position this mesh at the position of the coin
-    coinDummyMesh.position.copy(coin.position);
-    coinYOffset = 0;  // Adjust as necessary
-    coinDummyMesh.position.y += coinYOffset;
+        // Create a dummy mesh for the coin's BoxHelper
+        let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2); // Adjust the size as necessary
+        coinDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(iconBoxSize.x, iconBoxSize.y, iconBoxSize.z));
 
-    // Create a BoxHelper using this dummy mesh
-    coinBoxHelper = new THREE.BoxHelper(coinDummyMesh, 0x00ff00);
+        // Position this mesh at the position of the coin
+        coinDummyMesh.position.copy(coin.position);
+        coinYOffset = 0;  // Adjust as necessary
+        coinDummyMesh.position.y += coinYOffset;
 
-    // Add the BoxHelper to the scene
-    scene.add(coinBoxHelper);
+        // Create a BoxHelper using this dummy mesh
+        coinBoxHelper = new THREE.BoxHelper(coinDummyMesh, 0x00ff00);
 
-}, undefined, function (error) {
-    console.error(error);
-});
+        // Add the BoxHelper to the scene
+        scene.add(coinBoxHelper);
+    }, undefined, function (error) {
+        console.error(error);
+    });
+}
+
+createCoin();
 
 // Animation function
 var cameraPosition;
