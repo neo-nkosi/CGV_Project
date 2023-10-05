@@ -164,48 +164,40 @@ loader.load('models/villaHouse.glb', function (gltf) {
     console.error(error);
 });
 
-let coins = []; // Array to store multiple coins
+let coin;
+let coinBoxHelper;
+let coinDummyMesh;
+let coinYOffset;
 
-function createCoin(x, y, z) {
+function createCoin() {
     const iconLoader = new GLTFLoader();
 
     iconLoader.load('models/coin.glb', function (gltf) {
-        let coin = gltf.scene;
-        coin.position.set(x, y, z);
+        coin= gltf.scene;
+        coin.position.set(1, 0.3, 0);
         coin.scale.set(0.02, 0.02, 0.02);
-        scene.add(coin);
+        scene.add(gltf.scene);
 
         // Create a dummy mesh for the coin's BoxHelper
-        let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2);
-        let coinDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(iconBoxSize.x, iconBoxSize.y, iconBoxSize.z));
+        let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2); // Adjust the size as necessary
+        coinDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(iconBoxSize.x, iconBoxSize.y, iconBoxSize.z));
 
         // Position this mesh at the position of the coin
         coinDummyMesh.position.copy(coin.position);
-        let coinYOffset = 0;
-
+        coinYOffset = 0;  // Adjust as necessary
         coinDummyMesh.position.y += coinYOffset;
 
         // Create a BoxHelper using this dummy mesh
-        let coinBoxHelper = new THREE.BoxHelper(coinDummyMesh, 0x00ff00);
+        coinBoxHelper = new THREE.BoxHelper(coinDummyMesh, 0x00ff00);
 
         // Add the BoxHelper to the scene
         scene.add(coinBoxHelper);
-
-        coins.push({
-            mesh: coin,
-            dummyMesh: coinDummyMesh,
-            boxHelper: coinBoxHelper,
-            collected: false
-        });
     }, undefined, function (error) {
         console.error(error);
     });
 }
 
-// Create multiple coins
-createCoin(1, 0.3, 0);
-createCoin(-1, 0.3, 0);
-createCoin(0, 0.3, -1);
+createCoin();
 
 // Animation function
 var cameraPosition;
@@ -348,24 +340,20 @@ function updateMovement() {
         soldierBoxHelper.update();
     }
 
-    // Update the position and collision checks for each coin
-    coins.forEach(coin => {
-        // Update dummyMesh's position for coin
-        coin.dummyMesh.position.copy(coin.mesh.position);
-        coin.dummyMesh.position.y += 0;
-        if (coin.boxHelper) {
-            coin.boxHelper.update();
-        }
+    // Update dummyMesh's position for coin
+    coinDummyMesh.position.copy(coin.position);
+    coinDummyMesh.position.y += coinYOffset;
+    if (coinBoxHelper) {
+        coinBoxHelper.update();
+    }
 
-        const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
-        const coinBoundingBox = new THREE.Box3().setFromObject(coin.dummyMesh);
+    const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
+    const coinBoundingBox = new THREE.Box3().setFromObject(coinDummyMesh);
 
-        if (soldierBoundingBox.intersectsBox(coinBoundingBox) && !coin.collected) {
-            console.log("Collision between character and coin");
-            coin.mesh.visible = false;
-            coin.collected = true;
-        }
-    });
+    if (soldierBoundingBox.intersectsBox(coinBoundingBox)) {
+        console.log("Collision between character and icon");
+        coin.visible=false;
+    }
 
 }
 
