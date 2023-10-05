@@ -166,12 +166,31 @@ loader.load('models/villaHouse.glb', function (gltf) {
 
 const iconLoader = new GLTFLoader();
 
-let gameIcon;
-iconLoader.load('models/gameIcons.glb', function (gltf) {
-    gameIcon= gltf.scene;
-    gameIcon.position.set(1, 0.3, 0);
-    gameIcon.scale.set(0.02, 0.02, 0.02);
+let coin;
+let coinBoxHelper;
+let coinDummyMesh;
+let coinYOffset;
+
+iconLoader.load('models/coin.glb', function (gltf) {
+    coin= gltf.scene;
+    coin.position.set(1, 0.3, 0);
+    coin.scale.set(0.02, 0.02, 0.02);
     scene.add(gltf.scene);
+
+    // Create a dummy mesh for the coin's BoxHelper
+    let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2); // Adjust the size as necessary
+    coinDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(iconBoxSize.x, iconBoxSize.y, iconBoxSize.z));
+
+    // Position this mesh at the position of the coin
+    coinDummyMesh.position.copy(coin.position);
+    coinYOffset = 0;  // Adjust as necessary
+    coinDummyMesh.position.y += coinYOffset;
+
+    // Create a BoxHelper using this dummy mesh
+    coinBoxHelper = new THREE.BoxHelper(coinDummyMesh, 0x00ff00);
+
+    // Add the BoxHelper to the scene
+    scene.add(coinBoxHelper);
 
 }, undefined, function (error) {
     console.error(error);
@@ -312,12 +331,27 @@ function updateMovement() {
 
     // Update dummyMesh's position
     dummyMesh.position.copy(soldier.position);
-
     dummyMesh.position.y += yOffset;  // make sure to add yOffset again
     // At the end of your movement updates, add:
     if (soldierBoxHelper) {
         soldierBoxHelper.update();
     }
+
+    // Update dummyMesh's position for coin
+    coinDummyMesh.position.copy(coin.position);
+    coinDummyMesh.position.y += coinYOffset;
+    if (coinBoxHelper) {
+        coinBoxHelper.update();
+    }
+
+    const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
+    const coinBoundingBox = new THREE.Box3().setFromObject(coinDummyMesh);
+
+    if (soldierBoundingBox.intersectsBox(coinBoundingBox)) {
+        console.log("Collision between character and icon");
+        coin.visible=false;
+    }
+
 }
 
 
