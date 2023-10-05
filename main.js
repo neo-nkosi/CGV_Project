@@ -189,7 +189,7 @@ function createCoin(x, y, z) {
         let coinBoxHelper = new THREE.BoxHelper(coinDummyMesh, 0x00ff00);
 
         // Add the BoxHelper to the scene
-        //scene.add(coinBoxHelper);
+        scene.add(coinBoxHelper);
 
         coins.push({
             mesh: coin,
@@ -203,9 +203,9 @@ function createCoin(x, y, z) {
 }
 
 // Create multiple coins
-createCoin(1, 0, 0);
-createCoin(-1, 0, 0);
-createCoin(0, 0, -1);
+createCoin(1, 0.3, 0);
+createCoin(-1, 0.3, 0);
+createCoin(0, 0.3, -1);
 
 // Animation function
 var cameraPosition;
@@ -246,8 +246,6 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
 
 
 let verticalVelocity = 0;
-let collectedAllCoinsMessage = false;
-
 
 function updateMovement() {
 
@@ -368,13 +366,6 @@ function updateMovement() {
             coin.collected = true;
         }
     });
-
-    let allCoinsCollected = coins.every(coin => coin.collected);
-
-    if (allCoinsCollected && !collectedAllCoinsMessage) {
-        console.log("You have collected all the coins");
-        collectedAllCoinsMessage = true;  // This ensures the message is only printed once.
-    }
 
 }
 
