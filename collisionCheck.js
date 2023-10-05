@@ -86,7 +86,7 @@ export function checkMovement(soldier, villaHouse, keyState, isJumping, vertical
 
     if (keyState[87] || keyState[83] || keyState[65] || keyState[68] || keyState[38] || keyState[40] || keyState[37] || keyState[39]) {  // Check if any forward key is pressed
         if (checkCollision(intersects, soldier.position) || checkCollision(midIntersects, midBodyPosition)) {
-            console.log("colliding");
+            //console.log("colliding");
             canMove = false;
         } else {
             rayVars.sphere.visible = false;
@@ -97,7 +97,7 @@ export function checkMovement(soldier, villaHouse, keyState, isJumping, vertical
     const downIntersects = rayVars.downRaycaster.intersectObject(villaHouse, true);
     if (!isJumping) {
         if (checkCollision(downIntersects, soldier.position)) {
-            console.log("colliding downward");
+            //console.log("colliding downward");
             soldier.position.y = downIntersects[0].point.y + 0.05;
             verticalVelocity = 0;
             isOnGround = true;
