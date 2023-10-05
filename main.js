@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {checkMovement} from "./collisionCheck";
+import {Vector3} from "three";
 
 // Scene
 const scene = new THREE.Scene();
@@ -73,10 +74,32 @@ let currentAnimation = 'Idle';
 let currentAnimationAction;
 
 let soldierLoader = new GLTFLoader();
+let soldierBoxHelper;
+let dummyMesh;
+let yOffset;
 soldierLoader.load('models/Soldier.glb', function (gltf) {
     soldier = gltf.scene;
     soldier.scale.set(0.25, 0.25, 0.25);
+
     scene.add(soldier);
+
+    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
+    let boxSize = new THREE.Vector3(0.2,0.5, 0.2); // Size of the box (width, height, depth)
+    dummyMesh = new THREE.Mesh(new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z));
+
+// 2. Position this mesh at the position of the soldier.
+    dummyMesh.position.copy(new Vector3(soldier.position.x, soldier.position.y, soldier.position.z));
+    yOffset = 0.2;  // or any value you deem appropriate
+    dummyMesh.position.y += yOffset;
+
+
+// 3. Create a BoxHelper using this dummy mesh.
+    soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
+
+// 4. Add the BoxHelper to the scene.
+    scene.add(soldierBoxHelper);
+
+
 
     // Create a mixer for the soldier
     mixer = new THREE.AnimationMixer(soldier);
@@ -143,11 +166,11 @@ loader.load('models/villaHouse.glb', function (gltf) {
 
 const iconLoader = new GLTFLoader();
 
-let gameIcons;
+let gameIcon;
 iconLoader.load('models/gameIcons.glb', function (gltf) {
-    gameIcons= gltf.scene;
-    gameIcons.position.set(1, 0.3, 0);
-    gameIcons.scale.set(0.02, 0.02, 0.02);
+    gameIcon= gltf.scene;
+    gameIcon.position.set(1, 0.3, 0);
+    gameIcon.scale.set(0.02, 0.02, 0.02);
     scene.add(gltf.scene);
 
 }, undefined, function (error) {
@@ -166,6 +189,7 @@ function animate() {
     if (mixer) mixer.update(0.016);
 
     updateMovement();
+
 
     camera.position.x = soldier.position.x;
     camera.position.z = soldier.position.z + 2;
@@ -286,6 +310,14 @@ function updateMovement() {
 
     orbitControls.target.copy(soldier.position);
 
+    // Update dummyMesh's position
+    dummyMesh.position.copy(soldier.position);
+
+    dummyMesh.position.y += yOffset;  // make sure to add yOffset again
+    // At the end of your movement updates, add:
+    if (soldierBoxHelper) {
+        soldierBoxHelper.update();
+    }
 }
 
 
