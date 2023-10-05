@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import {checkMovement, initializeRays} from "./collisionCheck";
+import {checkMovement} from "./collisionCheck";
 
 // Scene
 const scene = new THREE.Scene();
@@ -72,8 +72,7 @@ let animations = {};
 let currentAnimation = 'Idle';
 let currentAnimationAction;
 
-const soldierLoader = new GLTFLoader();
-
+let soldierLoader = new GLTFLoader();
 soldierLoader.load('models/Soldier.glb', function (gltf) {
     soldier = gltf.scene;
     soldier.scale.set(0.25, 0.25, 0.25);
@@ -110,7 +109,7 @@ const wallGeometry = new THREE.BoxGeometry(1, 5, 1);
 const wallMaterial = new THREE.MeshBasicMaterial({ map: wallTexture });
 const wall = new THREE.Mesh(wallGeometry, wallMaterial);
 wall.position.set(3, 0, 0);
-scene.add(wall);
+//scene.add(wall);
 
 
 // Light
@@ -126,6 +125,9 @@ loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse = gltf.scene;
     gltf.scene.position.set(0, 0, -8);
     gltf.scene.scale.set(1, 1, 1);
+    // Set the villaHouse to be invisible
+    //villaHouse.visible = false;
+
     scene.add(gltf.scene);
     // Find the child named "floor" and set its material to use the floorTexture
     const floor = villaHouse.getObjectByName("floor");
@@ -134,6 +136,19 @@ loader.load('models/villaHouse.glb', function (gltf) {
     } else {
         console.warn('Floor not found in the villaHouse model.');
     }
+
+}, undefined, function (error) {
+    console.error(error);
+});
+
+const iconLoader = new GLTFLoader();
+
+let gameIcons;
+iconLoader.load('models/gameIcons.glb', function (gltf) {
+    gameIcons= gltf.scene;
+    gameIcons.position.set(1, 0.3, 0);
+    gameIcons.scale.set(0.02, 0.02, 0.02);
+    scene.add(gltf.scene);
 
 }, undefined, function (error) {
     console.error(error);
@@ -179,6 +194,7 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
 let verticalVelocity = 0;
 
 function updateMovement() {
+
 
     // Move the collision checks to the checkMovement function
     const movementChecks = checkMovement(soldier, villaHouse, keyState, isJumping, verticalVelocity);
@@ -269,6 +285,7 @@ function updateMovement() {
     }
 
     orbitControls.target.copy(soldier.position);
+
 }
 
 
