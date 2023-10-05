@@ -144,10 +144,13 @@ var cameraPosition;
 
 let isJumping = false; // This will tell us if the character has initiated a jump
 
-// Call the initializeRays function at the beginning of your code and store the returned variables
-const rayVars = initializeRays();
 
-function checkMovement(soldier, villaHouse, rayVars) {
+
+function checkMovement(soldier, villaHouse) {
+
+    // Call the initializeRays function at the beginning of your code and store the returned variables
+    const rayVars = initializeRays();
+
     let canMove = true;
     let isOnGround = false;
 
@@ -271,7 +274,7 @@ let verticalVelocity = 0;
 function updateMovement() {
 
     // Move the collision checks to the checkMovement function
-    const movementChecks = checkMovement(soldier, villaHouse, rayVars);
+    const movementChecks = checkMovement(soldier, villaHouse);
     let canMove = movementChecks.canMove;
     let isOnGround = movementChecks.isOnGround;
 
