@@ -190,19 +190,14 @@ function initializeRays(scene) {
     };
 }
 
-let isOnGround = false;
 let isJumping = false; // This will tell us if the character has initiated a jump
 
 // Call the initializeRays function at the beginning of your code and store the returned variables
 const rayVars = initializeRays(scene);
 
-
-function animate() {
-    requestAnimationFrame(animate);
-
-    if (mixer) mixer.update(0.016);
-
-    updateMovement();
+function checkMovement(soldier, villaHouse, rayVars) {
+    let canMove = true;
+    let isOnGround = false;
 
     // Update the raycaster position and direction based on the soldier's front
     soldier.getWorldPosition(rayVars.raycaster.ray.origin);
@@ -286,6 +281,15 @@ function animate() {
         }
     }
 
+    return { canMove, isOnGround };
+}
+function animate() {
+    requestAnimationFrame(animate);
+
+    if (mixer) mixer.update(0.016);
+
+    updateMovement();
+
     camera.position.x = soldier.position.x;
     camera.position.z = soldier.position.z + 2;
     camera.lookAt(soldier.position);
@@ -312,8 +316,13 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
 
 let verticalVelocity = 0;
 
-let canMove = true;
 function updateMovement() {
+
+    // Move the collision checks to the checkMovement function
+    const movementChecks = checkMovement(soldier, villaHouse, rayVars);
+    let canMove = movementChecks.canMove;
+    let isOnGround = movementChecks.isOnGround;
+
     var moveDistance = 0.015;
 
     if (keyState[16]) {  // shift key is pressed
@@ -358,20 +367,6 @@ function updateMovement() {
         const newPositionZ = soldier.position.z + moveZ;
         const newPositionY = soldier.position.y + verticalVelocity;
 
-        // Check for collisions with the villaHouse in all dimensions
-        const collisionThreshold = 0.1;
-        const collisionPoint = new THREE.Vector3(newPositionX, newPositionY, newPositionZ);
-        const intersects = rayVars.raycaster.intersectObject(villaHouse, true);
-
-        if (intersects.length > 0) {
-            const intersectionPoint = intersects[0].point;
-            const distance = intersectionPoint.distanceTo(collisionPoint);
-
-            if (distance < collisionThreshold) {
-                canMove = false; // Collision detected, prevent movement
-            }
-        }
-
         if (canMove) {
             soldier.position.x = newPositionX;
             soldier.position.y = newPositionY;
@@ -407,7 +402,7 @@ function updateMovement() {
     if (isJumping) {
         setTimeout(() => {
             isJumping = false; // Reset after allowing some time
-        }, 150); // Adjust this time based on your needs
+        }, 35); // Adjust this time based on your needs
     }
 
     orbitControls.target.copy(soldier.position);
