@@ -106,7 +106,5 @@ export function checkMovement(soldier, villaHouse, keyState, isJumping, vertical
             verticalVelocity -= 0.005;
         }
     }
-    //console.log("is on ground: ", isOnGround);
-    console.log("is jumping: ", isJumping);
     return { canMove, isOnGround, verticalVelocity };
 }
