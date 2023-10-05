@@ -143,38 +143,18 @@ loader.load('models/villaHouse.glb', function (gltf) {
 var cameraPosition;
 
 let isJumping = false; // This will tell us if the character has initiated a jump
-
-
-
 function checkMovement(soldier, villaHouse) {
-
-    // Call the initializeRays function at the beginning of your code and store the returned variables
     const rayVars = initializeRays();
 
     let canMove = true;
     let isOnGround = false;
-
-    // Update the raycaster position and direction based on the soldier's front
-    soldier.getWorldPosition(rayVars.raycaster.ray.origin);
-    soldier.getWorldDirection(rayVars.raycastDirection);
-    rayVars.raycaster.ray.direction.copy(rayVars.raycastDirection);
-
-    // Update the MiddleRaycaster position and direction based on the soldier's front
-    soldier.getWorldPosition(rayVars.middleRaycaster.ray.origin);
-    soldier.getWorldDirection(rayVars.middleRaycastDirection);
-    rayVars.middleRaycaster.ray.direction.copy(rayVars.middleRaycastDirection);
-
-    // Update the raycaster position and direction based on the soldier's front
-    rayVars.raycaster.ray.origin.copy(soldier.position);
-    // Calculate the direction vector based on the soldier's rotation
     const direction = new THREE.Vector3(0, 0, -1); // Default direction (in front of the soldier)
     direction.applyQuaternion(soldier.quaternion); // Apply soldier's rotation
 
+    // Update raycaster and middleRaycaster position and direction based on the soldier's front
+    soldier.getWorldPosition(rayVars.raycaster.ray.origin);
     rayVars.raycaster.ray.direction.copy(direction);
 
-    const intersects = rayVars.raycaster.intersectObject(villaHouse, true);
-
-    // Update the middleRaycaster position and direction based on the soldier's front
     const midBodyPosition = soldier.position.clone().add(new THREE.Vector3(0, 0.2, 0)); // roughly middle of a human body
     rayVars.middleRaycaster.ray.origin.copy(midBodyPosition);
     rayVars.middleRaycaster.ray.direction.copy(direction);
@@ -183,31 +163,24 @@ function checkMovement(soldier, villaHouse) {
     soldier.getWorldPosition(rayVars.downRaycaster.ray.origin);
     rayVars.downRaycaster.ray.direction.copy(rayVars.downRayDirection);
 
+    const intersects = rayVars.raycaster.intersectObject(villaHouse, true);
     const midIntersects = rayVars.middleRaycaster.intersectObject(villaHouse, true);
 
+    function checkCollision(intersections, refPosition) {
+        if (intersections.length > 0) {
+            const collisionPoint = intersections[0].point;
+            const distance = refPosition.distanceTo(collisionPoint);
+            const collisionThreshold = 0.2;
+
+            return distance < collisionThreshold;
+        }
+        return false;
+    }
+
     if (keyState[87] || keyState[83] || keyState[65] || keyState[68] || keyState[38] || keyState[40] || keyState[37] || keyState[39]) {  // Check if any forward key is pressed
-        if (intersects.length > 0) {
-            const collisionPoint = intersects[0].point;
-            const distance = soldier.position.distanceTo(collisionPoint);
-            const collisionThreshold = 0.2;
-
-            if (distance < collisionThreshold) {
-                console.log("colliding");
-                canMove = false;
-            } else {
-                canMove = true;
-            }
-        }else if (midIntersects.length > 0) {
-            const collisionPoint = midIntersects[0].point;
-            const distance = midBodyPosition.distanceTo(collisionPoint);
-            const collisionThreshold = 0.2;
-
-            if (distance < collisionThreshold) {
-                console.log("colliding");
-                canMove = false;
-            } else {
-                canMove = true;
-            }
+        if (checkCollision(intersects, soldier.position) || checkCollision(midIntersects, midBodyPosition)) {
+            console.log("colliding");
+            canMove = false;
         } else {
             rayVars.sphere.visible = false;
             canMove = true;
@@ -216,20 +189,11 @@ function checkMovement(soldier, villaHouse) {
 
     const downIntersects = rayVars.downRaycaster.intersectObject(villaHouse, true);
     if (!isJumping) {
-        // Existing logic
-        if (downIntersects.length > 0) {
-            const collisionPointDown = downIntersects[0].point;
-            const distance = soldier.position.distanceTo(collisionPointDown);
-            const collisionThreshold = 0.2;
-
-            if (distance < collisionThreshold) {
-                console.log("colliding downward");
-                soldier.position.y = downIntersects[0].point.y + 0.05;
-                verticalVelocity = 0;
-                isOnGround = true;
-            } else {
-                isOnGround = false;
-            }
+        if (checkCollision(downIntersects, soldier.position)) {
+            console.log("colliding downward");
+            soldier.position.y = downIntersects[0].point.y + 0.05;
+            verticalVelocity = 0;
+            isOnGround = true;
         } else {
             isOnGround = false;
             verticalVelocity -= 0.005;
@@ -238,6 +202,7 @@ function checkMovement(soldier, villaHouse) {
 
     return { canMove, isOnGround };
 }
+
 function animate() {
     requestAnimationFrame(animate);
 
