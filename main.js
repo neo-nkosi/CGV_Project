@@ -349,24 +349,7 @@ function updateMovement() {
         soldierBoxHelper.update();
     }
 
-    // Update the position and collision checks for each coin
-    coins.forEach(coin => {
-        // Update dummyMesh's position for coin
-        coin.dummyMesh.position.copy(coin.mesh.position);
-        coin.dummyMesh.position.y += 0;
-        if (coin.boxHelper) {
-            coin.boxHelper.update();
-        }
-
-        const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
-        const coinBoundingBox = new THREE.Box3().setFromObject(coin.dummyMesh);
-
-        if (soldierBoundingBox.intersectsBox(coinBoundingBox) && !coin.collected) {
-            console.log("Collision between character and coin");
-            coin.mesh.visible = false;
-            coin.collected = true;
-        }
-    });
+    checkCollisionsWithCollectibles();
 
     let allCoinsCollected = coins.every(coin => coin.collected);
 
@@ -375,53 +358,46 @@ function updateMovement() {
         collectedAllCoinsMessage = true;  // This ensures the message is only printed once.
     }
 
-    boosts.forEach(b => {
-        // Update dummyMesh's position for boost
-        b.dummyMesh.position.copy(b.mesh.position);
-        b.dummyMesh.position.y += 0;
-        if (b.boxHelper) {
-            b.boxHelper.update();
-        }
-
-        const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
-        const boostBoundingBox = new THREE.Box3().setFromObject(b.dummyMesh);
-
-        if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !b.collected) {
-            console.log("Collision between character and boost");
-            b.mesh.visible = false;
-            b.collected = true;
-            boostFactor +=1; // Double the speed
-
-            // Reset the boost after 10 seconds (or any desired duration)
-            setTimeout(() => {
-                boostFactor = 1;
-            }, 10000);
-        }
-    });
-
-    healths.forEach(health => {
-        // Update dummyMesh's position for health
-        health.dummyMesh.position.copy(health.mesh.position);
-        health.dummyMesh.position.y += 0;
-        if (health.boxHelper) {
-            health.boxHelper.update();
-        }
-
-        const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
-        const healthBoundingBox = new THREE.Box3().setFromObject(health.dummyMesh);
-
-        if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !health.collected) {
-            console.log("Collision between character and health");
-            health.mesh.visible = false;
-            health.collected = true;
-            soldierHealth += 1;  // Adjust the amount of health gained as necessary.
-            console.log("Soldier's health is ", soldierHealth);
-        }
-    });
-
 
 
 }
+
+function checkCollisionsWithCollectibles() {
+    const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
+
+    // Check collision with coins
+    coins.forEach(coin => {
+        const coinBoundingBox = new THREE.Box3().setFromObject(coin.dummyMesh);
+        if (soldierBoundingBox.intersectsBox(coinBoundingBox) && !coin.collected) {
+            console.log("Collision between character and coin");
+            coin.mesh.visible = false;
+            coin.collected = true;
+        }
+    });
+
+    // Check collision with boosts
+    boosts.forEach(b => {
+        const boostBoundingBox = new THREE.Box3().setFromObject(b.dummyMesh);
+        if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !b.collected) {
+            console.log("Collision between character and boost");
+            boostFactor += 1;  // or any other effect you want to give
+            b.mesh.visible = false;
+            b.collected = true;
+        }
+    });
+
+    // Check collision with healths
+    healths.forEach(h => {
+        const healthBoundingBox = new THREE.Box3().setFromObject(h.dummyMesh);
+        if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !h.collected) {
+            console.log("Collision between character and health");
+            soldierHealth += 1;
+            h.mesh.visible = false;
+            h.collected = true;
+        }
+    });
+}
+
 
 
 // Start animation
