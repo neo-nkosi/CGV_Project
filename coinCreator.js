@@ -1,6 +1,7 @@
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as THREE from "three";
 
+//Coin
 export function createCoin(x, y, z, scene, coins) {
     const iconLoader = new GLTFLoader();
 
@@ -36,3 +37,66 @@ export function createCoin(x, y, z, scene, coins) {
         console.error(error);
     });
 }
+
+// Boost
+export function createBoost(x, y, z, scene, boosts) {
+    const iconLoader = new GLTFLoader();
+
+    iconLoader.load('models/speed.glb', function (gltf) {
+        let boost = gltf.scene;
+        boost.position.set(x, y, z);
+        boost.scale.set(0.02, 0.02, 0.02);  // Adjust scale if needed
+        scene.add(boost);
+
+        let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2);
+        let boostDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(iconBoxSize.x, iconBoxSize.y, iconBoxSize.z));
+        boostDummyMesh.position.copy(boost.position);
+        let boostYOffset = 0;
+
+        boostDummyMesh.position.y += boostYOffset;
+
+        let boostBoxHelper = new THREE.BoxHelper(boostDummyMesh, 0x00ff00);
+        //scene.add(boostBoxHelper);
+
+        boosts.push({
+            mesh: boost,
+            dummyMesh: boostDummyMesh,
+            boxHelper: boostBoxHelper,
+            collected: false
+        });
+    }, undefined, function (error) {
+        console.error(error);
+    });
+}
+
+// Health
+export function createHealth(x, y, z, scene, healths) {
+    const iconLoader = new GLTFLoader();
+
+    iconLoader.load('models/health.glb', function (gltf) {
+        let health = gltf.scene;
+        health.position.set(x, y, z);
+        health.scale.set(0.02, 0.02, 0.02);  // Adjust scale if needed
+        scene.add(health);
+
+        let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2);
+        let healthDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(iconBoxSize.x, iconBoxSize.y, iconBoxSize.z));
+        healthDummyMesh.position.copy(health.position);
+        let healthYOffset = 0;
+
+        healthDummyMesh.position.y += healthYOffset;
+
+        let healthBoxHelper = new THREE.BoxHelper(healthDummyMesh, 0x00ff00);
+        //scene.add(healthBoxHelper);
+
+        healths.push({
+            mesh: health,
+            dummyMesh: healthDummyMesh,
+            boxHelper: healthBoxHelper,
+            collected: false
+        });
+    }, undefined, function (error) {
+        console.error(error);
+    });
+}
+
