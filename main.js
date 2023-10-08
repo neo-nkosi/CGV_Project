@@ -6,15 +6,25 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 const scene = new THREE.Scene();
 
 // Camera
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.y = 0.2; // adjust as necessary
-camera.position.z = 1;
-camera.lookAt(0, 0, 5);
+// Camera
+let firstPersonView = false;
 
+const fov = 60;
+const aspect = window.innerWidth / window.innerHeight;
+const near = 0.1;
+const far = 1000;
+const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+camera.position.y = 0.6; // adjust as necessary
+camera.position.z = 1;
+
+// Renderer
 // Renderer
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
 
 // Resize event
 window.addEventListener('resize', () => {
@@ -26,10 +36,19 @@ window.addEventListener('resize', () => {
     renderer.setSize(newWidth, newHeight);
 });
 
+//ORBIT CONTROLS
+const orbitControls = new OrbitControls(camera, renderer.domElement);
+orbitControls.enableDamping = true;
+orbitControls.dampingFactor = 0.05;
+
+orbitControls.minPolarAngle = Math.PI /3
+orbitControls.maxPolarAngle = Math.PI / 2 - 0.05; // Prevents the camera from going below the ground or too high above the soldier
+orbitControls.minAzimuthAngle = -Infinity;
+orbitControls.maxAzimuthAngle = Infinity;
+
 //CONTROLS
 //event listener for keyboard presses
 const keyState = {};
-
 document.addEventListener('keydown', onDocumentKeyDown, false);
 document.addEventListener('keyup', onDocumentKeyUp, false);
 
@@ -40,29 +59,6 @@ function onDocumentKeyDown(event) {
 function onDocumentKeyUp(event) {
     keyState[event.which] = false;
 }
-
-//MOUSE CONTROLS
-const orbitControls = new OrbitControls(camera, renderer.domElement);
-orbitControls.enableDamping = true;
-orbitControls.dampingFactor = 0.05;
-orbitControls.minDistance = 1;
-orbitControls.maxDistance = 15;
-orbitControls.enableRotate = true;
-orbitControls.enablePan = false;
-orbitControls.maxPolarAngle = Math.PI / 2 - 0.05; // Prevents the camera from going below the ground or too high above the soldier
-//orbitControls.target.copy(soldier.position); // Make sure the controls always orbit around the soldier
-
-
-//MOUSE CONTROLS
-// const orbitControls = new OrbitControls(camera, renderer.domElement);
-// orbitControls.target.copy(soldier.position); // Make sure the controls always orbit around the soldier
-// orbitControls.enableDamping = true;
-// orbitControls.dampingFactor = 0.05;
-// orbitControls.minDistance = 5;
-// orbitControls.maxDistance = 15;
-// orbitControls.enablePan = false;
-// orbitControls.maxPolarAngle = Math.PI / 2 - 0.05; // Prevents the camera from going below the ground or too high above the soldier
-
 
 // Soldier geometry
 let soldier;
@@ -109,13 +105,7 @@ const land = new THREE.Mesh(landGeometry, landMaterial);
 land.rotation.x = -Math.PI / 2; // Rotate the plane to horizontal
 scene.add(land);
 
-// Create walls
-const wallTexture = textureLoader.load('textures/wall.png');
-const wallGeometry = new THREE.BoxGeometry(1, 5, 1);
-const wallMaterial = new THREE.MeshBasicMaterial({ map: wallTexture });
-const wall = new THREE.Mesh(wallGeometry, wallMaterial);
-wall.position.set(3, 0, 0);
-scene.add(wall);
+
 
 // Create floor
 const floorGeometry = new THREE.BoxGeometry(10, 1, 10);
@@ -148,17 +138,16 @@ function animate() {
 
     updateMovement();
 
-    camera.position.x = soldier.position.x;
-    camera.position.z = soldier.position.z + 2;
-    camera.lookAt(soldier.position);
-    cameraPosition = getCameraPositionBehindSoldier(soldier, 5);
-    //camera.position.copy(cameraPosition);
-    camera.lookAt(soldier.position);
 
+    // if (firstPersonView) {
+    //     // In first-person view, make the camera "follow" the soldier's head
+    //     camera.position.set(soldier.position.x, soldier.position.y + 0.5, soldier.position.z); // adjust 0.5 if needed
+    // } else {
+    //     // ... (your current camera adjustments for third-person view)
+    // }
     orbitControls.update();
 
     renderer.render(scene, camera);
-
 }
 
 function getCameraPositionBehindSoldier(soldier, distanceBehind) {
@@ -180,21 +169,22 @@ function updateMovement() {
         moveDistance *= 2;  // speed is doubled
     }
 
-    let moveX = 0;
-    let moveZ = 0;
+    const forwardDirection = new THREE.Vector3();
+    camera.getWorldDirection(forwardDirection);  // or you can use camera.getWorldDirection(forwardDirection);
+    forwardDirection.y = 0;
+    forwardDirection.normalize();
 
-    if (keyState[87] || keyState[38]) moveZ = -moveDistance;
-    if (keyState[83] || keyState[40]) moveZ = moveDistance;
-    if (keyState[65] || keyState[37]) moveX = -moveDistance;
-    if (keyState[68] || keyState[39]) moveX = moveDistance;
+    let moveDirection = new THREE.Vector3();
 
-    if (moveX !== 0 && moveZ !== 0) {
-        moveX /= Math.sqrt(2);
-        moveZ /= Math.sqrt(2);
-    }
+    if (keyState[87] || keyState[38]) moveDirection.add(forwardDirection);
+    if (keyState[83] || keyState[40]) moveDirection.sub(forwardDirection);
+    if (keyState[65] || keyState[37]) moveDirection.add(new THREE.Vector3(forwardDirection.z, 0, -forwardDirection.x));
+    if (keyState[68] || keyState[39]) moveDirection.sub(new THREE.Vector3(forwardDirection.z, 0, -forwardDirection.x));
 
-    if (moveX !== 0 || moveZ !== 0) {
-        const rotationAngle = Math.PI + Math.atan2(moveX, moveZ);
+    moveDirection.normalize().multiplyScalar(moveDistance);
+
+    if (moveDirection.x !== 0 || moveDirection.z !== 0) {
+        const rotationAngle = 2*Math.PI + Math.atan2(-moveDirection.x, -moveDirection.z);
         soldier.rotation.y = rotationAngle;
 
         if (keyState[16]) {
@@ -213,7 +203,6 @@ function updateMovement() {
             }
         }
     } else {
-
         if (currentAnimation !== 'Idle'){
             currentAnimationAction.fadeOut(0.6);
             currentAnimation = 'Idle';
@@ -221,10 +210,26 @@ function updateMovement() {
             currentAnimationAction.reset().fadeIn(0.5).play();
         }
     }
-    soldier.position.x += moveX;
-    soldier.position.z += moveZ;
-    orbitControls.target.copy(soldier.position);
-}
 
+    soldier.position.add(moveDirection);
+    orbitControls.target.copy(soldier.position);
+
+    // Adjusting Y position
+    if (camera.position.y > 1.5) {
+        camera.position.y -= 0.01; // gradual adjustment
+        console.log('Adjusted camera Y due to being above 1.5:', camera.position.y);
+    } else if (camera.position.y < 0.6) {
+        camera.position.y += 0.01; // gradual adjustment
+        console.log('Adjusted camera Y due to being below 0.6:', camera.position.y);
+    }
+
+    // Maintain a specific distance from the soldier
+    const desiredDistance = 2;
+    let soldierToCamera = new THREE.Vector3().subVectors(camera.position, soldier.position);
+    soldierToCamera.normalize().multiplyScalar(desiredDistance);
+    let desiredPosition = new THREE.Vector3().addVectors(soldier.position, soldierToCamera);
+    camera.position.copy(desiredPosition);
+    // console.log('Adjusted camera position to maintain distance:', camera.position);
+}
 // Start animation
 animate();
