@@ -181,7 +181,8 @@ createBoost(-3,0,0,scene,boosts);
 createBoost(-4,0,-1,scene,boosts);
 //Create multiple hearts
 createHealth(2,0,0,scene,healths);
-
+createHealth(3,0,0,scene,healths);
+createHealth(4,0,0,scene,healths);
 
 // Animation function
 var cameraPosition;
@@ -242,7 +243,7 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
 }
 
 let boostFactor = 1;
-
+let soldierHealth = 1;
 let verticalVelocity = 0;
 let collectedAllCoinsMessage = false;
 
@@ -397,6 +398,27 @@ function updateMovement() {
             }, 10000);
         }
     });
+
+    healths.forEach(health => {
+        // Update dummyMesh's position for health
+        health.dummyMesh.position.copy(health.mesh.position);
+        health.dummyMesh.position.y += 0;
+        if (health.boxHelper) {
+            health.boxHelper.update();
+        }
+
+        const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
+        const healthBoundingBox = new THREE.Box3().setFromObject(health.dummyMesh);
+
+        if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !health.collected) {
+            console.log("Collision between character and health");
+            health.mesh.visible = false;
+            health.collected = true;
+            soldierHealth += 1;  // Adjust the amount of health gained as necessary.
+            console.log("Soldier's health is ", soldierHealth);
+        }
+    });
+
 
 
 }
