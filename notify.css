@@ -1,0 +1,18 @@
+#explorationNotification {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    background-color: #333;
+    color: #fff;
+    border-radius: 5px;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none; /* Makes sure the notification doesn't interfere with user interactions */
+}
+
+#explorationNotification.show {
+    opacity: 1;
+}

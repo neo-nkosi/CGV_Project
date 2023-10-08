@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import {checkMovement, initializeRays} from "./collisionCheck";
+import {checkMovement, initializeRays, checkDummyCollision} from "./collisionCheck";
 
 // Scene
 const scene = new THREE.Scene();
@@ -52,6 +52,19 @@ orbitControls.enableRotate = true;
 orbitControls.enablePan = false;
 orbitControls.maxPolarAngle = Math.PI / 2 - 0.05; // Prevents the camera from going below the ground or too high above the soldier
 //orbitControls.target.copy(soldier.position); // Make sure the controls always orbit around the soldier
+
+
+function showNotification() {
+    const notification = document.getElementById('explorationNotification');
+
+    // Show notification
+    notification.classList.add('show');
+
+    // Hide notification after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
 
 
 // Soldier geometry
@@ -118,34 +131,25 @@ let pursuing = false; // Flag to check if monster is in pursuit mode
 let path = []; // To store the path
 let grid; // We've already initialized this in the villa loader
 const cellSize = 0.3;  // Declare this variable here, at the top level
-let gridHeight; // Declare this variable here
-let gridWidth;  // Declare this too if it's not already
+
+const cubeGeometry = new THREE.BoxGeometry(cellSize, 0.1, cellSize);  // Dimensions of the cube
+const cubeMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.5});  // Semi-transparent red color
+const explorationCube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+scene.add(explorationCube);
 
 
 loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse = gltf.scene;
 
-    // Determine bounding box right after the model is loaded
-    villaBoundingBox = new THREE.Box3().setFromObject(villaHouse);
-    villaSize = villaBoundingBox.getSize(new THREE.Vector3());
-
-
-    // Initialize grid here
-
-    const gridSizeX = Math.ceil(villaSize.x / cellSize);
-    const gridSizeZ = Math.ceil(villaSize.z / cellSize);
-    gridWidth = Math.ceil(villaSize.x / cellSize);
-    gridHeight = Math.ceil(villaSize.z / cellSize);
-
-    grid = Array(gridHeight).fill().map(() => Array(gridWidth).fill(false));  // Updated to false
-
-    console.log("Grid initialized:");
-    console.table(grid);  // Check the initialized grid in the console
-
 
     gltf.scene.position.set(0, 0, -8);
     gltf.scene.scale.set(1, 1, 1);
     scene.add(gltf.scene);
+
+    // Determine bounding box right after the model is loaded
+    villaBoundingBox = new THREE.Box3().setFromObject(villaHouse);
+    villaSize = villaBoundingBox.getSize(new THREE.Vector3());
+
     // Find the child named "floor" and set its material to use the floorTexture
     const floor = villaHouse.getObjectByName("floor");
     if (floor) {
@@ -154,26 +158,67 @@ loader.load('models/villaHouse.glb', function (gltf) {
         console.warn('Floor not found in the villaHouse model.');
     }
 
-    // Now, villaHouse is loaded and you can safely access its position
-    const villaPosition = villaHouse.position;
-    const startX = Math.floor((villaPosition.x - villaBoundingBox.min.x) / cellSize);
-    const startZ = Math.floor((villaPosition.z - villaBoundingBox.min.z) / cellSize);
+    // Initialize the grid here
+    initializeGrid();
 
-    let start = {
-        x: startX,
-        y: startZ,
-        distance: 0
-    };
+    if (explorationCube && grid) {
+        console.log("Starting exploration with cube...");
 
-    if (dummyMonster) {
-        console.log("Starting dummy monster exploration...");
-        dummyMonster.position.copy(monster.position); // Start from real monster's position
-        exploreWithDummyMonster(dummyMonster);
+        const villaPosition = villaHouse.position;
+        const startX = Math.floor((villaPosition.x - villaBoundingBox.min.x) / cellSize);
+        const startZ = Math.floor((villaPosition.z - villaBoundingBox.min.z) / cellSize);
+
+        let start = {
+            x: startX,
+            y: startZ,
+            distance: 0
+        };
+
+        // Assume you have a defined variable for the villa's floor Y position, adjust as needed:
+        const floorLevelY = 0;
+        explorationCube.position.set(startX * cellSize + villaBoundingBox.min.x, floorLevelY + 0.05, startZ * cellSize + villaBoundingBox.min.z);
+
+        exploreWithCube(explorationCube);
+        // saveGridToLocalStorage();
     }
 
 }, undefined, function (error) {
     console.error(error);
 });
+
+function saveGridToLocalStorage() {
+    if (grid) {
+        localStorage.setItem('explorationGrid', JSON.stringify(grid));
+    }
+}
+
+function loadGridFromLocalStorage() {
+    const savedGrid = localStorage.getItem('explorationGrid');
+    if (savedGrid) {
+        grid = JSON.parse(savedGrid);
+        return true; // Grid loaded successfully
+    }
+    return false; // Grid was not in local storage
+}
+
+
+function initializeGrid() {
+    // Attempt to load grid from local storage
+    if (loadGridFromLocalStorage()) {
+        console.log("Grid loaded from local storage.");
+        return;
+    }
+
+    // Otherwise, initialize a new grid and start exploration
+    const gridSizeX = Math.ceil(villaSize.x / cellSize);
+    const gridSizeZ = Math.ceil(villaSize.z / cellSize);
+
+    // Initialize the grid with 'false' values for non-walkable areas
+    grid = Array(gridSizeZ).fill().map(() => Array(gridSizeX).fill(true));
+
+    console.log("Grid initialized:");
+    console.table(grid); // Check the initialized grid in the console
+}
 
 //breadth first search algorithm:
 function BFS(grid, start, target) {
@@ -278,11 +323,6 @@ function playAnimation(name) {
 }
 
 // Correctly position monster on the floor:
-function positionOnFloor(entity) {
-    const box = new THREE.Box3().setFromObject(entity);
-    entity.position.y -= box.min.y;
-}
-
 let dummyMonster; // For grid generation
 monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
     monster = gltf.scene;
@@ -291,10 +331,6 @@ monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf)
 
     monsterMixer = new THREE.AnimationMixer(monster);
     scene.add(monster);
-
-    dummyMonster = monster.clone(); // Create a dummy monster based on the real one
-    dummyMonster.scale.set(0.3, 0.3, 0.3); // Ensure it has the same scale as the actual monster
-    dummyMonster.position.copy(monster.position); // This sets x, y, and z of dummy to the original monster
 
 
     monsterAnimations.Idle = gltf.animations[0];
@@ -315,45 +351,44 @@ monsterloader.load('monster models/Monster warrior/MW Walking gltf/MW Walking.gl
     monsterAnimations.Walking = gltf.animations[1];
 });
 
-let visited = new Set();
-
-const visitedCells = new Set();
-
-function exploreWithDummyMonster(dummy, stepSize = 1) {
-    const directions = [
-        new THREE.Vector3(0, 0, -stepSize),
-        new THREE.Vector3(0, 0, stepSize),
-        new THREE.Vector3(-stepSize, 0, 0),
-        new THREE.Vector3(stepSize, 0, 0),
-    ];
-
-    const stack = [dummy.position.clone()];  // Initialize the stack with the starting position
-
-    while (stack.length > 0) {
-        const currentPos = stack.pop();
-
-        directions.forEach(dir => {
-            const newPos = currentPos.clone().add(dir);
-            const gridPos = toGridCoordinates(newPos.x, newPos.z);
-
-            const cellKey = `${gridPos.x},${gridPos.y}`;
-
-            if (gridPos.y >= 0 && gridPos.y < gridHeight &&
-                gridPos.x >= 0 && gridPos.x < gridWidth &&
-                !visitedCells.has(cellKey)) {
-
-                visitedCells.add(cellKey);
-
-                if (!grid[gridPos.y][gridPos.x] && isTileWalkable(newPos, villaHouse, -0.4)) {
-                    grid[gridPos.y][gridPos.x] = true;
-                    console.log(`Marking cell ${cellKey} as walkable`);
-                    stack.push(newPos);  // Add the new position to the stack to continue exploration
-                }
-            }
-        });
-    }
+function isValidGridPosition(gridPos) {
+    return gridPos.x >= 0 && gridPos.x < grid[0].length && gridPos.y >= 0 && gridPos.y < grid.length;
 }
 
+function exploreWithCube(cube) {
+    const directions = [
+        new THREE.Vector3(0, 0, -cellSize),
+        new THREE.Vector3(0, 0, cellSize),
+        new THREE.Vector3(-cellSize, 0, 0),
+        new THREE.Vector3(cellSize, 0, 0),
+    ];
+
+    const stack = [{
+        position: cube.position.clone(),
+        direction: null
+    }];
+
+    while (stack.length > 0) {
+        const current = stack.pop();
+        cube.position.copy(current.position);
+
+        if (checkDummyCollision(cube, villaHouse)) {
+            const gridPos = toGridCoordinates(cube.position.x, cube.position.z);
+            grid[gridPos.y][gridPos.x] = false;
+            console.log(`Marking cell ${gridPos.y},${gridPos.x} as non-walkable due to collision`);
+        } else {
+            directions.forEach(dir => {
+                const newPos = current.position.clone().add(dir);
+                const gridPos = toGridCoordinates(newPos.x, newPos.z);
+
+                if (isValidGridPosition(gridPos) && grid[gridPos.y][gridPos.x]) {
+                    stack.push({position: newPos, direction: dir});
+                    grid[gridPos.y][gridPos.x] = false;
+                }
+            });
+        }
+    }
+}
 
 function visualizeGrid(grid) {
     const material = new THREE.MeshBasicMaterial({color: 0x00ff00, transparent: true, opacity: 0.5});
@@ -365,6 +400,10 @@ function visualizeGrid(grid) {
                 const worldPos = toWorldCoordinates(j, i);  // Assuming toWorldCoordinates function is still in the code
                 const cube = new THREE.Mesh(geometry, material);
                 cube.position.copy(worldPos);
+
+                // Lower the grid height by 0.3 units
+                cube.position.y -= 0.3;
+
                 scene.add(cube);
             }
         }
@@ -388,6 +427,7 @@ document.addEventListener('keydown', (event) => {
                 const soldierGridPos = toGridCoordinates(soldier.position.x, soldier.position.z);
                 console.log("Soldier's world position:", soldier.position, "Grid position:", soldierGridPos);
 
+                // Use the updated grid for BFS
                 path = BFS(grid, monsterGridPos, soldierGridPos);
                 console.log("Generated path:", path);
                 playAnimation('Running');
@@ -414,9 +454,13 @@ function animate() {
     if (mixer) mixer.update(0.016);
     if (monsterMixer) monsterMixer.update(0.015);
 
+    if (dummyMonster) {
+        // Now you can safely use dummyMonster
+        dummyMonster.position.x += 0.1; // example
+    }
     updateMovement();
     // Call the function after the exploration is done
-    visualizeGrid(grid);
+    // visualizeGrid(grid);
 
     //monster movement
     if (pursuing && path.length > 0) {
@@ -428,14 +472,7 @@ function animate() {
         const direction = nextWorldPos.clone().sub(monster.position).normalize();
         const moveVector = direction.multiplyScalar(moveSpeed);
 
-
-        console.log("Next world position:", nextWorldPos);
-        console.log("Direction vector:", direction);
-        console.log("Monster's new position:", monster.position);
-
         monster.position.add(moveVector);
-
-        dummyMonster.position.copy(monster.position);
 
         // Smoothly rotate the monster towards the direction
         const lookAtPos = monster.position.clone().add(direction);

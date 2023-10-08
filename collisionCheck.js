@@ -108,3 +108,50 @@ export function checkMovement(soldier, villaHouse, keyState, isJumping, vertical
     }
     return { canMove, isOnGround, verticalVelocity };
 }
+
+export function checkDummyCollision(dummy, villaHouse) {
+    const rayVars = initializeRays();
+
+    const direction = new THREE.Vector3(0, 0, -1); // Default direction (in front of the dummy)
+    direction.applyQuaternion(dummy.quaternion); // Apply dummy's rotation
+
+    // Update raycaster's position and direction based on the dummy's front
+    dummy.getWorldPosition(rayVars.raycaster.ray.origin);
+    rayVars.raycaster.ray.direction.copy(direction);
+
+    const midBodyPosition = dummy.position.clone().add(new THREE.Vector3(0, 0.2, 0)); // roughly middle of a humanoid body
+    rayVars.middleRaycaster.ray.origin.copy(midBodyPosition);
+    rayVars.middleRaycaster.ray.direction.copy(direction);
+
+    // Update the downward raycaster position and direction
+    dummy.getWorldPosition(rayVars.downRaycaster.ray.origin);
+    rayVars.downRaycaster.ray.direction.copy(rayVars.downRayDirection);
+
+    const intersects = rayVars.raycaster.intersectObject(villaHouse, true);
+    const midIntersects = rayVars.middleRaycaster.intersectObject(villaHouse, true);
+
+    function checkCollision(intersections, refPosition) {
+        if (intersections.length > 0) {
+            const collisionPoint = intersections[0].point;
+            const distance = refPosition.distanceTo(collisionPoint);
+            const collisionThreshold = 0.2;
+
+            return distance < collisionThreshold;
+        }
+        return false;
+    }
+
+    // Check if dummy collides in its current position
+    if (checkCollision(intersects, dummy.position) || checkCollision(midIntersects, midBodyPosition)) {
+        console.log("Dummy colliding");
+        return true;
+    }
+
+    const downIntersects = rayVars.downRaycaster.intersectObject(villaHouse, true);
+    if (checkCollision(downIntersects, dummy.position)) {
+        console.log("Dummy colliding downward");
+        return true;
+    }
+
+    return false;
+}
