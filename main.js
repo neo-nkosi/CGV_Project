@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { FirstPersonControls } from 'three/examples/jsm/controls/FirstPersonControls';
+
 
 // Scene
 const scene = new THREE.Scene();
 
 // Camera
-// Camera
-let firstPersonView = false;
 
 const fov = 60;
 const aspect = window.innerWidth / window.innerHeight;
@@ -16,8 +16,21 @@ const far = 1000;
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 camera.position.y = 0.6; // adjust as necessary
 camera.position.z = 1;
+let firstPersonView = false;
 
-// Renderer
+function toggleFirstPersonView() {
+    firstPersonView = !firstPersonView;
+
+    // Disable OrbitControls in first-person mode and enable in third-person mode
+    orbitControls.enabled = !firstPersonView;
+    firstPersonControls.enabled = firstPersonView;
+
+    if (firstPersonView) {
+        // Adjust camera's position if needed (e.g., to set it at the soldier's eye level)
+        camera.position.set(soldier.position.x, soldier.position.y + 1.6, soldier.position.z);
+    }
+}
+
 // Renderer
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -25,6 +38,11 @@ document.body.appendChild(renderer.domElement);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+
+const firstPersonControls = new FirstPersonControls(camera, renderer.domElement);
+firstPersonControls.movementSpeed = 10;
+firstPersonControls.lookSpeed = 0.3;
+firstPersonControls.lookVertical = true;
 
 // Resize event
 window.addEventListener('resize', () => {
@@ -54,7 +72,11 @@ document.addEventListener('keyup', onDocumentKeyUp, false);
 
 function onDocumentKeyDown(event) {
     keyState[event.which] = true;
+    if (event.which === 86) { // 'v' key
+        toggleFirstPersonView();
+    }
 }
+
 
 function onDocumentKeyUp(event) {
     keyState[event.which] = false;
@@ -130,7 +152,8 @@ loader.load('models/villaHouse.glb', function (gltf) {
 });
 
 // Animation function
-var cameraPosition;
+const clock = new THREE.Clock();
+
 function animate() {
     requestAnimationFrame(animate);
 
@@ -138,29 +161,14 @@ function animate() {
 
     updateMovement();
 
-
-    // if (firstPersonView) {
-    //     // In first-person view, make the camera "follow" the soldier's head
-    //     camera.position.set(soldier.position.x, soldier.position.y + 0.5, soldier.position.z); // adjust 0.5 if needed
-    // } else {
-    //     // ... (your current camera adjustments for third-person view)
-    // }
-    orbitControls.update();
+    if (firstPersonView) {
+        firstPersonControls.update(clock.getDelta());
+    } else {
+        orbitControls.update();
+    }
 
     renderer.render(scene, camera);
 }
-
-function getCameraPositionBehindSoldier(soldier, distanceBehind) {
-    const forwardDirection = new THREE.Vector3();
-    soldier.getWorldDirection(forwardDirection);
-
-    // The computed offset
-    const offset = forwardDirection.multiplyScalar(-distanceBehind);
-
-    return new THREE.Vector3().addVectors(soldier.position, offset);
-}
-
-
 
 function updateMovement() {
     var moveDistance = 0.015;
@@ -214,22 +222,30 @@ function updateMovement() {
     soldier.position.add(moveDirection);
     orbitControls.target.copy(soldier.position);
 
-    // Adjusting Y position
-    if (camera.position.y > 1.5) {
-        camera.position.y -= 0.01; // gradual adjustment
-        console.log('Adjusted camera Y due to being above 1.5:', camera.position.y);
-    } else if (camera.position.y < 0.6) {
-        camera.position.y += 0.01; // gradual adjustment
-        console.log('Adjusted camera Y due to being below 0.6:', camera.position.y);
+    if (firstPersonView) {
+        camera.rotation.y = soldier.rotation.y;
+        // Adjust position for first-person (for example, put camera in soldier's head)
+        camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
+    } else {
+        // ... [existing third-person camera position adjustment]
+        // Adjusting Y position
+        if (camera.position.y > 1.5) {
+            camera.position.y -= 0.01; // gradual adjustment
+            console.log('Adjusted camera Y due to being above 1.5:', camera.position.y);
+        } else if (camera.position.y < 0.6) {
+            camera.position.y += 0.01; // gradual adjustment
+            console.log('Adjusted camera Y due to being below 0.6:', camera.position.y);
+        }
+
+        // Maintain a specific distance from the soldier
+        const desiredDistance = 2;
+        let soldierToCamera = new THREE.Vector3().subVectors(camera.position, soldier.position);
+        soldierToCamera.normalize().multiplyScalar(desiredDistance);
+        let desiredPosition = new THREE.Vector3().addVectors(soldier.position, soldierToCamera);
+        camera.position.copy(desiredPosition);
+        // console.log('Adjusted camera position to maintain distance:', camera.position);
     }
 
-    // Maintain a specific distance from the soldier
-    const desiredDistance = 2;
-    let soldierToCamera = new THREE.Vector3().subVectors(camera.position, soldier.position);
-    soldierToCamera.normalize().multiplyScalar(desiredDistance);
-    let desiredPosition = new THREE.Vector3().addVectors(soldier.position, soldierToCamera);
-    camera.position.copy(desiredPosition);
-    // console.log('Adjusted camera position to maintain distance:', camera.position);
 }
 // Start animation
 animate();
