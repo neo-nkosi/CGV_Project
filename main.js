@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import {checkMovement, initializeRays, isTileWalkable} from "./collisionCheck";
+import {checkMovement, initializeRays} from "./collisionCheck";
 
 // Scene
 const scene = new THREE.Scene();
@@ -117,25 +117,13 @@ let villaSize;
 let pursuing = false; // Flag to check if monster is in pursuit mode
 let path = []; // To store the path
 let grid; // We've already initialized this in the villa loader
-const cellSize =1;  // Declare this variable here, at the top level
+const cellSize = 0.3;  // Declare this variable here, at the top level
 let gridHeight; // Declare this variable here
 let gridWidth;  // Declare this too if it's not already
 
 
 loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse = gltf.scene;
-
-    gltf.scene.position.set(0, 0, -8);
-    gltf.scene.scale.set(1, 1, 1);
-    scene.add(gltf.scene);
-    // Find the child named "floor" and set its material to use the floorTexture
-    const floor = villaHouse.getObjectByName("floor");
-    if (floor) {
-        floor.material = new THREE.MeshBasicMaterial({color: 0xffffff});
-    } else {
-        console.warn('Floor not found in the villaHouse model.');
-    }
-
 
     // Determine bounding box right after the model is loaded
     villaBoundingBox = new THREE.Box3().setFromObject(villaHouse);
@@ -155,6 +143,16 @@ loader.load('models/villaHouse.glb', function (gltf) {
     console.table(grid);  // Check the initialized grid in the console
 
 
+    gltf.scene.position.set(0, 0, -8);
+    gltf.scene.scale.set(1, 1, 1);
+    scene.add(gltf.scene);
+    // Find the child named "floor" and set its material to use the floorTexture
+    const floor = villaHouse.getObjectByName("floor");
+    if (floor) {
+        floor.material = new THREE.MeshBasicMaterial({color: 0xffffff});
+    } else {
+        console.warn('Floor not found in the villaHouse model.');
+    }
 
     // Now, villaHouse is loaded and you can safely access its position
     const villaPosition = villaHouse.position;
@@ -359,7 +357,7 @@ function exploreWithDummyMonster(dummy, stepSize = 1) {
 
 function visualizeGrid(grid) {
     const material = new THREE.MeshBasicMaterial({color: 0x00ff00, transparent: true, opacity: 0.5});
-    const geometry = new THREE.BoxGeometry(1, 0.01, 1);  // Adjust dimensions according to your grid cell size
+    const geometry = new THREE.BoxGeometry(0.3, 0.01, 0.3);  // Adjust dimensions according to your grid cell size
 
     for (let i = 0; i < grid.length; i++) {
         for (let j = 0; j < grid[i].length; j++) {
@@ -418,7 +416,7 @@ function animate() {
 
     updateMovement();
     // Call the function after the exploration is done
-    // visualizeGrid(grid);
+    visualizeGrid(grid);
 
     //monster movement
     if (pursuing && path.length > 0) {
@@ -434,7 +432,6 @@ function animate() {
         console.log("Next world position:", nextWorldPos);
         console.log("Direction vector:", direction);
         console.log("Monster's new position:", monster.position);
-        // console.table(grid);
 
         monster.position.add(moveVector);
 
@@ -572,6 +569,5 @@ function updateMovement() {
 
 // Start animation
 animate();
-console.table(grid);
 
 // console.table("grid", grid);
