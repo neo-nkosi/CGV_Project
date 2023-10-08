@@ -27,12 +27,19 @@ export function createCoin(x, y, z, scene, coins) {
         // Add the BoxHelper to the scene
         //scene.add(coinBoxHelper);
 
-        coins.push({
-            mesh: coin,
-            dummyMesh: coinDummyMesh,
-            boxHelper: coinBoxHelper,
-            collected: false
-        });
+        if (gltf.animations && gltf.animations.length) {
+            const mixer = new THREE.AnimationMixer(coin);
+            const action = mixer.clipAction(gltf.animations[0]); // Assuming you want the first animation
+            action.play();
+
+            coins.push({
+                mesh: coin,
+                dummyMesh: coinDummyMesh,
+                boxHelper: coinBoxHelper,
+                collected: false,
+                mixer:mixer,
+            });
+        }
     }, undefined, function (error) {
         console.error(error);
     });
@@ -57,13 +64,19 @@ export function createBoost(x, y, z, scene, boosts) {
 
         let boostBoxHelper = new THREE.BoxHelper(boostDummyMesh, 0x00ff00);
         //scene.add(boostBoxHelper);
+        if (gltf.animations && gltf.animations.length) {
+            const mixer = new THREE.AnimationMixer(boost);
+            const action = mixer.clipAction(gltf.animations[1]); // Assuming you want the first animation
+            action.play();
 
-        boosts.push({
-            mesh: boost,
-            dummyMesh: boostDummyMesh,
-            boxHelper: boostBoxHelper,
-            collected: false
-        });
+            boosts.push({
+                mesh: boost,
+                dummyMesh: boostDummyMesh,
+                boxHelper: boostBoxHelper,
+                collected: false,
+                mixer: mixer
+            });
+        }
     }, undefined, function (error) {
         console.error(error);
     });
@@ -89,12 +102,19 @@ export function createHealth(x, y, z, scene, healths) {
         let healthBoxHelper = new THREE.BoxHelper(healthDummyMesh, 0x00ff00);
         //scene.add(healthBoxHelper);
 
-        healths.push({
-            mesh: health,
-            dummyMesh: healthDummyMesh,
-            boxHelper: healthBoxHelper,
-            collected: false
-        });
+        if (gltf.animations && gltf.animations.length) {
+            const mixer = new THREE.AnimationMixer(health);
+            const action = mixer.clipAction(gltf.animations[0]); // Assuming you want the first animation
+            action.play();
+
+            healths.push({
+                mesh: health,
+                dummyMesh: healthDummyMesh,
+                boxHelper: healthBoxHelper,
+                collected: false,
+                mixer: mixer
+            });
+        }
     }, undefined, function (error) {
         console.error(error);
     });

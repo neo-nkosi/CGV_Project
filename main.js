@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {checkMovement} from "./collisionCheck";
 import {Vector3} from "three";
-import { createCoin } from './coinCreator.js';
+import {createBoost, createCoin, createHealth} from './iconsCreation.js';
 
 
 // Scene
@@ -167,11 +167,21 @@ loader.load('models/villaHouse.glb', function (gltf) {
 });
 
 let coins = []; // Array to store multiple coins
+let boosts = [];
+let healths = [];
 
 // Create multiple coins
 createCoin(1, 0, 0, scene, coins);
 createCoin(-1, 0, 0, scene, coins);
 createCoin(0, 0, -1, scene, coins);
+
+//Create multiple boosts
+createBoost(-2,0,0,scene,boosts);
+createBoost(-3,0,0,scene,boosts);
+createBoost(-4,0,-1,scene,boosts);
+//Create multiple hearts
+createHealth(2,0,0,scene,healths);
+
 
 // Animation function
 var cameraPosition;
@@ -183,6 +193,27 @@ function animate() {
     requestAnimationFrame(animate);
 
     if (mixer) mixer.update(0.016);
+
+    // Update mixers for all coins
+    for (const coin of coins) {
+        if (coin.mixer) {
+            coin.mixer.update(0.016);
+        }
+    }
+
+    // Update mixers for all boost
+    for (const boost of boosts) {
+        if (boost.mixer) {
+            boost.mixer.update(0.016);
+        }
+    }
+
+    // Update mixers for all boost
+    for (const health of healths) {
+        if (health.mixer) {
+            health.mixer.update(0.016);
+        }
+    }
 
     updateMovement();
 
@@ -210,6 +241,7 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
     return new THREE.Vector3().addVectors(soldier.position, offset);
 }
 
+let boostFactor = 1;
 
 let verticalVelocity = 0;
 let collectedAllCoinsMessage = false;
@@ -224,7 +256,7 @@ function updateMovement() {
     let isOnGround = movementChecks.isOnGround;
     verticalVelocity = movementChecks.verticalVelocity;
 
-    var moveDistance = 0.015;
+    var moveDistance = 0.015 * boostFactor;
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
@@ -341,6 +373,31 @@ function updateMovement() {
         console.log("You have collected all the coins");
         collectedAllCoinsMessage = true;  // This ensures the message is only printed once.
     }
+
+    boosts.forEach(b => {
+        // Update dummyMesh's position for boost
+        b.dummyMesh.position.copy(b.mesh.position);
+        b.dummyMesh.position.y += 0;
+        if (b.boxHelper) {
+            b.boxHelper.update();
+        }
+
+        const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
+        const boostBoundingBox = new THREE.Box3().setFromObject(b.dummyMesh);
+
+        if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !b.collected) {
+            console.log("Collision between character and boost");
+            b.mesh.visible = false;
+            b.collected = true;
+            boostFactor +=1; // Double the speed
+
+            // Reset the boost after 10 seconds (or any desired duration)
+            setTimeout(() => {
+                boostFactor = 1;
+            }, 10000);
+        }
+    });
+
 
 }
 
