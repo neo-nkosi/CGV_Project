@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import {createHUD} from './hud';
 
 // Scene
 const scene = new THREE.Scene();
@@ -10,6 +11,22 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 camera.position.y = 0.2; // adjust as necessary
 camera.position.z = 1;
 camera.lookAt(0, 0, 5);
+scene.add(camera);
+
+//HUD
+// const hudElement = createHUD(camera,updateHUDPosition);
+
+// function updateHUDPosition(){
+//     const position = getCameraPositionBehindSoldier(soldier, 5);
+//     const canvasHalfWidth = renderer.domElement.width/2;
+//     const canvasHalfHeight = renderer.domElement.height/2;
+
+//     const hudX = (position.x/position.z)*canvasHalfWidth+canvasHalfWidth;
+//     const hudY = (position.y/position.z)*canvasHalfHeight+canvasHalfHeight;
+//     hudElement.style.transform = `translate(-50%, -50%) translate(${hudX}px, ${hudY}px)`;
+// }
+
+const hudElement = createHUD(camera);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer();
