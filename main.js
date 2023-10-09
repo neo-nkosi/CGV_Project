@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {createHUD} from './hud';
+import {checkMovement} from "./collisionCheck";
+import {Vector3} from "three";
+import {createBoost, createCoin, createHealth} from './iconsCreation.js';
+
 
 // Scene
 const scene = new THREE.Scene();
@@ -88,12 +92,33 @@ let animations = {};
 let currentAnimation = 'Idle';
 let currentAnimationAction;
 
-const soldierLoader = new GLTFLoader();
-
+let soldierLoader = new GLTFLoader();
+let soldierBoxHelper;
+let dummyMesh;
+let yOffset;
 soldierLoader.load('models/Soldier.glb', function (gltf) {
     soldier = gltf.scene;
     soldier.scale.set(0.25, 0.25, 0.25);
+
     scene.add(soldier);
+
+    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
+    let boxSize = new THREE.Vector3(0.2,0.5, 0.2); // Size of the box (width, height, depth)
+    dummyMesh = new THREE.Mesh(new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z));
+
+// 2. Position this mesh at the position of the soldier.
+    dummyMesh.position.copy(new Vector3(soldier.position.x, soldier.position.y, soldier.position.z));
+    yOffset = 0.2;  // or any value you deem appropriate
+    dummyMesh.position.y += yOffset;
+
+
+// 3. Create a BoxHelper using this dummy mesh.
+    soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
+
+// 4. Add the BoxHelper to the scene.
+    scene.add(soldierBoxHelper);
+
+
 
     // Create a mixer for the soldier
     mixer = new THREE.AnimationMixer(soldier);
@@ -119,12 +144,6 @@ soldierLoader.load('models/Soldier.glb', function (gltf) {
 const textureLoader = new THREE.TextureLoader();
 const floorTexture = textureLoader.load('textures/floor.jpg');
 
-// Land Geometry
-const landGeometry = new THREE.PlaneGeometry(50, 50, 50, 50);
-const landMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
-const land = new THREE.Mesh(landGeometry, landMaterial);
-land.rotation.x = -Math.PI / 2; // Rotate the plane to horizontal
-scene.add(land);
 
 // Create walls
 const wallTexture = textureLoader.load('textures/wall.png');
@@ -132,38 +151,90 @@ const wallGeometry = new THREE.BoxGeometry(1, 5, 1);
 const wallMaterial = new THREE.MeshBasicMaterial({ map: wallTexture });
 const wall = new THREE.Mesh(wallGeometry, wallMaterial);
 wall.position.set(3, 0, 0);
-scene.add(wall);
+//scene.add(wall);
 
-// Create floor
-const floorGeometry = new THREE.BoxGeometry(10, 1, 10);
-const floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
-const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.position.y = -1;
-scene.add(floor);
 
 // Light
 const light = new THREE.AmbientLight(0xffffff);
 light.translateY(5);
 scene.add(light);
 
+let villaHouse;
+
 // Load the maze model
 const loader = new GLTFLoader();
 loader.load('models/villaHouse.glb', function (gltf) {
+    villaHouse = gltf.scene;
     gltf.scene.position.set(0, 0, -8);
     gltf.scene.scale.set(1, 1, 1);
+    // Set the villaHouse to be invisible
+    //villaHouse.visible = false;
+
     scene.add(gltf.scene);
+    // Find the child named "floor" and set its material to use the floorTexture
+    const floor = villaHouse.getObjectByName("floor");
+    if (floor) {
+        floor.material = new THREE.MeshBasicMaterial({color: 0xffffff});
+    } else {
+        console.warn('Floor not found in the villaHouse model.');
+    }
+
 }, undefined, function (error) {
     console.error(error);
 });
 
+let coins = []; // Array to store multiple coins
+let boosts = [];
+let healths = [];
+
+// Create multiple coins
+createCoin(1, 0, 0, scene, coins);
+createCoin(-1, 0, 0, scene, coins);
+createCoin(0, 0, -1, scene, coins);
+
+//Create multiple boosts
+createBoost(-2,0,0,scene,boosts);
+createBoost(-3,0,0,scene,boosts);
+createBoost(-4,0,-1,scene,boosts);
+//Create multiple hearts
+createHealth(2,0,0,scene,healths);
+createHealth(3,0,0,scene,healths);
+createHealth(4,0,0,scene,healths);
+
 // Animation function
 var cameraPosition;
+
+let isJumping = false; // This will tell us if the character has initiated a jump
+
+
 function animate() {
     requestAnimationFrame(animate);
 
     if (mixer) mixer.update(0.016);
 
+    // Update mixers for all coins
+    for (const coin of coins) {
+        if (coin.mixer) {
+            coin.mixer.update(0.016);
+        }
+    }
+
+    // Update mixers for all boost
+    for (const boost of boosts) {
+        if (boost.mixer) {
+            boost.mixer.update(0.016);
+        }
+    }
+
+    // Update mixers for all boost
+    for (const health of healths) {
+        if (health.mixer) {
+            health.mixer.update(0.016);
+        }
+    }
+
     updateMovement();
+
 
     camera.position.x = soldier.position.x;
     camera.position.z = soldier.position.z + 2;
@@ -188,10 +259,22 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
     return new THREE.Vector3().addVectors(soldier.position, offset);
 }
 
+let boostFactor = 1;
+let soldierHealth = 1;
+let verticalVelocity = 0;
+let collectedAllCoinsMessage = false;
 
 
 function updateMovement() {
-    var moveDistance = 0.015;
+
+
+    // Move the collision checks to the checkMovement function
+    const movementChecks = checkMovement(soldier, villaHouse, keyState, isJumping, verticalVelocity);
+    let canMove = movementChecks.canMove;
+    let isOnGround = movementChecks.isOnGround;
+    verticalVelocity = movementChecks.verticalVelocity;
+
+    var moveDistance = 0.015 * boostFactor;
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
@@ -229,8 +312,18 @@ function updateMovement() {
                 currentAnimationAction.reset().fadeIn(0.5).play();
             }
         }
-    } else {
 
+        // Calculate the potential new position
+        const newPositionX = soldier.position.x + moveX;
+        const newPositionZ = soldier.position.z + moveZ;
+        const newPositionY = soldier.position.y + verticalVelocity;
+
+        if (canMove) {
+            soldier.position.x = newPositionX;
+            soldier.position.y = newPositionY;
+            soldier.position.z = newPositionZ;
+        }
+    } else {
         if (currentAnimation !== 'Idle'){
             currentAnimationAction.fadeOut(0.6);
             currentAnimation = 'Idle';
@@ -238,10 +331,91 @@ function updateMovement() {
             currentAnimationAction.reset().fadeIn(0.5).play();
         }
     }
-    soldier.position.x += moveX;
-    soldier.position.z += moveZ;
+
+    // Jumping logic
+    const jumpSpeed = 0.06; // Adjust the jump speed as needed
+    const gravity = 0.005; // Adjust the gravity as needed
+
+    if (keyState[32] && isOnGround) { // Spacebar is pressed and the character is on the ground
+        verticalVelocity = jumpSpeed; // Set the vertical velocity to make the character jump
+        isOnGround = false;
+        isJumping = true; // Character has initiated a jump
+    }
+
+    if (!isOnGround) {
+        verticalVelocity -= gravity; // Apply gravity if the character is not on the ground
+    }
+
+    soldier.position.y += verticalVelocity; // Update the character's vertical position
+
+    // After the jump has initiated, allow a brief period before checking downward collisions
+    // This ensures the character can rise off the ground before collision is checked
+    if (isJumping) {
+        setTimeout(() => {
+            isJumping = false; // Reset after allowing some time
+        }, 50); // Adjust this time based on your needs
+    }
+
     orbitControls.target.copy(soldier.position);
+
+    // Update dummyMesh's position
+    dummyMesh.position.copy(soldier.position);
+    dummyMesh.position.y += yOffset;  // make sure to add yOffset again
+    // At the end of your movement updates, add:
+    if (soldierBoxHelper) {
+        soldierBoxHelper.update();
+    }
+
+    checkCollisionsWithCollectibles();
+
+    let allCoinsCollected = coins.every(coin => coin.collected);
+
+    if (allCoinsCollected && !collectedAllCoinsMessage) {
+        console.log("You have collected all the coins");
+        collectedAllCoinsMessage = true;  // This ensures the message is only printed once.
+    }
+
+
+
 }
+
+function checkCollisionsWithCollectibles() {
+    const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
+
+    // Check collision with coins
+    coins.forEach(coin => {
+        const coinBoundingBox = new THREE.Box3().setFromObject(coin.dummyMesh);
+        if (soldierBoundingBox.intersectsBox(coinBoundingBox) && !coin.collected) {
+            console.log("Collision between character and coin");
+            coin.mesh.visible = false;
+            coin.collected = true;
+        }
+    });
+
+    // Check collision with boosts
+    boosts.forEach(b => {
+        const boostBoundingBox = new THREE.Box3().setFromObject(b.dummyMesh);
+        if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !b.collected) {
+            console.log("Collision between character and boost");
+            boostFactor += 1;  // or any other effect you want to give
+            b.mesh.visible = false;
+            b.collected = true;
+        }
+    });
+
+    // Check collision with healths
+    healths.forEach(h => {
+        const healthBoundingBox = new THREE.Box3().setFromObject(h.dummyMesh);
+        if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !h.collected) {
+            console.log("Collision between character and health");
+            soldierHealth += 1;
+            h.mesh.visible = false;
+            h.collected = true;
+        }
+    });
+}
+
+
 
 // Start animation
 animate();
