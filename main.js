@@ -30,7 +30,7 @@ scene.add(camera);
 //     hudElement.style.transform = `translate(-50%, -50%) translate(${hudX}px, ${hudY}px)`;
 // }
 
-const hudElement = createHUD(camera);
+createHUD(camera);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer();
