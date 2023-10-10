@@ -3,7 +3,6 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { FirstPersonControls } from 'three/examples/jsm/controls/FirstPersonControls';
 
-
 // Scene
 const scene = new THREE.Scene();
 
@@ -27,7 +26,7 @@ function toggleFirstPersonView() {
 
     if (firstPersonView) {
         // Adjust camera's position if needed (e.g., to set it at the soldier's eye level)
-        camera.position.set(soldier.position.x, soldier.position.y + 1.6, soldier.position.z);
+        camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
     }
 }
 
