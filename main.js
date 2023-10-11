@@ -274,6 +274,7 @@ let verticalVelocity = 0;
 let collectedAllCoinsMessage = false;
 let portal;
 let coinCounter = 0;
+let jumpStartY = null;  // This will keep track of the Y position when the jump starts
 
 
 
@@ -347,11 +348,17 @@ function updateMovement() {
     // Jumping logic
     const jumpSpeed = 0.06; // Adjust the jump speed as needed
     const gravity = 0.005; // Adjust the gravity as needed
+    const collisionThreshold = 0.2;
 
     if (keyState[32] && isOnGround) { // Spacebar is pressed and the character is on the ground
         verticalVelocity = jumpSpeed; // Set the vertical velocity to make the character jump
         isOnGround = false;
         isJumping = true; // Character has initiated a jump
+        jumpStartY = soldier.position.y;
+    }
+
+    if (isJumping && soldier.position.y >= jumpStartY + collisionThreshold) {
+        isJumping = false;
     }
 
     if (!isOnGround) {
@@ -360,13 +367,6 @@ function updateMovement() {
 
     soldier.position.y += verticalVelocity; // Update the character's vertical position
 
-    // After the jump has initiated, allow a brief period before checking downward collisions
-    // This ensures the character can rise off the ground before collision is checked
-    if (isJumping) {
-        setTimeout(() => {
-            isJumping = false; // Reset after allowing some time
-        }, 30); // Adjust this time based on your needs
-    }
 
     orbitControls.target.copy(soldier.position);
 
