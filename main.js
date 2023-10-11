@@ -192,7 +192,7 @@ function loadPortal() {
     if (!portal) { // check if portal hasn't been loaded
         portalLoader.load('models/portal.glb', function (gltf) {
             portal = gltf.scene;
-            gltf.scene.position.set(1,-0.3,0);
+            gltf.scene.position.set(-7,-0.3,0);
             gltf.scene.scale.set(0.3, 0.3, 0.3);
             scene.add(gltf.scene);
 
