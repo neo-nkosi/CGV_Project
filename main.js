@@ -179,10 +179,34 @@ createCoin(0, 0, -1, scene, coins);
 createBoost(-2,0,0,scene,boosts);
 createBoost(-3,0,0,scene,boosts);
 createBoost(-4,0,-1,scene,boosts);
+
 //Create multiple hearts
 createHealth(2,0,0,scene,healths);
 createHealth(3,0,0,scene,healths);
 createHealth(4,0,0,scene,healths);
+
+let portalMixer;
+
+function loadPortal() {
+    const portalLoader = new GLTFLoader();
+    if (!portal) { // check if portal hasn't been loaded
+        portalLoader.load('models/portal.glb', function (gltf) {
+            portal = gltf.scene;
+            gltf.scene.position.set(1,-0.3,0);
+            gltf.scene.scale.set(0.3, 0.3, 0.3);
+            scene.add(gltf.scene);
+
+            if (gltf.animations && gltf.animations.length) {
+                portalMixer = new THREE.AnimationMixer(portal);
+                const action = portalMixer.clipAction(gltf.animations[0]); // Assuming you want the first animation
+                action.play();
+            }
+        }, undefined, function (error) {
+            console.error(error);
+        });
+    }
+}
+
 
 // Animation function
 var cameraPosition;
@@ -194,6 +218,8 @@ function animate() {
     requestAnimationFrame(animate);
 
     if (mixer) mixer.update(0.016);
+    if (portalMixer) portalMixer.update(0.016);
+
 
     // Update mixers for all coins
     for (const coin of coins) {
@@ -246,6 +272,9 @@ let boostFactor = 1;
 let soldierHealth = 1;
 let verticalVelocity = 0;
 let collectedAllCoinsMessage = false;
+let portal;
+let coinCounter = 0;
+
 
 
 function updateMovement() {
@@ -336,7 +365,7 @@ function updateMovement() {
     if (isJumping) {
         setTimeout(() => {
             isJumping = false; // Reset after allowing some time
-        }, 50); // Adjust this time based on your needs
+        }, 30); // Adjust this time based on your needs
     }
 
     orbitControls.target.copy(soldier.position);
@@ -372,6 +401,17 @@ function checkCollisionsWithCollectibles() {
             console.log("Collision between character and coin");
             coin.mesh.visible = false;
             coin.collected = true;
+
+            // Increase coinCounter
+            coinCounter++;
+
+            // Remove the coin from the scene
+            scene.remove(coin.mesh);
+
+            // Load the portal if 3 coins have been collected
+            if (coinCounter === 3) {
+                loadPortal();
+            }
         }
     });
 
