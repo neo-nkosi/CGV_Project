@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import {createHUD} from './hud';
+import {createHUD, updateHUDCoin, updateHUDHP, updateHUDSpeed} from './hud';
 import {checkMovement} from "./collisionCheck";
 import {Vector3} from "three";
 import {createBoost, createCoin, createHealth} from './iconsCreation.js';
@@ -30,7 +30,7 @@ scene.add(camera);
 //     hudElement.style.transform = `translate(-50%, -50%) translate(${hudX}px, ${hudY}px)`;
 // }
 
-createHUD(camera);
+
 
 // Renderer
 const renderer = new THREE.WebGLRenderer();
@@ -261,8 +261,12 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
 
 let boostFactor = 1;
 let soldierHealth = 1;
+let numCoins = 0;
 let verticalVelocity = 0;
 let collectedAllCoinsMessage = false;
+
+createHUD(camera,numCoins,boostFactor,soldierHealth);
+
 
 
 function updateMovement() {
@@ -387,8 +391,11 @@ function checkCollisionsWithCollectibles() {
         const coinBoundingBox = new THREE.Box3().setFromObject(coin.dummyMesh);
         if (soldierBoundingBox.intersectsBox(coinBoundingBox) && !coin.collected) {
             console.log("Collision between character and coin");
+            numCoins+=1;
             coin.mesh.visible = false;
             coin.collected = true;
+            updateHUDCoin(numCoins);
+            animate();
         }
     });
 
@@ -400,6 +407,8 @@ function checkCollisionsWithCollectibles() {
             boostFactor += 1;  // or any other effect you want to give
             b.mesh.visible = false;
             b.collected = true;
+            updateHUDSpeed(boostFactor);
+            animate();
         }
     });
 
@@ -411,8 +420,12 @@ function checkCollisionsWithCollectibles() {
             soldierHealth += 1;
             h.mesh.visible = false;
             h.collected = true;
+            updateHUDHP(soldierHealth);
+            animate();
         }
     });
+
+    
 }
 
 
