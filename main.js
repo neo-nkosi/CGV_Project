@@ -66,6 +66,7 @@ const soldierLoader = new GLTFLoader();
 
 soldierLoader.load('models/Soldier.glb', function (gltf) {
     soldier = gltf.scene;
+    soldier.position.set(0,0,8);
     soldier.scale.set(0.25, 0.25, 0.25);
     scene.add(soldier);
 
@@ -126,7 +127,7 @@ const navMeshName = "SampleScene_Exported_NavMesh";  // Replace with your navmes
 loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse = gltf.scene;
 
-    gltf.scene.position.set(0, 0, -8);
+    gltf.scene.position.set(0, 0, 0);
     gltf.scene.scale.set(1, 1, 1);
     scene.add(gltf.scene);
     //
@@ -185,7 +186,7 @@ function playAnimation(name) {
 let dummyMonster; // For grid generation
 monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
     monster = gltf.scene;
-    monster.position.set(0.3, 0, 0); // Set initial position here
+    monster.position.set(0.3, 0, 8); // Set initial position here
     monster.scale.set(0.35, 0.35, 0.35);
 
     monsterMixer = new THREE.AnimationMixer(monster);
@@ -219,9 +220,9 @@ let navmesh;
 let groupId;
 let navpath;
 scene.add(pathfindinghelper);
-loader.load("navmesh/blendernavmesh1.glb", function(gltf){
+loader.load("navmesh/blendernavmesh4.glb", function(gltf){
 meshfloor = gltf.scene;
-meshfloor.position.set(0, 0, -8);
+meshfloor.position.set(0, 0, 0);
 meshfloor.scale.set(1, 1, 1);
 scene.add(meshfloor);
 gltf.scene.traverse(node =>{
@@ -230,120 +231,166 @@ gltf.scene.traverse(node =>{
              console.log("navmesh object:", navmesh);
              pathfinding.setZoneData(ZONE, Pathfinding.createZone(navmesh.geometry));
              console.log("pathfinding zones", pathfinding.zones);
+
          }
      })
  })
 
 
 
-// function findPath() {
-//     if (pursuing) {
-//
-//         let target = soldier.position.clone();
-//         console.log("soldier pos:", target);
-//
-//         let monsterPos = monster.position.clone();
-//
-//         //for (let i = 0; i < pathfinding.zones["villaHouse"].groups.length; i++) {
-//             groupId = pathfinding.getGroup('villaHouse', monsterPos);
-//             console.log("Group Id:", groupId);
-//             const closest = pathfinding.getClosestNode(monsterPos, 'villaHouse', groupId);
-//             console.log("closest node:", closest);
-//             const closest2 = pathfinding.getClosestNode(target, 'villaHouse', groupId);
-//             console.log("closest node 2:", closest2);
-//             if (closest) {
-//                 navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
-//                 console.log("nav path :", navpath);
-//                 if (navpath && navpath.length > 0) {
-//                     pathfindinghelper.reset();
-//                     pathfindinghelper.setPlayerPosition(monster.position);
-//                     pathfindinghelper.setTargetPosition(target);
-//                     pathfindinghelper.setPath(navpath);
-//
-//                     // Target position
-//                     let targetPos = navpath[0];
-//
-//                     // Compute distance to target
-//                     const distance = targetPos.clone().sub(monster.position);
-//
-//                     // If the monster is close enough to the target position
-//                     if (distance.lengthSq() < 0.5 * 0.05) {
-//                         navpath.shift(); // Go to the next waypoint
-//                         if (navpath.length === 0) {
-//                             navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
-//
-//                         } // If there's no more waypoints, just return
-//                         targetPos = navpath[0]; // New target position
-//                         distance.copy(targetPos.clone().sub(monster.position)); // Update distance
-//                     }
-//
-//                     // Normalize distance to get direction
-//                     const direction = distance.normalize();
-//
-//                     // Set monster speed (adjust the 0.05 value to your preference)
-//                     const speed = 0.035;
-//
-//                     // Update the monster's position
-//                     monster.position.add(direction.multiplyScalar(speed));
-//
-//                     // Make the monster face the direction it's heading
-//                     monster.lookAt(monster.position.clone().add(direction));
-//                 }
-//             }
-//
-//
-//     }
-// }
+function findPath() {
+    if (pursuing) {
 
-// }
-//youyube
-function findSoldier(delta){
-    groupId = pathfinding.getGroup('villaHouse', monster.position);
-    console.log("Group Id:", groupId);
-    const closest = pathfinding.getClosestNode(monster.position, 'villaHouse', groupId);
-    console.log("Closest Pos:" ,closest);
-    navpath = pathfinding.findPath(closest.centroid, soldier.position, "villaHouse", groupId);
-    console.log("Navpath:" ,navpath);
-    if(!navpath || navpath.length <= 0) return;
-    let targetPos = navpath[0];
-    console.log("Target", targetPos);
-    const distance = targetPos.clone().sub(monster.position);
-    if(distance.lengthSq () > 0.5 * 0.05){
-        distance.normalize();
-        monster.position.add(distance.multiply(delta * 0.03))
-    }
-    else{
-        navpath.shift();
+        let target = soldier.position.clone();
+        console.log("soldier pos:", target);
+
+        let monsterPos = monster.position.clone();
+
+        //for (let i = 0; i < pathfinding.zones["villaHouse"].groups.length; i++) {
+            groupId = pathfinding.getGroup('villaHouse', monsterPos);
+            console.log("Group Id:", groupId);
+            const closest = pathfinding.getClosestNode(monsterPos, 'villaHouse', groupId);
+            console.log("closest node:", closest);
+            const closest2 = pathfinding.getClosestNode(target, 'villaHouse', groupId);
+            console.log("closest node 2:", closest2);
+            if (closest) {
+                navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
+                console.log("nav path :", navpath);
+                if (navpath && navpath.length > 0) {
+                    pathfindinghelper.reset();
+                    pathfindinghelper.setPlayerPosition(monster.position);
+                    pathfindinghelper.setTargetPosition(target);
+                    pathfindinghelper.setPath(navpath);
+
+                    // Target position
+                    let targetPos = navpath[0];
+
+                    // Compute distance to target
+                    const distance = targetPos.clone().sub(monster.position);
+
+                    // If the monster is close enough to the target position
+                    if (distance.lengthSq() < 0.05 * 0.05) {
+                        navpath.shift(); // Go to the next waypoint
+                        if (navpath.length === 0) {
+                            navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
+
+                        } // If there's no more waypoints, just return
+                        targetPos = navpath[0]; // New target position
+                        distance.copy(targetPos.clone().sub(monster.position)); // Update distance
+                    }
+
+                    // Normalize distance to get direction
+                    const direction = distance.normalize();
+
+                    // Set monster speed (adjust the 0.05 value to your preference)
+                    const speed = 0.035;
+
+                    // Update the monster's position
+                    monster.position.add(direction.multiplyScalar(speed));
+
+                    // Make the monster face the direction it's heading
+                    monster.lookAt(monster.position.clone().add(direction));
+                }
+            }
+
+
     }
 }
 
-const NAVMESH_Y_OFFSET = 0.1; // this will ensure the monster moves at a slightly higher position than the navmesh
-let path = [];
-let currentWaypoint = 0;
 
- // function findSoldier() {
- //     if (monster && soldier && pathfinding.zones[ZONE]) {
- //         const start = monster.position.clone();
- //         const goal = soldier.position.clone();
- //
- //         // Ensure they are on the NavMesh:
- //         const startNode = pathfinding.getClosestNode(start, ZONE);
- //         const endNode = pathfinding.getClosestNode(goal, ZONE);
- //
- //         if (startNode && endNode) {
- //             path = pathfinding.findPath(start, goal, ZONE);
- //             if (path && path.length) {
- //                 path.push(goal);
- //                 console.log("new path from findsoldier:", path);
- //                 currentWaypoint = 1;
- //             }// because we are already at the starting point
- //             else
- //                 {
- //                     console.log("No path found");
- //                 }
- //             }
- //        }
- // }
+// function findSoldier(delta){
+//     for (let i = 0; i < pathfinding.zones["villaHouse"].groups.length; i++) {
+//         groupId = i
+//         // groupId = pathfinding.getGroup('villaHouse', monster.position.clone());
+//         console.log("Group Id:", groupId);
+//         const closest = pathfinding.getClosestNode(monster.position.clone(), 'villaHouse', groupId);
+//         console.log("Closest Pos:", closest);
+//         navpath = pathfinding.findPath(closest.centroid, soldier.position.clone(), "villaHouse", groupId);
+//         console.log("Navpath:", navpath);
+//         if (!navpath || navpath.length <= 0) return;
+//         if(navpath.length > 0) {
+//             let targetPos = navpath[0];
+//             console.log("Target", targetPos);
+//             const distance = targetPos.clone().sub(monster.position);
+//             if (distance.lengthSq() > 0.0005 * 0.05) {
+//                 distance.normalize();
+//                 monster.position.add(distance.multiply(delta * 0.035))
+//             } else {
+//                 navpath.shift();
+//             }
+//         }
+//     }
+// }
+
+// function getSafeClosestNode(position, zone, groupId, maxDistance = Infinity) {
+//     const nodes = pathfinding.zones[zone].groups[groupId].nodes;
+//     const vertices = pathfinding.zones[zone].vertices;
+//
+//     let closestNode = null;
+//     let closestDistance = maxDistance;
+//
+//     nodes.forEach((node) => {
+//         const distance = Utils.distanceToSquared(node.centroid, position);
+//         console.log("Node centroid:", node.centroid, "Position:", position, "Distance:", distance);
+//
+//         if (distance < closestDistance && Utils.isVectorInPolygon(position, node, vertices)) {
+//             closestNode = node;
+//             closestDistance = distance;
+//         }
+//     });
+//
+//
+//     return closestNode;
+// }
+
+// function findPath(deltaTime) {
+//     if (!pursuing) return;
+//
+//     const zone = 'villaHouse';
+//
+//     let groupId = pathfinding.getGroup(zone, monster.position);
+//     if (groupId === null) {
+//         console.warn("Couldn't determine monster's group!");
+//         return;
+//     }
+//
+//     let monsterNode = getSafeClosestNode(monster.position, zone, groupId);
+//     let soldierNode = getSafeClosestNode(soldier.position, zone, groupId);
+//
+//     if (!monsterNode || !soldierNode) {
+//         console.warn("Monster or Soldier is outside navmesh or beyond max search distance!");
+//         return;
+//     }
+//
+//
+//     // Consider visualizing the nodes:
+//     // visualizeNode(monsterNode, 'red');
+//     // visualizeNode(soldierNode, 'blue');
+//
+//     let navpath = pathfinding.findPath(monsterNode, soldierPos, zone, groupId);
+//
+//     if (navpath && navpath.length > 0) {
+//         // Consider visualizing the path:
+//         // visualizePath(navpath);
+//
+//         const waypointProximityThreshold = 0.025; // Adjust this value based on your requirements
+//
+//         let targetPos = navpath[0];
+//         let distanceToWaypoint = targetPos.clone().sub(monster.position).lengthSq();
+//
+//         if (distanceToWaypoint < waypointProximityThreshold) {
+//             navpath.shift();
+//             if (navpath.length === 0) return; // Reached destination
+//             targetPos = navpath[0];
+//         }
+//
+//         const direction = targetPos.clone().sub(monster.position).normalize();
+//         const speed = 0.035;
+//
+//         monster.position.add(direction.multiplyScalar(speed * deltaTime));
+//         monster.lookAt(targetPos); // Adjust if any unwanted rotation occurs
+//     }
+// }
 
 
 
@@ -378,144 +425,144 @@ let currentWaypoint = 0;
 
 //monster pursuit code:
 
-         const clock = new THREE.Clock();
-         function animate() {
-             requestAnimationFrame(animate);
+     const clock = new THREE.Clock();
+     function animate() {
+         requestAnimationFrame(animate);
 
-             if (mixer) mixer.update(0.016);
-             if (monsterMixer) monsterMixer.update(0.015);
-
-
-             updateMovement();
-             // Call the function after the exploration is done
-             // visualizeGrid(grid);
+         if (mixer) mixer.update(0.016);
+         if (monsterMixer) monsterMixer.update(0.015);
 
 
-             // In your animate function
-             if (pursuing) {
-                 findSoldier(clock.getDelta()); // start fin
-                 // findPath();
-             }
+         updateMovement();
+         // Call the function after the exploration is done
+         // visualizeGrid(grid);
 
 
-             camera.position.x = soldier.position.x;
-             camera.position.z = soldier.position.z + 2;
-             camera.lookAt(soldier.position);
-             cameraPosition = getCameraPositionBehindSoldier(soldier, 5);
-             //camera.position.copy(cameraPosition);
-             camera.lookAt(soldier.position);
-
-             orbitControls.update();
-
-             renderer.render(scene, camera);
-
-         }
-
-         function getCameraPositionBehindSoldier(soldier, distanceBehind) {
-             const forwardDirection = new THREE.Vector3();
-             soldier.getWorldDirection(forwardDirection);
-
-             // The computed offset
-             const offset = forwardDirection.multiplyScalar(-distanceBehind);
-
-             return new THREE.Vector3().addVectors(soldier.position, offset);
+         // In your animate function
+         if (pursuing) {
+             // findSoldier(clock.getDelta()); // start fin
+             findPath();
          }
 
 
-         let verticalVelocity = 0;
+         camera.position.x = soldier.position.x;
+         camera.position.z = soldier.position.z + 2;
+         camera.lookAt(soldier.position);
+         cameraPosition = getCameraPositionBehindSoldier(soldier, 5);
+         //camera.position.copy(cameraPosition);
+         camera.lookAt(soldier.position);
 
-         function updateMovement() {
+         orbitControls.update();
 
-             // Move the collision checks to the checkMovement function
-             const movementChecks = checkMovement(soldier, villaHouse, keyState, isJumping, verticalVelocity);
-             let canMove = movementChecks.canMove;
-             let isOnGround = movementChecks.isOnGround;
-             verticalVelocity = movementChecks.verticalVelocity;
+         renderer.render(scene, camera);
 
-             var moveDistance = 0.1;
+     }
 
-             if (keyState[16]) {  // shift key is pressed
-                 moveDistance *= 2;  // speed is doubled
-             }
+     function getCameraPositionBehindSoldier(soldier, distanceBehind) {
+         const forwardDirection = new THREE.Vector3();
+         soldier.getWorldDirection(forwardDirection);
 
-             let moveX = 0;
-             let moveZ = 0;
+         // The computed offset
+         const offset = forwardDirection.multiplyScalar(-distanceBehind);
 
-             if (keyState[87] || keyState[38]) moveZ = -moveDistance;
-             if (keyState[83] || keyState[40]) moveZ = moveDistance;
-             if (keyState[65] || keyState[37]) moveX = -moveDistance;
-             if (keyState[68] || keyState[39]) moveX = moveDistance;
+         return new THREE.Vector3().addVectors(soldier.position, offset);
+     }
 
-             if (moveX !== 0 && moveZ !== 0) {
-                 moveX /= Math.sqrt(2);
-                 moveZ /= Math.sqrt(2);
-             }
 
-             if (moveX !== 0 || moveZ !== 0) {
-                 const rotationAngle = Math.PI + Math.atan2(moveX, moveZ);
-                 soldier.rotation.y = rotationAngle;
+     let verticalVelocity = 0;
 
-                 if (keyState[16]) {
-                     if (currentAnimation !== 'Run') {
-                         currentAnimationAction.fadeOut(0.6);
-                         currentAnimation = 'Run';
-                         currentAnimationAction = animations[currentAnimation];
-                         currentAnimationAction.reset().fadeIn(0.5).play();
-                     }
-                 } else {
-                     if (currentAnimation !== 'Walk') {
-                         currentAnimationAction.fadeOut(0.6);
-                         currentAnimation = 'Walk';
-                         currentAnimationAction = animations[currentAnimation];
-                         currentAnimationAction.reset().fadeIn(0.5).play();
-                     }
-                 }
+     function updateMovement() {
 
-                 // Calculate the potential new position
-                 const newPositionX = soldier.position.x + moveX;
-                 const newPositionZ = soldier.position.z + moveZ;
-                 const newPositionY = soldier.position.y + verticalVelocity;
+         // Move the collision checks to the checkMovement function
+         const movementChecks = checkMovement(soldier, villaHouse, keyState, isJumping, verticalVelocity);
+         let canMove = movementChecks.canMove;
+         let isOnGround = movementChecks.isOnGround;
+         verticalVelocity = movementChecks.verticalVelocity;
 
-                 if (canMove) {
-                     soldier.position.x = newPositionX;
-                     soldier.position.y = newPositionY;
-                     soldier.position.z = newPositionZ;
+         var moveDistance = 0.1;
+
+         if (keyState[16]) {  // shift key is pressed
+             moveDistance *= 2;  // speed is doubled
+         }
+
+         let moveX = 0;
+         let moveZ = 0;
+
+         if (keyState[87] || keyState[38]) moveZ = -moveDistance;
+         if (keyState[83] || keyState[40]) moveZ = moveDistance;
+         if (keyState[65] || keyState[37]) moveX = -moveDistance;
+         if (keyState[68] || keyState[39]) moveX = moveDistance;
+
+         if (moveX !== 0 && moveZ !== 0) {
+             moveX /= Math.sqrt(2);
+             moveZ /= Math.sqrt(2);
+         }
+
+         if (moveX !== 0 || moveZ !== 0) {
+             const rotationAngle = Math.PI + Math.atan2(moveX, moveZ);
+             soldier.rotation.y = rotationAngle;
+
+             if (keyState[16]) {
+                 if (currentAnimation !== 'Run') {
+                     currentAnimationAction.fadeOut(0.6);
+                     currentAnimation = 'Run';
+                     currentAnimationAction = animations[currentAnimation];
+                     currentAnimationAction.reset().fadeIn(0.5).play();
                  }
              } else {
-                 if (currentAnimation !== 'Idle'){
+                 if (currentAnimation !== 'Walk') {
                      currentAnimationAction.fadeOut(0.6);
-                     currentAnimation = 'Idle';
+                     currentAnimation = 'Walk';
                      currentAnimationAction = animations[currentAnimation];
                      currentAnimationAction.reset().fadeIn(0.5).play();
                  }
              }
 
-             // Jumping logic
-             const jumpSpeed = 0.06; // Adjust the jump speed as needed
-             const gravity = 0.005; // Adjust the gravity as needed
+             // Calculate the potential new position
+             const newPositionX = soldier.position.x + moveX;
+             const newPositionZ = soldier.position.z + moveZ;
+             const newPositionY = soldier.position.y + verticalVelocity;
 
-             if (keyState[32] && isOnGround) { // Spacebar is pressed and the character is on the ground
-                 verticalVelocity = jumpSpeed; // Set the vertical velocity to make the character jump
-                 isOnGround = false;
-                 isJumping = true; // Character has initiated a jump
+             if (canMove) {
+                 soldier.position.x = newPositionX;
+                 soldier.position.y = newPositionY;
+                 soldier.position.z = newPositionZ;
              }
-
-             if (!isOnGround) {
-                 verticalVelocity -= gravity; // Apply gravity if the character is not on the ground
+         } else {
+             if (currentAnimation !== 'Idle'){
+                 currentAnimationAction.fadeOut(0.6);
+                 currentAnimation = 'Idle';
+                 currentAnimationAction = animations[currentAnimation];
+                 currentAnimationAction.reset().fadeIn(0.5).play();
              }
-
-             soldier.position.y += verticalVelocity; // Update the character's vertical position
-
-             // After the jump has initiated, allow a brief period before checking downward collisions
-             // This ensures the character can rise off the ground before collision is checked
-             if (isJumping) {
-                 setTimeout(() => {
-                     isJumping = false; // Reset after allowing some time
-                 }, 50); // Adjust this time based on your needs
-             }
-
-             orbitControls.target.copy(soldier.position);
          }
+
+         // Jumping logic
+         const jumpSpeed = 0.06; // Adjust the jump speed as needed
+         const gravity = 0.005; // Adjust the gravity as needed
+
+         if (keyState[32] && isOnGround) { // Spacebar is pressed and the character is on the ground
+             verticalVelocity = jumpSpeed; // Set the vertical velocity to make the character jump
+             isOnGround = false;
+             isJumping = true; // Character has initiated a jump
+         }
+
+         if (!isOnGround) {
+             verticalVelocity -= gravity; // Apply gravity if the character is not on the ground
+         }
+
+         soldier.position.y += verticalVelocity; // Update the character's vertical position
+
+         // After the jump has initiated, allow a brief period before checking downward collisions
+         // This ensures the character can rise off the ground before collision is checked
+         if (isJumping) {
+             setTimeout(() => {
+                 isJumping = false; // Reset after allowing some time
+             }, 50); // Adjust this time based on your needs
+         }
+
+         orbitControls.target.copy(soldier.position);
+     }
 
 
 // Start animation
