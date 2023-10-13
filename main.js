@@ -196,10 +196,48 @@ createCoin(0, 0, -1, scene, coins);
 createBoost(-2,0,0,scene,boosts);
 createBoost(-3,0,0,scene,boosts);
 createBoost(-4,0,-1,scene,boosts);
+
 //Create multiple hearts
 createHealth(2,0,0,scene,healths);
 createHealth(3,0,0,scene,healths);
 createHealth(4,0,0,scene,healths);
+
+let portalMixer;
+let portalDummyMesh;
+
+function loadPortal() {
+    const portalLoader = new GLTFLoader();
+    if (!portal) { // check if portal hasn't been loaded
+        portalLoader.load('models/portal.glb', function (gltf) {
+            portal = gltf.scene;
+            gltf.scene.position.set(-7,-0.3,0);
+            gltf.scene.scale.set(0.3, 0.3, 0.3);
+            scene.add(gltf.scene);
+
+            // After adding the portal to the scene:
+            portalDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 0.1));  // Adjust the size as necessary
+            portalDummyMesh.position.copy(portal.position);
+            portalDummyMesh.position.z -= 1.3;
+            //scene.add(portalDummyMesh);
+
+            const portalBoxHelper = new THREE.BoxHelper(portalDummyMesh, 0xff0000);  // Making it red for visibility
+            //scene.add(portalBoxHelper);
+
+
+            if (gltf.animations && gltf.animations.length) {
+                portalMixer = new THREE.AnimationMixer(portal);
+                const action = portalMixer.clipAction(gltf.animations[0]);
+                action.play();
+            }
+        }, undefined, function (error) {
+            console.error(error);
+        });
+    }
+}
+
+function isColliding(box1, box2) {
+    return box1.intersectsBox(box2);
+}
 
 // Animation function
 var cameraPosition;
@@ -211,6 +249,8 @@ function animate() {
     requestAnimationFrame(animate);
 
     if (mixer) mixer.update(0.016);
+    if (portalMixer) portalMixer.update(0.016);
+
 
     // Update mixers for all coins
     for (const coin of coins) {
@@ -264,6 +304,9 @@ let soldierHealth = 1;
 let numCoins = 0;
 let verticalVelocity = 0;
 let collectedAllCoinsMessage = false;
+let portal;
+let coinCounter = 0;
+let jumpStartY = null;  // This will keep track of the Y position when the jump starts
 
 createHUD(camera,numCoins,boostFactor,soldierHealth);
 
@@ -339,11 +382,17 @@ function updateMovement() {
     // Jumping logic
     const jumpSpeed = 0.06; // Adjust the jump speed as needed
     const gravity = 0.005; // Adjust the gravity as needed
+    const collisionThreshold = 0.2;
 
     if (keyState[32] && isOnGround) { // Spacebar is pressed and the character is on the ground
         verticalVelocity = jumpSpeed; // Set the vertical velocity to make the character jump
         isOnGround = false;
         isJumping = true; // Character has initiated a jump
+        jumpStartY = soldier.position.y;
+    }
+
+    if (isJumping && soldier.position.y >= jumpStartY + collisionThreshold) {
+        isJumping = false;
     }
 
     if (!isOnGround) {
@@ -352,13 +401,6 @@ function updateMovement() {
 
     soldier.position.y += verticalVelocity; // Update the character's vertical position
 
-    // After the jump has initiated, allow a brief period before checking downward collisions
-    // This ensures the character can rise off the ground before collision is checked
-    if (isJumping) {
-        setTimeout(() => {
-            isJumping = false; // Reset after allowing some time
-        }, 50); // Adjust this time based on your needs
-    }
 
     orbitControls.target.copy(soldier.position);
 
@@ -379,6 +421,15 @@ function updateMovement() {
         collectedAllCoinsMessage = true;  // This ensures the message is only printed once.
     }
 
+    // At the end of your movement updates:
+    if (dummyMesh && portalDummyMesh) {
+        let soldierBox = new THREE.Box3().setFromObject(dummyMesh);
+        let portalBox = new THREE.Box3().setFromObject(portalDummyMesh);
+        if (soldierBox.intersectsBox(portalBox)) {
+            console.log("Soldier collided with portal!");
+        }
+    }
+
 
 
 }
@@ -396,6 +447,14 @@ function checkCollisionsWithCollectibles() {
             coin.collected = true;
             updateHUDCoin(numCoins);
             animate();
+
+            // Remove the coin from the scene
+            scene.remove(coin.mesh);
+
+            // Load the portal if 3 coins have been collected
+            if (numCoins === 3) {
+                loadPortal();
+            }
         }
     });
 
@@ -425,7 +484,7 @@ function checkCollisionsWithCollectibles() {
         }
     });
 
-    
+
 }
 
 
