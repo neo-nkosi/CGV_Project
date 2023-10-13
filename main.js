@@ -186,15 +186,14 @@ createHealth(3,0,0,scene,healths);
 createHealth(4,0,0,scene,healths);
 
 let portalMixer;
-let portalBoxHelper;
-let portalDummyMesh
+let portalDummyMesh;
 
 function loadPortal() {
     const portalLoader = new GLTFLoader();
     if (!portal) { // check if portal hasn't been loaded
         portalLoader.load('models/portal.glb', function (gltf) {
             portal = gltf.scene;
-            gltf.scene.position.set(-0,-0.3,0);
+            gltf.scene.position.set(-7,-0.3,0);
             gltf.scene.scale.set(0.3, 0.3, 0.3);
             scene.add(gltf.scene);
 
@@ -204,8 +203,8 @@ function loadPortal() {
             portalDummyMesh.position.z -= 1.3;
             //scene.add(portalDummyMesh);
 
-            portalBoxHelper = new THREE.BoxHelper(portalDummyMesh, 0xff0000);  // Making it red for visibility
-            scene.add(portalBoxHelper);
+            const portalBoxHelper = new THREE.BoxHelper(portalDummyMesh, 0xff0000);  // Making it red for visibility
+            //scene.add(portalBoxHelper);
 
 
             if (gltf.animations && gltf.animations.length) {
@@ -402,7 +401,7 @@ function updateMovement() {
     }
 
     // At the end of your movement updates:
-    if (soldierBoxHelper && portalBoxHelper) {
+    if (dummyMesh && portalDummyMesh) {
         let soldierBox = new THREE.Box3().setFromObject(dummyMesh);
         let portalBox = new THREE.Box3().setFromObject(portalDummyMesh);
         if (soldierBox.intersectsBox(portalBox)) {
@@ -413,8 +412,6 @@ function updateMovement() {
 
 
 }
-
-loadPortal();
 
 function checkCollisionsWithCollectibles() {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
@@ -434,9 +431,9 @@ function checkCollisionsWithCollectibles() {
             scene.remove(coin.mesh);
 
             // Load the portal if 3 coins have been collected
-            //if (coinCounter === 3) {
-            //    loadPortal();
-            //}
+            if (coinCounter === 3) {
+                loadPortal();
+            }
         }
     });
 
