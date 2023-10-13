@@ -186,19 +186,31 @@ createHealth(3,0,0,scene,healths);
 createHealth(4,0,0,scene,healths);
 
 let portalMixer;
+let portalBoxHelper;
+let portalDummyMesh
 
 function loadPortal() {
     const portalLoader = new GLTFLoader();
     if (!portal) { // check if portal hasn't been loaded
         portalLoader.load('models/portal.glb', function (gltf) {
             portal = gltf.scene;
-            gltf.scene.position.set(-7,-0.3,0);
+            gltf.scene.position.set(-0,-0.3,0);
             gltf.scene.scale.set(0.3, 0.3, 0.3);
             scene.add(gltf.scene);
 
+            // After adding the portal to the scene:
+            portalDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 0.1));  // Adjust the size as necessary
+            portalDummyMesh.position.copy(portal.position);
+            portalDummyMesh.position.z -= 1.3;
+            //scene.add(portalDummyMesh);
+
+            portalBoxHelper = new THREE.BoxHelper(portalDummyMesh, 0xff0000);  // Making it red for visibility
+            scene.add(portalBoxHelper);
+
+
             if (gltf.animations && gltf.animations.length) {
                 portalMixer = new THREE.AnimationMixer(portal);
-                const action = portalMixer.clipAction(gltf.animations[0]); // Assuming you want the first animation
+                const action = portalMixer.clipAction(gltf.animations[0]);
                 action.play();
             }
         }, undefined, function (error) {
@@ -207,6 +219,9 @@ function loadPortal() {
     }
 }
 
+function isColliding(box1, box2) {
+    return box1.intersectsBox(box2);
+}
 
 // Animation function
 var cameraPosition;
@@ -275,7 +290,6 @@ let collectedAllCoinsMessage = false;
 let portal;
 let coinCounter = 0;
 let jumpStartY = null;  // This will keep track of the Y position when the jump starts
-
 
 
 function updateMovement() {
@@ -387,9 +401,20 @@ function updateMovement() {
         collectedAllCoinsMessage = true;  // This ensures the message is only printed once.
     }
 
+    // At the end of your movement updates:
+    if (soldierBoxHelper && portalBoxHelper) {
+        let soldierBox = new THREE.Box3().setFromObject(dummyMesh);
+        let portalBox = new THREE.Box3().setFromObject(portalDummyMesh);
+        if (soldierBox.intersectsBox(portalBox)) {
+            console.log("Soldier collided with portal!");
+        }
+    }
+
 
 
 }
+
+loadPortal();
 
 function checkCollisionsWithCollectibles() {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
@@ -409,9 +434,9 @@ function checkCollisionsWithCollectibles() {
             scene.remove(coin.mesh);
 
             // Load the portal if 3 coins have been collected
-            if (coinCounter === 3) {
-                loadPortal();
-            }
+            //if (coinCounter === 3) {
+            //    loadPortal();
+            //}
         }
     });
 
