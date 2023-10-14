@@ -712,6 +712,11 @@ function checkCollisionsWithCollectibles() {
 
      if (firstPersonView) {
          firstPersonControls.update(clock.getDelta());
+         let a = soldier.position.x;
+         let b = soldier.position.y+0.3;
+         let c = soldier.position.z;
+
+         camera.position.set(a,b,c);
      } else {
          orbitControls.update();
          maintainDistanceFromSoldier(soldier, camera, 2); // 10 is the desired distance from the soldier
