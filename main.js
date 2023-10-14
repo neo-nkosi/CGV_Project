@@ -13,7 +13,7 @@ const scene = new THREE.Scene();
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.y = 0.2; // adjust as necessary
+camera.position.y = 0.6; // adjust as necessary
 camera.position.z = 1;
 scene.add(camera);
 let firstPersonView = false;
@@ -73,12 +73,11 @@ firstPersonControls.lookVertical = true;
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true;
 orbitControls.dampingFactor = 0.05;
-orbitControls.minDistance = 1;
-orbitControls.maxDistance = 15;
-orbitControls.enableRotate = true;
-orbitControls.enablePan = false;
+
+orbitControls.minPolarAngle = Math.PI /3
 orbitControls.maxPolarAngle = Math.PI / 2 - 0.05; // Prevents the camera from going below the ground or too high above the soldier
-//orbitControls.target.copy(soldier.position); // Make sure the controls always orbit around the soldier
+orbitControls.minAzimuthAngle = -Infinity;
+orbitControls.maxAzimuthAngle = Infinity;
 
 
 // Soldier geometry
@@ -715,7 +714,7 @@ function checkCollisionsWithCollectibles() {
          firstPersonControls.update(clock.getDelta());
      } else {
          orbitControls.update();
-         maintainDistanceFromSoldier(soldier, camera, 10); // 10 is the desired distance from the soldier
+         maintainDistanceFromSoldier(soldier, camera, 2); // 10 is the desired distance from the soldier
 
      }
 
@@ -726,14 +725,11 @@ function checkCollisionsWithCollectibles() {
      }
 
 
-     camera.position.x = soldier.position.x;
-     camera.position.z = soldier.position.z + 2;
-     camera.lookAt(soldier.position);
-     cameraPosition = getCameraPositionBehindSoldier(soldier, 5);
-     //camera.position.copy(cameraPosition);
-     camera.lookAt(soldier.position);
-
-     orbitControls.update();
+     if (firstPersonView) {
+         firstPersonControls.update(clock.getDelta());
+     } else {
+         orbitControls.update();
+     }
 
      renderer.render(scene, camera);
 
