@@ -15,7 +15,6 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.y = 0.2; // adjust as necessary
 camera.position.z = 1;
-camera.lookAt(0, 0, 5);
 scene.add(camera);
 let firstPersonView = false;
 
@@ -272,13 +271,21 @@ let jumpStartY = null;  // This will keep track of the Y position when the jump 
 createHUD(camera,numCoins,boostFactor,soldierHealth);
 
 function updateMovement() {
+    // Calculate the direction in which the camera is looking.
+    const cameraDirection = new THREE.Vector3();
+    camera.getWorldDirection(cameraDirection);
+
+    // Get the camera's forward and right vectors
+    const cameraForward = cameraDirection.clone().normalize();
+    const cameraRight = new THREE.Vector3().crossVectors(camera.up, cameraDirection).normalize();
+
     // Move the collision checks to the checkMovement function
     const movementChecks = checkMovement(soldier, villaHouse, keyState, isJumping, verticalVelocity);
     let canMove = movementChecks.canMove;
     let isOnGround = movementChecks.isOnGround;
     verticalVelocity = movementChecks.verticalVelocity;
 
-    var moveDistance = 0.030;
+    var moveDistance = 0.015 * boostFactor;
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
@@ -287,14 +294,21 @@ function updateMovement() {
     let moveX = 0;
     let moveZ = 0;
 
-    if (keyState[87] || keyState[38]) moveZ = -moveDistance;
-    if (keyState[83] || keyState[40]) moveZ = moveDistance;
-    if (keyState[65] || keyState[37]) moveX = -moveDistance;
-    if (keyState[68] || keyState[39]) moveX = moveDistance;
-
-    if (moveX !== 0 && moveZ !== 0) {
-        moveX /= Math.sqrt(2);
-        moveZ /= Math.sqrt(2);
+    if (keyState[87] || keyState[38]) { // forward
+        moveX += cameraForward.x * moveDistance;
+        moveZ += cameraForward.z * moveDistance;
+    }
+    if (keyState[83] || keyState[40]) { // backward
+        moveX -= cameraForward.x * moveDistance;
+        moveZ -= cameraForward.z * moveDistance;
+    }
+    if (keyState[65] || keyState[37]) { // left
+        moveX += cameraRight.x * moveDistance;
+        moveZ += cameraRight.z * moveDistance;
+    }
+    if (keyState[68] || keyState[39]) { // right
+        moveX -= cameraRight.x * moveDistance;
+        moveZ -= cameraRight.z * moveDistance;
     }
 
     if (moveX !== 0 || moveZ !== 0) {
@@ -317,7 +331,6 @@ function updateMovement() {
             }
         }
 
-        // Calculate the potential new position
         const newPositionX = soldier.position.x + moveX;
         const newPositionZ = soldier.position.z + moveZ;
         const newPositionY = soldier.position.y + verticalVelocity;
@@ -388,6 +401,20 @@ function updateMovement() {
         }
     }
 }
+
+const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
+
+function maintainDistanceFromSoldier(soldier, camera, distance) {
+    let offset = new THREE.Vector3().subVectors(camera.position, soldier.position);
+    offset.normalize().multiplyScalar(distance);
+
+    camera.position.x = soldier.position.x + offset.x;
+    camera.position.z = soldier.position.z + offset.z;
+    camera.position.y = soldier.position.y + ELEVATION_OFFSET;  // Elevate the camera based on the soldier's y position
+
+    camera.position.lerp(camera.position, 0.05);
+}
+
 
 
 
@@ -684,6 +711,13 @@ function checkCollisionsWithCollectibles() {
      // Call the function after the exploration is done
      // visualizeGrid(grid);
 
+     if (firstPersonView) {
+         firstPersonControls.update(clock.getDelta());
+     } else {
+         orbitControls.update();
+         maintainDistanceFromSoldier(soldier, camera, 10); // 10 is the desired distance from the soldier
+
+     }
 
      // In your animate function
      if (pursuing) {
