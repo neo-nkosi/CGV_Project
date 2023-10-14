@@ -112,7 +112,7 @@ soldierLoader.load('models/Soldier.glb', function (gltf) {
     soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
 
 // 4. Add the BoxHelper to the scene.
-    scene.add(soldierBoxHelper);
+    //scene.add(soldierBoxHelper);
 
 
 
