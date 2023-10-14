@@ -182,8 +182,24 @@ function playAnimation(name) {
     animationState = name;
 }
 
-// Correctly position monster on the floor:
-let dummyMonster; // For grid generation
+// Load and store animations by their names
+monsterloader.load('monster models/Monster warrior/MW Running gltf/MW Running.gltf', (gltf) => {
+    gltf.animations.forEach((clip) => {
+        monsterAnimations[clip.name] = clip;
+    });
+});
+
+monsterloader.load('monster models/Monster warrior/MW Walking gltf/MW Walking.gltf', (gltf) => {
+    gltf.animations.forEach((clip) => {
+        monsterAnimations[clip.name] = clip;
+    });
+});
+
+monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing .gltf', (gltf) => {
+    gltf.animations.forEach((clip) => {
+        monsterAnimations[clip.name] = clip;
+    });
+});
 monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
     monster = gltf.scene;
     monster.position.set(0.3, 0, 8); // Set initial position here
@@ -211,6 +227,10 @@ monsterloader.load('monster models/Monster warrior/MW Walking gltf/MW Walking.gl
     monsterAnimations.Walking = gltf.animations[1];
 });
 
+monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing .gltf', (gltf) => {
+    // Store the smashing animation
+    monsterAnimations.Smashing = gltf.animations[2];
+});
 
  const pathfinding = new Pathfinding();
 const pathfindinghelper = new PathfindingHelper();
@@ -239,6 +259,7 @@ gltf.scene.traverse(node =>{
 
 
 function findPath() {
+
     if (pursuing) {
 
         let target = soldier.position.clone();
@@ -270,6 +291,7 @@ function findPath() {
 
                     // If the monster is close enough to the target position
                     if (distance.lengthSq() < 0.05 * 0.05) {
+
                         navpath.shift(); // Go to the next waypoint
                         if (navpath.length === 0) {
                             navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
@@ -290,6 +312,17 @@ function findPath() {
 
                     // Make the monster face the direction it's heading
                     monster.lookAt(monster.position.clone().add(direction));
+
+                    // Check if monster is close enough to soldier to play smashing animation
+                    const distanceToSoldier = monster.position.distanceTo(soldier.position);
+                    const closeEnoughThreshold = 0.6; // Adjust this value based on your requirements
+
+                    if (distanceToSoldier < closeEnoughThreshold) {
+
+                        let event = new KeyboardEvent('keydown', { key: 'G', code: 'KeyG', which: 71 });
+                        document.dispatchEvent(event);
+
+                    }
                 }
             }
 
@@ -418,7 +451,7 @@ function findPath() {
                      playAnimation('Walking');
                      break;
                  case 'KeyG':
-
+                     playAnimation('Smashing');
                      break;
              }
          });
@@ -479,7 +512,7 @@ function findPath() {
          let isOnGround = movementChecks.isOnGround;
          verticalVelocity = movementChecks.verticalVelocity;
 
-         var moveDistance = 0.1;
+         var moveDistance = 0.030;
 
          if (keyState[16]) {  // shift key is pressed
              moveDistance *= 2;  // speed is doubled
