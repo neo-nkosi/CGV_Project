@@ -6,6 +6,7 @@ import {checkMovement} from "./collisionCheck";
 import {Vector3} from "three";
 import {createBoost, createCoin, createHealth} from './iconsCreation.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
+import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 
 // Scene
 const scene = new THREE.Scene();
@@ -16,9 +17,20 @@ camera.position.y = 0.2; // adjust as necessary
 camera.position.z = 1;
 camera.lookAt(0, 0, 5);
 scene.add(camera);
+let firstPersonView = false;
 
+function toggleFirstPersonView() {
+    firstPersonView = !firstPersonView;
 
+    // Disable OrbitControls in first-person mode and enable in third-person mode
+    orbitControls.enabled = !firstPersonView;
+    firstPersonControls.enabled = firstPersonView;
 
+    if (firstPersonView) {
+        // Adjust camera's position if needed (e.g., to set it at the soldier's eye level)
+        camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
+    }
+}
 
 // Renderer
 const renderer = new THREE.WebGLRenderer();
@@ -42,15 +54,23 @@ const keyState = {};
 document.addEventListener('keydown', onDocumentKeyDown, false);
 document.addEventListener('keyup', onDocumentKeyUp, false);
 
+
 function onDocumentKeyDown(event) {
     keyState[event.which] = true;
+    if (event.which === 86) { // 'v' key
+        toggleFirstPersonView();
+    }
 }
 
 function onDocumentKeyUp(event) {
     keyState[event.which] = false;
 }
-
-//MOUSE CONTROLS
+//First person controls
+const firstPersonControls = new FirstPersonControls(camera, renderer.domElement);
+firstPersonControls.movementSpeed = 10;
+firstPersonControls.lookSpeed = 0.3;
+firstPersonControls.lookVertical = true;
+//ORBIT CONTROLS
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true;
 orbitControls.dampingFactor = 0.05;
@@ -117,19 +137,6 @@ soldierLoader.load('models/Soldier.glb', function (gltf) {
 }, undefined, function (error) {
     console.error(error);
 });
-
-// Land texture
-const textureLoader = new THREE.TextureLoader();
-const floorTexture = textureLoader.load('textures/floor.jpg');
-
-
-// Create walls
-const wallTexture = textureLoader.load('textures/wall.png');
-const wallGeometry = new THREE.BoxGeometry(1, 5, 1);
-const wallMaterial = new THREE.MeshBasicMaterial({ map: wallTexture });
-const wall = new THREE.Mesh(wallGeometry, wallMaterial);
-wall.position.set(3, 0, 0);
-//scene.add(wall);
 
 
 // Light
