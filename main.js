@@ -331,102 +331,6 @@ function findPath() {
 }
 
 
-// function findSoldier(delta){
-//     for (let i = 0; i < pathfinding.zones["villaHouse"].groups.length; i++) {
-//         groupId = i
-//         // groupId = pathfinding.getGroup('villaHouse', monster.position.clone());
-//         console.log("Group Id:", groupId);
-//         const closest = pathfinding.getClosestNode(monster.position.clone(), 'villaHouse', groupId);
-//         console.log("Closest Pos:", closest);
-//         navpath = pathfinding.findPath(closest.centroid, soldier.position.clone(), "villaHouse", groupId);
-//         console.log("Navpath:", navpath);
-//         if (!navpath || navpath.length <= 0) return;
-//         if(navpath.length > 0) {
-//             let targetPos = navpath[0];
-//             console.log("Target", targetPos);
-//             const distance = targetPos.clone().sub(monster.position);
-//             if (distance.lengthSq() > 0.0005 * 0.05) {
-//                 distance.normalize();
-//                 monster.position.add(distance.multiply(delta * 0.035))
-//             } else {
-//                 navpath.shift();
-//             }
-//         }
-//     }
-// }
-
-// function getSafeClosestNode(position, zone, groupId, maxDistance = Infinity) {
-//     const nodes = pathfinding.zones[zone].groups[groupId].nodes;
-//     const vertices = pathfinding.zones[zone].vertices;
-//
-//     let closestNode = null;
-//     let closestDistance = maxDistance;
-//
-//     nodes.forEach((node) => {
-//         const distance = Utils.distanceToSquared(node.centroid, position);
-//         console.log("Node centroid:", node.centroid, "Position:", position, "Distance:", distance);
-//
-//         if (distance < closestDistance && Utils.isVectorInPolygon(position, node, vertices)) {
-//             closestNode = node;
-//             closestDistance = distance;
-//         }
-//     });
-//
-//
-//     return closestNode;
-// }
-
-// function findPath(deltaTime) {
-//     if (!pursuing) return;
-//
-//     const zone = 'villaHouse';
-//
-//     let groupId = pathfinding.getGroup(zone, monster.position);
-//     if (groupId === null) {
-//         console.warn("Couldn't determine monster's group!");
-//         return;
-//     }
-//
-//     let monsterNode = getSafeClosestNode(monster.position, zone, groupId);
-//     let soldierNode = getSafeClosestNode(soldier.position, zone, groupId);
-//
-//     if (!monsterNode || !soldierNode) {
-//         console.warn("Monster or Soldier is outside navmesh or beyond max search distance!");
-//         return;
-//     }
-//
-//
-//     // Consider visualizing the nodes:
-//     // visualizeNode(monsterNode, 'red');
-//     // visualizeNode(soldierNode, 'blue');
-//
-//     let navpath = pathfinding.findPath(monsterNode, soldierPos, zone, groupId);
-//
-//     if (navpath && navpath.length > 0) {
-//         // Consider visualizing the path:
-//         // visualizePath(navpath);
-//
-//         const waypointProximityThreshold = 0.025; // Adjust this value based on your requirements
-//
-//         let targetPos = navpath[0];
-//         let distanceToWaypoint = targetPos.clone().sub(monster.position).lengthSq();
-//
-//         if (distanceToWaypoint < waypointProximityThreshold) {
-//             navpath.shift();
-//             if (navpath.length === 0) return; // Reached destination
-//             targetPos = navpath[0];
-//         }
-//
-//         const direction = targetPos.clone().sub(monster.position).normalize();
-//         const speed = 0.035;
-//
-//         monster.position.add(direction.multiplyScalar(speed * deltaTime));
-//         monster.lookAt(targetPos); // Adjust if any unwanted rotation occurs
-//     }
-// }
-
-
-
 
 
 
@@ -601,5 +505,3 @@ function findPath() {
 // Start animation
          animate();
 
-
-// console.table("grid", grid);
