@@ -184,9 +184,9 @@ let boosts = [];
 let healths = [];
 
 // Create multiple coins
-createCoin(1, 0, 0, scene, coins);
-createCoin(-1, 0, 0, scene, coins);
-createCoin(0, 0, -1, scene, coins);
+createCoin(1, 0, 7, scene, coins);
+createCoin(-1, 0, 7, scene, coins);
+createCoin(0, 0, 7, scene, coins);
 
 //Create multiple boosts
 createBoost(-2,0,0,scene,boosts);
@@ -206,7 +206,7 @@ function loadPortal() {
     if (!portal) { // check if portal hasn't been loaded
         portalLoader.load('models/portal.glb', function (gltf) {
             portal = gltf.scene;
-            gltf.scene.position.set(-7,-0.3,0);
+            gltf.scene.position.set(-7,-0.3,8);
             gltf.scene.scale.set(0.3, 0.3, 0.3);
             scene.add(gltf.scene);
 
@@ -263,8 +263,6 @@ let coinCounter = 0;
 let jumpStartY = null;  // This will keep track of the Y position when the jump starts
 
 createHUD(camera,numCoins,boostFactor,soldierHealth);
-
-
 
 function updateMovement() {
     // Move the collision checks to the checkMovement function
@@ -651,6 +649,28 @@ function checkCollisionsWithCollectibles() {
 
      if (mixer) mixer.update(0.016);
      if (monsterMixer) monsterMixer.update(0.015);
+     if (portalMixer) portalMixer.update(0.016);
+
+     // Update mixers for all coins
+     for (const coin of coins) {
+         if (coin.mixer) {
+             coin.mixer.update(0.016);
+         }
+     }
+
+     // Update mixers for all boost
+     for (const boost of boosts) {
+         if (boost.mixer) {
+             boost.mixer.update(0.016);
+         }
+     }
+
+     // Update mixers for all boost
+     for (const health of healths) {
+         if (health.mixer) {
+             health.mixer.update(0.016);
+         }
+     }
 
 
      updateMovement();
