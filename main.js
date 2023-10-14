@@ -5,7 +5,7 @@ import {createHUD, updateHUDCoin, updateHUDHP, updateHUDSpeed} from './hud';
 import {checkMovement} from "./collisionCheck";
 import {Vector3} from "three";
 import {createBoost, createCoin, createHealth} from './iconsCreation.js';
-
+import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 
 // Scene
 const scene = new THREE.Scene();
@@ -17,18 +17,6 @@ camera.position.z = 1;
 camera.lookAt(0, 0, 5);
 scene.add(camera);
 
-//HUD
-// const hudElement = createHUD(camera,updateHUDPosition);
-
-// function updateHUDPosition(){
-//     const position = getCameraPositionBehindSoldier(soldier, 5);
-//     const canvasHalfWidth = renderer.domElement.width/2;
-//     const canvasHalfHeight = renderer.domElement.height/2;
-
-//     const hudX = (position.x/position.z)*canvasHalfWidth+canvasHalfWidth;
-//     const hudY = (position.y/position.z)*canvasHalfHeight+canvasHalfHeight;
-//     hudElement.style.transform = `translate(-50%, -50%) translate(${hudX}px, ${hudY}px)`;
-// }
 
 
 
@@ -74,17 +62,6 @@ orbitControls.maxPolarAngle = Math.PI / 2 - 0.05; // Prevents the camera from go
 //orbitControls.target.copy(soldier.position); // Make sure the controls always orbit around the soldier
 
 
-//MOUSE CONTROLS
-// const orbitControls = new OrbitControls(camera, renderer.domElement);
-// orbitControls.target.copy(soldier.position); // Make sure the controls always orbit around the soldier
-// orbitControls.enableDamping = true;
-// orbitControls.dampingFactor = 0.05;
-// orbitControls.minDistance = 5;
-// orbitControls.maxDistance = 15;
-// orbitControls.enablePan = false;
-// orbitControls.maxPolarAngle = Math.PI / 2 - 0.05; // Prevents the camera from going below the ground or too high above the soldier
-
-
 // Soldier geometry
 let soldier;
 let mixer;
@@ -98,6 +75,7 @@ let dummyMesh;
 let yOffset;
 soldierLoader.load('models/Soldier.glb', function (gltf) {
     soldier = gltf.scene;
+    soldier.position.set(0,0,8);
     soldier.scale.set(0.25, 0.25, 0.25);
 
     scene.add(soldier);
@@ -160,17 +138,33 @@ light.translateY(5);
 scene.add(light);
 
 let villaHouse;
+let meshfloor;
 
 // Load the maze model
 const loader = new GLTFLoader();
+
+let villaBoundingBox;
+let villaSize;
+
+let pursuing = false; // Flag to check if monster is in pursuit mode
+
+let grid; // We've already initialized this in the villa loader
+const cellSize = 0.3  // Declare this variable here, at the top level
+const navMeshName = "SampleScene_Exported_NavMesh";  // Replace with your navmesh name
+
 loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse = gltf.scene;
-    gltf.scene.position.set(0, 0, -8);
+
+    gltf.scene.position.set(0, 0, 0);
     gltf.scene.scale.set(1, 1, 1);
     // Set the villaHouse to be invisible
     //villaHouse.visible = false;
 
     scene.add(gltf.scene);
+    //
+
+    console.log(soldier.position);
+
     // Find the child named "floor" and set its material to use the floorTexture
     const floor = villaHouse.getObjectByName("floor");
     if (floor) {
@@ -179,9 +173,11 @@ loader.load('models/villaHouse.glb', function (gltf) {
         console.warn('Floor not found in the villaHouse model.');
     }
 
+
 }, undefined, function (error) {
     console.error(error);
 });
+
 
 let coins = []; // Array to store multiple coins
 let boosts = [];
@@ -245,8 +241,8 @@ var cameraPosition;
 let isJumping = false; // This will tell us if the character has initiated a jump
 
 
-function animate() {
-    requestAnimationFrame(animate);
+//Monster Code
+
 
     if (mixer) mixer.update(0.016);
     if (portalMixer) portalMixer.update(0.016);
@@ -287,7 +283,8 @@ function animate() {
 
     renderer.render(scene, camera);
 
-}
+
+
 
 function getCameraPositionBehindSoldier(soldier, distanceBehind) {
     const forwardDirection = new THREE.Vector3();
@@ -313,15 +310,13 @@ createHUD(camera,numCoins,boostFactor,soldierHealth);
 
 
 function updateMovement() {
-
-
     // Move the collision checks to the checkMovement function
     const movementChecks = checkMovement(soldier, villaHouse, keyState, isJumping, verticalVelocity);
     let canMove = movementChecks.canMove;
     let isOnGround = movementChecks.isOnGround;
     verticalVelocity = movementChecks.verticalVelocity;
 
-    var moveDistance = 0.015 * boostFactor;
+    var moveDistance = 0.030;
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
@@ -371,7 +366,7 @@ function updateMovement() {
             soldier.position.z = newPositionZ;
         }
     } else {
-        if (currentAnimation !== 'Idle'){
+        if (currentAnimation !== 'Idle') {
             currentAnimationAction.fadeOut(0.6);
             currentAnimation = 'Idle';
             currentAnimationAction = animations[currentAnimation];
@@ -379,7 +374,8 @@ function updateMovement() {
         }
     }
 
-    // Jumping logic
+
+// Jumping logic
     const jumpSpeed = 0.06; // Adjust the jump speed as needed
     const gravity = 0.005; // Adjust the gravity as needed
     const collisionThreshold = 0.2;
@@ -404,10 +400,10 @@ function updateMovement() {
 
     orbitControls.target.copy(soldier.position);
 
-    // Update dummyMesh's position
+// Update dummyMesh's position
     dummyMesh.position.copy(soldier.position);
     dummyMesh.position.y += yOffset;  // make sure to add yOffset again
-    // At the end of your movement updates, add:
+// At the end of your movement updates, add:
     if (soldierBoxHelper) {
         soldierBoxHelper.update();
     }
@@ -421,7 +417,7 @@ function updateMovement() {
         collectedAllCoinsMessage = true;  // This ensures the message is only printed once.
     }
 
-    // At the end of your movement updates:
+// At the end of your movement updates:
     if (dummyMesh && portalDummyMesh) {
         let soldierBox = new THREE.Box3().setFromObject(dummyMesh);
         let portalBox = new THREE.Box3().setFromObject(portalDummyMesh);
@@ -429,10 +425,187 @@ function updateMovement() {
             console.log("Soldier collided with portal!");
         }
     }
-
-
-
 }
+
+
+
+
+let monster;
+let monsterMixer;
+const monsterAnimations = {};
+const monsterloader = new GLTFLoader();
+let animationState = 'Idle'; // default animation
+
+//function to play animation
+function playAnimation(name) {
+    // Stop all other actions
+    for (let actionName in monsterAnimations) {
+        if (monsterMixer) {
+            monsterMixer.stopAllAction();
+        }
+        monsterMixer.clipAction(monsterAnimations[actionName]).stop();
+
+    }
+
+    // Play the desired action
+    if (monsterAnimations[name]) {
+        monsterMixer.clipAction(monsterAnimations[name]).play();
+    }
+
+    // Update animation state
+    animationState = name;
+}
+
+// Load and store animations by their names
+monsterloader.load('monster models/Monster warrior/MW Running gltf/MW Running.gltf', (gltf) => {
+    gltf.animations.forEach((clip) => {
+        monsterAnimations[clip.name] = clip;
+    });
+});
+
+monsterloader.load('monster models/Monster warrior/MW Walking gltf/MW Walking.gltf', (gltf) => {
+    gltf.animations.forEach((clip) => {
+        monsterAnimations[clip.name] = clip;
+    });
+});
+
+monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing .gltf', (gltf) => {
+    gltf.animations.forEach((clip) => {
+        monsterAnimations[clip.name] = clip;
+    });
+});
+monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
+    monster = gltf.scene;
+    monster.position.set(0.3, 0, 8); // Set initial position here
+    monster.scale.set(0.35, 0.35, 0.35);
+
+    monsterMixer = new THREE.AnimationMixer(monster);
+    scene.add(monster);
+
+
+    monsterAnimations.Idle = gltf.animations[0];
+    playAnimation('Idle');
+
+    // Adjust the monster's y position based on bounding box here
+    const box = new THREE.Box3().setFromObject(monster);
+    monster.position.y = -0.4 - box.min.y;
+});
+
+monsterloader.load('monster models/Monster warrior/MW Running gltf/MW Running.gltf', (gltf) => {
+    // Store the running animation
+    monsterAnimations.Running = gltf.animations[6];
+});
+
+monsterloader.load('monster models/Monster warrior/MW Walking gltf/MW Walking.gltf', (gltf) => {
+    // Store the walking animation
+    monsterAnimations.Walking = gltf.animations[1];
+});
+
+monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing .gltf', (gltf) => {
+    // Store the smashing animation
+    monsterAnimations.Smashing = gltf.animations[2];
+});
+
+ const pathfinding = new Pathfinding();
+const pathfindinghelper = new PathfindingHelper();
+ scene.add(pathfindinghelper);
+const ZONE = "villaHouse";
+let navmesh;
+let groupId;
+let navpath;
+scene.add(pathfindinghelper);
+loader.load("navmesh/blendernavmesh4.glb", function(gltf){
+meshfloor = gltf.scene;
+meshfloor.position.set(0, 0, 0);
+meshfloor.scale.set(1, 1, 1);
+scene.add(meshfloor);
+gltf.scene.traverse(node =>{
+         if(!navmesh && node.isObject3D && node.children && node.children.length > 0){
+             navmesh = node.children[0];
+             console.log("navmesh object:", navmesh);
+             pathfinding.setZoneData(ZONE, Pathfinding.createZone(navmesh.geometry));
+             console.log("pathfinding zones", pathfinding.zones);
+
+         }
+     })
+ })
+
+
+
+function findPath() {
+
+    if (pursuing) {
+
+        let target = soldier.position.clone();
+        console.log("soldier pos:", target);
+
+        let monsterPos = monster.position.clone();
+
+        //for (let i = 0; i < pathfinding.zones["villaHouse"].groups.length; i++) {
+        groupId = pathfinding.getGroup('villaHouse', monsterPos);
+        console.log("Group Id:", groupId);
+        const closest = pathfinding.getClosestNode(monsterPos, 'villaHouse', groupId);
+        console.log("closest node:", closest);
+        const closest2 = pathfinding.getClosestNode(target, 'villaHouse', groupId);
+        console.log("closest node 2:", closest2);
+        if (closest) {
+            navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
+            console.log("nav path :", navpath);
+            if (navpath && navpath.length > 0) {
+                pathfindinghelper.reset();
+                pathfindinghelper.setPlayerPosition(monster.position);
+                pathfindinghelper.setTargetPosition(target);
+                pathfindinghelper.setPath(navpath);
+
+                // Target position
+                let targetPos = navpath[0];
+
+                // Compute distance to target
+                const distance = targetPos.clone().sub(monster.position);
+
+                // If the monster is close enough to the target position
+                if (distance.lengthSq() < 0.05 * 0.05) {
+
+                    navpath.shift(); // Go to the next waypoint
+                    if (navpath.length === 0) {
+                        navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
+
+                    } // If there's no more waypoints, just return
+                    targetPos = navpath[0]; // New target position
+                    distance.copy(targetPos.clone().sub(monster.position)); // Update distance
+                }
+
+                // Normalize distance to get direction
+                const direction = distance.normalize();
+
+                // Set monster speed (adjust the 0.05 value to your preference)
+                const speed = 0.035;
+
+                // Update the monster's position
+                monster.position.add(direction.multiplyScalar(speed));
+
+                // Make the monster face the direction it's heading
+                monster.lookAt(monster.position.clone().add(direction));
+
+                // Check if monster is close enough to soldier to play smashing animation
+                const distanceToSoldier = monster.position.distanceTo(soldier.position);
+                const closeEnoughThreshold = 0.6; // Adjust this value based on your requirements
+                //
+                // if (distanceToSoldier < closeEnoughThreshold) {
+                //
+                //     let event = new KeyboardEvent('keydown', {key: 'G', code: 'KeyG', which: 71});
+                //     document.dispatchEvent(event);
+                //
+                // }
+            }
+        }
+
+
+    }
+}
+
+
+
 
 function checkCollisionsWithCollectibles() {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
@@ -487,7 +660,174 @@ function checkCollisionsWithCollectibles() {
 
 }
 
+//play different animations
+ document.addEventListener('keydown', (event) => {
+     switch (event.code) {
+         case 'KeyI':
+             playAnimation('Idle');
+             break;
+         case 'KeyR':
+             if (!pursuing) {
+                 pursuing = true;
+                 playAnimation('Running');
+             } else {
+                 pursuing = false;
+                 // path = [];
+                 playAnimation('Idle');
+             }
+             break;
+         // generateRandomDestination(monster);
+         case 'KeyO':
+             playAnimation('Walking');
+             break;
+         case 'KeyG':
+             playAnimation('Smashing');
+             break;
+     }
+ });
+
+//monster pursuit code:
+
+     const clock = new THREE.Clock();
+ function animate() {
+     requestAnimationFrame(animate);
+
+     if (mixer) mixer.update(0.016);
+     if (monsterMixer) monsterMixer.update(0.015);
+
+
+     updateMovement();
+     // Call the function after the exploration is done
+     // visualizeGrid(grid);
+
+
+     // In your animate function
+     if (pursuing) {
+         // findSoldier(clock.getDelta()); // start fin
+         findPath();
+     }
+
+
+     camera.position.x = soldier.position.x;
+     camera.position.z = soldier.position.z + 2;
+     camera.lookAt(soldier.position);
+     cameraPosition = getCameraPositionBehindSoldier(soldier, 5);
+     //camera.position.copy(cameraPosition);
+     camera.lookAt(soldier.position);
+
+     orbitControls.update();
+
+     renderer.render(scene, camera);
+
+ }
+
+ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
+     const forwardDirection = new THREE.Vector3();
+     soldier.getWorldDirection(forwardDirection);
+
+     // The computed offset
+     const offset = forwardDirection.multiplyScalar(-distanceBehind);
+
+     return new THREE.Vector3().addVectors(soldier.position, offset);
+ }
+
+
+
+
+ // function updateMovement() {
+ //
+ //     // Move the collision checks to the checkMovement function
+ //     const movementChecks = checkMovement(soldier, villaHouse, keyState, isJumping, verticalVelocity);
+ //     let canMove = movementChecks.canMove;
+ //     let isOnGround = movementChecks.isOnGround;
+ //     verticalVelocity = movementChecks.verticalVelocity;
+ //
+ //     var moveDistance = 0.030;
+ //
+ //     if (keyState[16]) {  // shift key is pressed
+ //         moveDistance *= 2;  // speed is doubled
+ //     }
+ //
+ //     let moveX = 0;
+ //     let moveZ = 0;
+ //
+ //     if (keyState[87] || keyState[38]) moveZ = -moveDistance;
+ //     if (keyState[83] || keyState[40]) moveZ = moveDistance;
+ //     if (keyState[65] || keyState[37]) moveX = -moveDistance;
+ //     if (keyState[68] || keyState[39]) moveX = moveDistance;
+ //
+ //     if (moveX !== 0 && moveZ !== 0) {
+ //         moveX /= Math.sqrt(2);
+ //         moveZ /= Math.sqrt(2);
+ //     }
+ //
+ //     if (moveX !== 0 || moveZ !== 0) {
+ //         const rotationAngle = Math.PI + Math.atan2(moveX, moveZ);
+ //         soldier.rotation.y = rotationAngle;
+ //
+ //         if (keyState[16]) {
+ //             if (currentAnimation !== 'Run') {
+ //                 currentAnimationAction.fadeOut(0.6);
+ //                 currentAnimation = 'Run';
+ //                 currentAnimationAction = animations[currentAnimation];
+ //                 currentAnimationAction.reset().fadeIn(0.5).play();
+ //             }
+ //         } else {
+ //             if (currentAnimation !== 'Walk') {
+ //                 currentAnimationAction.fadeOut(0.6);
+ //                 currentAnimation = 'Walk';
+ //                 currentAnimationAction = animations[currentAnimation];
+ //                 currentAnimationAction.reset().fadeIn(0.5).play();
+ //             }
+ //         }
+ //
+ //         // Calculate the potential new position
+ //         const newPositionX = soldier.position.x + moveX;
+ //         const newPositionZ = soldier.position.z + moveZ;
+ //         const newPositionY = soldier.position.y + verticalVelocity;
+ //
+ //         if (canMove) {
+ //             soldier.position.x = newPositionX;
+ //             soldier.position.y = newPositionY;
+ //             soldier.position.z = newPositionZ;
+ //         }
+ //     } else {
+ //         if (currentAnimation !== 'Idle'){
+ //             currentAnimationAction.fadeOut(0.6);
+ //             currentAnimation = 'Idle';
+ //             currentAnimationAction = animations[currentAnimation];
+ //             currentAnimationAction.reset().fadeIn(0.5).play();
+ //         }
+ //     }
+ //
+ //     // Jumping logic
+ //     const jumpSpeed = 0.06; // Adjust the jump speed as needed
+ //     const gravity = 0.005; // Adjust the gravity as needed
+ //
+ //     if (keyState[32] && isOnGround) { // Spacebar is pressed and the character is on the ground
+ //         verticalVelocity = jumpSpeed; // Set the vertical velocity to make the character jump
+ //         isOnGround = false;
+ //         isJumping = true; // Character has initiated a jump
+ //     }
+ //
+ //     if (!isOnGround) {
+ //         verticalVelocity -= gravity; // Apply gravity if the character is not on the ground
+ //     }
+ //
+ //     soldier.position.y += verticalVelocity; // Update the character's vertical position
+ //
+ //     // After the jump has initiated, allow a brief period before checking downward collisions
+ //     // This ensures the character can rise off the ground before collision is checked
+ //     if (isJumping) {
+ //         setTimeout(() => {
+ //             isJumping = false; // Reset after allowing some time
+ //         }, 50); // Adjust this time based on your needs
+ //     }
+ //
+ //     orbitControls.target.copy(soldier.position);
+ // }
 
 
 // Start animation
-animate();
+ animate();
+

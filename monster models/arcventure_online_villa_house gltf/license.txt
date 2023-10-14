@@ -1,0 +1,11 @@
+Model Information:
+* title:	ArcVenture Online Villa House
+* source:	https://sketchfab.com/3d-models/arcventure-online-villa-house-9d52c0116fe740edbea98bb544ef9755
+* author:	Mark.Vanstone (https://sketchfab.com/Mark.Vanstone)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "ArcVenture Online Villa House" (https://sketchfab.com/3d-models/arcventure-online-villa-house-9d52c0116fe740edbea98bb544ef9755) by Mark.Vanstone (https://sketchfab.com/Mark.Vanstone) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

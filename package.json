@@ -10,7 +10,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "three": "^0.156.1"
+    "three": "^0.156.1",
+    "three-pathfinding": "^1.2.0",
+    "yuka": "^0.7.8"
   },
   "devDependencies": {
     "vite": "^4.4.9"
