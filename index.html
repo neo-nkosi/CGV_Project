@@ -61,8 +61,8 @@
 
 <script type="module">
     window.selectedLevel = 1;
-    loadMainScript();
-    /*function showIntermediateScreen(level) {
+
+    function showIntermediateScreen(level) {
         // Set a global variable with the selected level
         window.selectedLevel = level;
 
@@ -113,15 +113,8 @@
 
         // Load the main script
         loadMainScript();
-    });*/
-
-    function loadMainScript() {
-        // Import the main script
-        import('/main.js')
-            .catch((error) => {
-                console.error("An error occurred while loading the script: ", error);
-            });
-    }
+    });
+    
 
     document.addEventListener('keydown', function(event) {
         if (event.code === 'KeyP') { // Let's say 'P' for 'Pause'
