@@ -429,6 +429,10 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
         monsterAnimations[clip.name] = clip;
     });
 });
+
+let MondummyMesh;
+let MonBoxHelper;
+
 monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
     monster = gltf.scene;
     monster.position.set(0.3, 0, 8); // Set initial position here
@@ -436,6 +440,22 @@ monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf)
 
     monsterMixer = new THREE.AnimationMixer(monster);
     scene.add(monster);
+
+    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
+    let MonboxSize = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box (width, height, depth)
+    MondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize.x, MonboxSize.y, MonboxSize.z));
+
+// 2. Position this mesh at the position of the soldier.
+    MondummyMesh.position.copy(new Vector3(monster.position.x, monster.position.y, monster.position.z));
+    yOffset = 0.1;  // or any value you deem appropriate
+    MondummyMesh.position.y += yOffset;
+
+
+// 3. Create a BoxHelper using this dummy mesh.
+    MonBoxHelper = new THREE.BoxHelper(MondummyMesh, 0x00ff00);
+
+// 4. Add the BoxHelper to the scene.
+    scene.add(MonBoxHelper);
 
 
     monsterAnimations.Idle = gltf.animations[0];
@@ -469,7 +489,7 @@ let navmesh;
 let groupId;
 let navpath;
 scene.add(pathfindinghelper);
-loader.load("navmesh/blendernavmesh4.glb", function(gltf){
+loader.load("navmesh/blendernavmesh7.glb", function(gltf){
 meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
 meshfloor.scale.set(1, 1, 1);
@@ -484,7 +504,6 @@ gltf.scene.traverse(node =>{
          }
      })
  })
-
 
 
 function findPath() {
@@ -519,7 +538,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() < 0.05 * 0.05) {
+                if (distance.lengthSq() <   0.5) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
@@ -545,7 +564,7 @@ function findPath() {
                 // Check if monster is close enough to soldier to play smashing animation
                 const distanceToSoldier = monster.position.distanceTo(soldier.position);
                 const closeEnoughThreshold = 0.6; // Adjust this value based on your requirements
-                //
+
                 // if (distanceToSoldier < closeEnoughThreshold) {
                 //
                 //     let event = new KeyboardEvent('keydown', {key: 'G', code: 'KeyG', which: 71});
@@ -554,7 +573,6 @@ function findPath() {
                 // }
             }
         }
-
 
     }
 }
