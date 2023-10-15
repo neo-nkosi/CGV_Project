@@ -18,8 +18,6 @@ camera.lookAt(0, 0, 5);
 scene.add(camera);
 
 
-
-
 // Renderer
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -263,15 +261,38 @@ let coinCounter = 0;
 let jumpStartY = null;  // This will keep track of the Y position when the jump starts
 
 createHUD(camera,numCoins,boostFactor,soldierHealth);
-
+let isSlowedDown = false;  // to check if the soldier is currently slowed down
+let timerStarted = false;
 function updateMovement() {
     // Move the collision checks to the checkMovement function
     const movementChecks = checkMovement(soldier, villaHouse, keyState, isJumping, verticalVelocity);
     let canMove = movementChecks.canMove;
     let isOnGround = movementChecks.isOnGround;
     verticalVelocity = movementChecks.verticalVelocity;
+    // Update the bounding boxes
+    dummyBox.setFromObject(dummyMesh);
+    MonBox.setFromObject(MondummyMesh);
 
-    var moveDistance = 0.030;
+    var moveDistance = 0.016;
+
+    if (isSlowedDown) {
+        moveDistance= 0.005;  // slow the original speed
+
+    }
+
+
+
+    if (!dummyBox.intersectsBox(MonBox) && !timerStarted) {
+        timerStarted = true;  // Set the flag to true so that timer doesn't restart in the next frame
+        setTimeout(function() {
+            pursuing = true;
+            playAnimation('Running');
+            timerStarted = false;  // Reset the flag after the timer completes
+        }, 5000);  // Set the timer for 5 seconds (5000 milliseconds)
+
+        isSlowedDown = false;
+    }
+
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
@@ -385,6 +406,8 @@ function updateMovement() {
             console.log("Soldier collided with portal!");
         }
     }
+
+
 }
 
 
@@ -440,7 +463,7 @@ let MonBoxHelper;
 
 monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
     monster = gltf.scene;
-    monster.position.set(0.3, 0, 8); // Set initial position here
+    monster.position.set(0.9, 0, 8); // Set initial position here
     monster.scale.set(0.35, 0.35, 0.35);
 
     monsterMixer = new THREE.AnimationMixer(monster);
@@ -494,7 +517,7 @@ let navmesh;
 let groupId;
 let navpath;
 scene.add(pathfindinghelper);
-loader.load("navmesh/blendernavmesh8.glb", function(gltf){
+loader.load("navmesh/blendernavmesh4.glb", function(gltf){
 meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
 meshfloor.scale.set(1, 1, 1);
@@ -505,15 +528,18 @@ gltf.scene.traverse(node =>{
              console.log("navmesh object:", navmesh);
              pathfinding.setZoneData(ZONE, Pathfinding.createZone(navmesh.geometry));
              console.log("pathfinding zones", pathfinding.zones);
-
          }
      })
  })
 
+let dummyBox = new THREE.Box3();
+let MonBox = new THREE.Box3();
 
 function findPath() {
 
     if (pursuing) {
+
+        // playAnimation('Running');
 
         let target = soldier.position.clone();
         console.log("soldier pos:", target);
@@ -543,7 +569,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() <   0.5) {
+                if (distance.lengthSq() < 0.7) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
@@ -558,7 +584,7 @@ function findPath() {
                 const direction = distance.normalize();
 
                 // Set monster speed (adjust the 0.05 value to your preference)
-                const speed = 0.035;
+                const speed = 0.03;
 
                 // Update the monster's position
                 monster.position.add(direction.multiplyScalar(speed));
@@ -566,16 +592,18 @@ function findPath() {
                 // Make the monster face the direction it's heading
                 monster.lookAt(monster.position.clone().add(direction));
 
-                // Check if monster is close enough to soldier to play smashing animation
-                const distanceToSoldier = monster.position.distanceTo(soldier.position);
-                const closeEnoughThreshold = 0.6; // Adjust this value based on your requirements
+                // Update the bounding boxes
+                dummyBox.setFromObject(dummyMesh);
+                MonBox.setFromObject(MondummyMesh);
 
-                // if (distanceToSoldier < closeEnoughThreshold) {
-                //
-                //     let event = new KeyboardEvent('keydown', {key: 'G', code: 'KeyG', which: 71});
-                //     document.dispatchEvent(event);
-                //
-                // }
+                // Then, check for intersections.
+                if (dummyBox.intersectsBox(MonBox)) {
+                    pursuing = false;
+                    isSlowedDown = true;
+                    playAnimation("Idle");
+                    playAnimation('Smashing');
+                }
+
             }
         }
 
