@@ -1,4 +1,73 @@
+
 body {
     margin: 0;
-    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+}
+header {
+    color: black;
+    padding: 20px 0;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+header h1 {
+    margin: 0;
+    font-size: 1.6em;
+}
+header h2 {
+    margin: 5px 0 0;
+    font-size: 1.4em;
+}
+#level-select {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+button {
+    margin-bottom: 10px;
+    padding: 10px 20px;
+    font-size: 1em;
+}
+#back-button {
+    margin-top: 10px;
+}
+#intermediate-screen {
+    display: none;
+}
+#pause-screen {
+    display: none;
+    flex-direction: column;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 2em;
+    align-items: center;
+    justify-content: center;
+}
+#intermediate-screen {
+    display: none; /* It will be set to 'flex' in the JavaScript when needed */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* Full height to center vertically */
+}
+#level-objective, #level-modifiers {
+    margin-bottom: 15px;
+    text-align: center;
+}
+#level-objective h3, #level-modifiers h3 {
+    margin: 0 0 5px;
+    font-size: 1.2em;
+    text-align: center;
 }
