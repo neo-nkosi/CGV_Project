@@ -640,7 +640,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() < 0.7) {
+                if (distance.lengthSq() < 0.75) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
@@ -655,7 +655,7 @@ function findPath() {
                 const direction = distance.normalize();
 
                 // Set monster speed (adjust the 0.05 value to your preference)
-                const speed = 0.03;
+                const speed = 0.021;
 
                 // Update the monster's position
                 monster.position.add(direction.multiplyScalar(speed));
