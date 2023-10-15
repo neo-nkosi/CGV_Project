@@ -31,6 +31,24 @@ function toggleFirstPersonView() {
     }
 }
 
+// SOUND
+
+// Create an AudioListener and add it to the camera
+var listener = new THREE.AudioListener();
+camera.add(listener);
+
+// Create the sound player (position is irrelevant because we're not using positional audio)
+var soldierMarchingSound = new THREE.Audio(listener);
+
+// Load a sound and set it as the Audio object's buffer
+var audioLoader = new THREE.AudioLoader();
+audioLoader.load('/audio/marching.mp3', function(buffer) {
+    soldierMarchingSound.setBuffer(buffer);
+    soldierMarchingSound.setLoop(true); // for continuous play
+    soldierMarchingSound.setVolume(0.5);
+});
+
+
 // Renderer
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -268,6 +286,17 @@ let jumpStartY = null;  // This will keep track of the Y position when the jump 
 
 createHUD(camera,numCoins,boostFactor,soldierHealth);
 
+let isRunning = false;
+
+function checkSoldierStatus() {
+    // Check your soldier's status here (whether walking or running)
+    // and adjust playback rate accordingly. For example:
+    if (isRunning) {
+        source.playbackRate.value = 1.5; // Increase tempo for running. You can calibrate this value as needed.
+    } else if (!isRunning) {
+        source.playbackRate.value = 1.0; // Normal tempo for walking
+    }
+}
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
     const cameraDirection = new THREE.Vector3();
@@ -319,6 +348,8 @@ function updateMovement() {
                 currentAnimation = 'Run';
                 currentAnimationAction = animations[currentAnimation];
                 currentAnimationAction.reset().fadeIn(0.5).play();
+                soldierMarchingSound.setPlaybackRate(1.2);
+                soldierMarchingSound.play();
             }
         } else {
             if (currentAnimation !== 'Walk') {
@@ -326,6 +357,10 @@ function updateMovement() {
                 currentAnimation = 'Walk';
                 currentAnimationAction = animations[currentAnimation];
                 currentAnimationAction.reset().fadeIn(0.5).play();
+                soldierMarchingSound.setPlaybackRate(0.8);
+                soldierMarchingSound.play();
+
+
             }
         }
 
@@ -344,6 +379,8 @@ function updateMovement() {
             currentAnimation = 'Idle';
             currentAnimationAction = animations[currentAnimation];
             currentAnimationAction.reset().fadeIn(0.5).play();
+            soldierMarchingSound.stop();
+
         }
     }
 
