@@ -246,7 +246,7 @@ function initLevel(level){
         createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
     }else if (level === 2){
         // Create multiple coins
-        //createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
 
@@ -591,7 +591,7 @@ function updateMovement() {
             console.log("Soldier collided with portal!");
         }
     }
-    console.log(soldier.position.x, soldier.position.y, soldier.position.z);
+    //console.log(soldier.position.x, soldier.position.y, soldier.position.z);
 }
 
 const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
