@@ -11,12 +11,16 @@
             align-items: center;
             height: 100vh;
         }
-        #level-select {
+        #level-select, #intermediate-screen {
             display: flex;
             flex-direction: column;
         }
         button {
             margin-bottom: 10px;
+        }
+        /* Hide the intermediate screen by default */
+        #intermediate-screen {
+            display: none;
         }
     </style>
 </head>
@@ -29,14 +33,36 @@
     <!-- Add more buttons here for more levels -->
 </div>
 
+<!-- Intermediate screen content -->
+<div id="intermediate-screen">
+    <p id="level-info">Get ready to start the adventure!</p> <!-- This will be changed based on level -->
+    <button id="continue-button">Continue</button>
+</div>
+
 <script type="module">
-    function loadLevel(level) {
+    function showIntermediateScreen(level) {
         // Set a global variable with the selected level
         window.selectedLevel = level;
+
+        // Change the content based on the level
+        let levelInfo = document.getElementById('level-info');
+        if (level === '1') {
+            levelInfo.textContent = 'Get ready for Level 1!';
+        } else if (level === '2') {
+            levelInfo.textContent = 'Can you handle Level 2?';
+        } else if (level === '3') {
+            levelInfo.textContent = 'Level 3 is a tough one!';
+        }
+        // add more conditions here for more levels
 
         // Hide the level select screen
         document.getElementById('level-select').style.display = 'none';
 
+        // Show the intermediate screen
+        document.getElementById('intermediate-screen').style.display = 'flex';
+    }
+
+    function loadMainScript() {
         // Import the main script
         import('/main.js')
             .catch((error) => {
@@ -44,19 +70,28 @@
             });
     }
 
+
+    // Level buttons event listeners
     document.getElementById('level-1').addEventListener('click', function() {
-        loadLevel('1');
+        showIntermediateScreen('1');
     });
 
     document.getElementById('level-2').addEventListener('click', function() {
-        loadLevel('2');
+        showIntermediateScreen('2');
     });
 
     document.getElementById('level-3').addEventListener('click', function() {
-        loadLevel('3');
+        showIntermediateScreen('3');
     });
 
-    // Additional levels can follow the same pattern
+    // Continue button event listener
+    document.getElementById('continue-button').addEventListener('click', function() {
+        // Hide the intermediate screen
+        document.getElementById('intermediate-screen').style.display = 'none';
+
+        // Load the main script
+        loadMainScript();
+    });
 </script>
 </body>
 </html>
