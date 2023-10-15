@@ -111,7 +111,6 @@ soldierLoader.load('models/Soldier.glb', function (gltf) {
 // 3. Create a BoxHelper using this dummy mesh.
     soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
 
-// 4. Add the BoxHelper to the scene.
     //scene.add(soldierBoxHelper);
 
 
@@ -194,9 +193,9 @@ createCoin(-1, 0, 7, scene, coins);
 createCoin(0, 0, 7, scene, coins);
 
 //Create multiple boosts
-createBoost(-2,0,0,scene,boosts);
-createBoost(-3,0,0,scene,boosts);
-createBoost(-4,0,-1,scene,boosts);
+createBoost(-2,0,7,scene,boosts);
+//createBoost(-3,0,0,scene,boosts);
+//createBoost(-4,0,-1,scene,boosts);
 
 //Create multiple hearts
 createHealth(2,0,0,scene,healths);
