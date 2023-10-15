@@ -8,8 +8,19 @@ import {createBoost, createCoin, createHealth} from './iconsCreation.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 
+
+// main.js
+if (window.selectedLevel) {
+
+    console.log("Selected level is: " + window.selectedLevel);
+} else {
+    // Handle case where no level is selected if necessary
+}
+
+
 // Scene
 const scene = new THREE.Scene();
+
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);

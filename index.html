@@ -30,24 +30,33 @@
 </div>
 
 <script type="module">
-    // Listen for a click on the level buttons
-    document.getElementById('level-1').addEventListener('click', function() {
-        // Remove level selection screen after choosing a level
+    function loadLevel(level) {
+        // Set a global variable with the selected level
+        window.selectedLevel = level;
+
+        // Hide the level select screen
         document.getElementById('level-select').style.display = 'none';
 
-        // Dynamically import the main.js module
+        // Import the main script
         import('/main.js')
-            .then((module) => {
-                // main.js loaded
-                // You can access exports from main.js via module if exported
-            })
             .catch((error) => {
-                // Handle the error
                 console.error("An error occurred while loading the script: ", error);
             });
+    }
+
+    document.getElementById('level-1').addEventListener('click', function() {
+        loadLevel('1');
     });
 
-    // Add similar event listeners for other level buttons when you have them
+    document.getElementById('level-2').addEventListener('click', function() {
+        loadLevel('2');
+    });
+
+    document.getElementById('level-3').addEventListener('click', function() {
+        loadLevel('3');
+    });
+
+    // Additional levels can follow the same pattern
 </script>
 </body>
 </html>
