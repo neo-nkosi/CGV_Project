@@ -20,8 +20,6 @@ let firstPersonView = false;
 
 function toggleFirstPersonView() {
     firstPersonView = !firstPersonView;
-
-    // Disable OrbitControls in first-person mode and enable in third-person mode
     orbitControls.enabled = !firstPersonView;
     firstPersonControls.enabled = firstPersonView;
 
@@ -47,6 +45,7 @@ audioLoader.load('/audio/marching.mp3', function(buffer) {
     soldierMarchingSound.setLoop(true); // for continuous play
     soldierMarchingSound.setVolume(0.5);
 });
+
 
 
 // Renderer
@@ -297,6 +296,10 @@ function checkSoldierStatus() {
         source.playbackRate.value = 1.0; // Normal tempo for walking
     }
 }
+
+let isSlowedDown = false;  // to check if the soldier is currently slowed down
+let timerStarted = false;
+
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
     const cameraDirection = new THREE.Vector3();
@@ -311,8 +314,28 @@ function updateMovement() {
     let canMove = movementChecks.canMove;
     let isOnGround = movementChecks.isOnGround;
     verticalVelocity = movementChecks.verticalVelocity;
+    // Update the bounding boxes
+    dummyBox.setFromObject(dummyMesh);
+    MonBox.setFromObject(MondummyMesh);
 
     var moveDistance = 0.015 * boostFactor;
+
+    if (isSlowedDown) {
+        moveDistance= 0.005;  // slow the original speed
+
+    }
+
+    if (!dummyBox.intersectsBox(MonBox) && !timerStarted) {
+        timerStarted = true;  // Set the flag to true so that timer doesn't restart in the next frame
+        setTimeout(function() {
+            pursuing = true;
+            playAnimation('Running');
+            timerStarted = false;  // Reset the flag after the timer completes
+        }, 5000);  // Set the timer for 5 seconds (5000 milliseconds)
+
+        isSlowedDown = false;
+    }
+
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
@@ -413,9 +436,14 @@ function updateMovement() {
 // Update dummyMesh's position
     dummyMesh.position.copy(soldier.position);
     dummyMesh.position.y += yOffset;  // make sure to add yOffset again
+    MondummyMesh.position.copy(monster.position);
+    MondummyMesh.position.y += 0.3;
 // At the end of your movement updates, add:
     if (soldierBoxHelper) {
         soldierBoxHelper.update();
+    }
+    if (MonBoxHelper) {
+        MonBoxHelper.update();
     }
 
     checkCollisionsWithCollectibles();
@@ -435,6 +463,8 @@ function updateMovement() {
             console.log("Soldier collided with portal!");
         }
     }
+
+
 }
 
 const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
@@ -504,7 +534,7 @@ let MonBoxHelper;
 
 monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
     monster = gltf.scene;
-    monster.position.set(0.3, 0, 8); // Set initial position here
+    monster.position.set(0.9, 0, 8); // Set initial position here
     monster.scale.set(0.35, 0.35, 0.35);
 
     monsterMixer = new THREE.AnimationMixer(monster);
@@ -524,7 +554,7 @@ monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf)
     MonBoxHelper = new THREE.BoxHelper(MondummyMesh, 0x00ff00);
 
 // 4. Add the BoxHelper to the scene.
-    scene.add(MonBoxHelper);
+//     scene.add(MonBoxHelper);
 
 
     monsterAnimations.Idle = gltf.animations[0];
@@ -569,15 +599,18 @@ gltf.scene.traverse(node =>{
              console.log("navmesh object:", navmesh);
              pathfinding.setZoneData(ZONE, Pathfinding.createZone(navmesh.geometry));
              console.log("pathfinding zones", pathfinding.zones);
-
          }
      })
  })
 
+let dummyBox = new THREE.Box3();
+let MonBox = new THREE.Box3();
 
 function findPath() {
 
     if (pursuing) {
+
+        // playAnimation('Running');
 
         let target = soldier.position.clone();
         console.log("soldier pos:", target);
@@ -607,7 +640,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() <   0.5) {
+                if (distance.lengthSq() < 0.7) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
@@ -622,7 +655,7 @@ function findPath() {
                 const direction = distance.normalize();
 
                 // Set monster speed (adjust the 0.05 value to your preference)
-                const speed = 0.035;
+                const speed = 0.03;
 
                 // Update the monster's position
                 monster.position.add(direction.multiplyScalar(speed));
@@ -630,16 +663,18 @@ function findPath() {
                 // Make the monster face the direction it's heading
                 monster.lookAt(monster.position.clone().add(direction));
 
-                // Check if monster is close enough to soldier to play smashing animation
-                const distanceToSoldier = monster.position.distanceTo(soldier.position);
-                const closeEnoughThreshold = 0.6; // Adjust this value based on your requirements
+                // Update the bounding boxes
+                dummyBox.setFromObject(dummyMesh);
+                MonBox.setFromObject(MondummyMesh);
 
-                // if (distanceToSoldier < closeEnoughThreshold) {
-                //
-                //     let event = new KeyboardEvent('keydown', {key: 'G', code: 'KeyG', which: 71});
-                //     document.dispatchEvent(event);
-                //
-                // }
+                // Then, check for intersections.
+                if (dummyBox.intersectsBox(MonBox)) {
+                    pursuing = false;
+                    isSlowedDown = true;
+                    playAnimation("Idle");
+                    playAnimation('Smashing');
+                }
+
             }
         }
 
