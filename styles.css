@@ -1,12 +1,16 @@
 
-body {
+body, html {
+    height: 100%; /* Ensure the full height is taken by the body */
     margin: 0;
+}
+
+body {
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 100vh;
+    justify-content: center; /* Add this to center content vertically */
 }
 header {
     color: black;
@@ -23,12 +27,18 @@ header h2 {
     margin: 5px 0 0;
     font-size: 1.4em;
 }
-#level-select {
+#level-select, #intermediate-screen {
+    width: 100%; /* Full width */
+    height: 100vh; /* Full viewport height */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
+
+    background-image: url('textures/level-background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 button {
     margin-bottom: 10px;
@@ -54,13 +64,6 @@ button {
     font-size: 2em;
     align-items: center;
     justify-content: center;
-}
-#intermediate-screen {
-    display: none; /* It will be set to 'flex' in the JavaScript when needed */
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%; /* Full height to center vertically */
 }
 #level-objective, #level-modifiers {
     margin-bottom: 15px;
