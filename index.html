@@ -22,6 +22,20 @@
         #intermediate-screen {
             display: none;
         }
+        /* Hide the pause screen by default */
+        #pause-screen {
+            display: none;
+            position: fixed; /* Ensure the pause screen is on top */
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            color: white;
+            font-size: 2em;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -31,6 +45,11 @@
     <button id="level-2">Level 2</button>
     <button id="level-3">Level 3</button>
     <!-- Add more buttons here for more levels -->
+</div>
+
+<div id="pause-screen">
+    <p>Game Paused</p>
+    <button id="resume-button">Continue</button>
 </div>
 
 <!-- Intermediate screen content -->
@@ -91,6 +110,18 @@
 
         // Load the main script
         loadMainScript();
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.code === 'KeyP') { // Let's say 'P' for 'Pause'
+            window.pauseGame(); // this calls the pauseGame function from your main.js
+            document.getElementById('pause-screen').style.display = 'flex'; // show the pause screen
+        }
+    });
+
+    document.getElementById('resume-button').addEventListener('click', function() {
+        document.getElementById('pause-screen').style.display = 'none'; // hide the pause screen
+        window.resumeGame(); // this calls the resumeGame function from your main.js
     });
 </script>
 </body>

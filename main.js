@@ -8,8 +8,6 @@ import {createBoost, createCoin, createHealth} from './iconsCreation.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 
-
-// main.js
 if (window.selectedLevel) {
 
     console.log("Selected level is: " + window.selectedLevel);
@@ -17,6 +15,20 @@ if (window.selectedLevel) {
     // Handle case where no level is selected if necessary
 }
 
+let isGamePaused = false;
+
+window.pauseGame = function() {
+    isGamePaused = true;  // Set the game state to paused
+    // Here, handle anything else you need when the game is paused (e.g., stop sounds, etc.)
+}
+
+window.resumeGame = function() {
+    if (isGamePaused) {
+        isGamePaused = false; // Set the game state to running
+        animate(); // Restart the game loop
+        // Here, handle anything else you need when the game resumes
+    }
+}
 
 // Scene
 const scene = new THREE.Scene();
@@ -737,6 +749,11 @@ function checkCollisionsWithCollectibles() {
 
      const clock = new THREE.Clock();
  function animate() {
+     if (isGamePaused) {
+         // If the game is paused, simply return without doing anything
+         return;
+     }
+
      requestAnimationFrame(animate);
 
      if (mixer) mixer.update(0.016);
