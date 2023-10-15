@@ -322,43 +322,26 @@ const lineMaterial = new THREE.LineBasicMaterial({
 
 let maxStepHeight = 0.15;
 
-// Create a geometry that will be used for the line
-const lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, -maxStepHeight, 0)]);
 
-// Create the line using the geometry and material
-const rayLine = new THREE.Line(lineGeometry, lineMaterial);
-
-// Add the line to the scene
-scene.add(rayLine);
-
-// Create a small sphere geometry to represent the collision point
-const collisionGeometry = new THREE.SphereGeometry(0.05); // The radius of the sphere is 0.05 units
-const collisionMaterial = new THREE.MeshBasicMaterial({color: 0xff0000}); // Red color for high visibility
-const collisionPoint = new THREE.Mesh(collisionGeometry, collisionMaterial);
-
-// Initially, we don't want this sphere to be visible
-collisionPoint.visible = false;
-
-// Add the sphere to the scene
-scene.add(collisionPoint);
 
 
 function checkStairs(character, sceneObject) {
+
     const rayStartHeight = 0;  // Start at the foot of the character
     const upwardRayLength = 0.3;  // The length of the ray pointing upwards
 
     // Setup the raycaster
-    const footPosition = character.position.clone().add(new THREE.Vector3(0, rayStartHeight, -0.2)); // starts at the foot
-    // The direction of the ray should now be relative to the character's rotation
-    const rayDirection = new THREE.Vector3(0, 1, 0).applyQuaternion(character.quaternion);
+    // Compute the character's forward direction
+    const forwardOffset = new THREE.Vector3(0, 0, -0.2).applyQuaternion(character.quaternion);
+    const footPosition = character.position.clone().add(forwardOffset).add(new THREE.Vector3(0, rayStartHeight, 0)); // starts at the foot, but forward
+
+    // The direction of the ray remains pointing upwards
+    const rayDirection = new THREE.Vector3(0, 1, 0);
     const upRay = new THREE.Raycaster(footPosition, rayDirection, 0, upwardRayLength);
 
-    // Update the ray line's position and rotation to match the character
-    rayLine.position.copy(footPosition);
 
-    // Update the line's end point based on the ray direction
-    lineGeometry.setFromPoints([new THREE.Vector3(), rayDirection.multiplyScalar(upwardRayLength)]);
-    lineGeometry.attributes.position.needsUpdate = true; // Required when updating line geometry after creation
+
+
 
     // Check if the ray intersects any object in the scene
     const intersects = upRay.intersectObject(sceneObject, true);
@@ -367,8 +350,8 @@ function checkStairs(character, sceneObject) {
         const distanceToGround = intersects[0].distance;
         if (distanceToGround < maxStepHeight) {
             // Position the sphere at the collision point and make it visible
-            collisionPoint.position.copy(intersects[0].point);
-            collisionPoint.visible = true;
+            //collisionPoint.position.copy(intersects[0].point);
+            //collisionPoint.visible = true;
 
             // Adjust the character's Y position to the collision point.
             character.position.y = intersects[0].point.y + 0.07;
@@ -377,6 +360,36 @@ function checkStairs(character, sceneObject) {
         // If there's no collision, make sure the sphere is not visible
         //collisionPoint.visible = false;
     }
+
+    /*  // Create a geometry that will be used for the line
+  const lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, -maxStepHeight, 0)]);
+
+// Create the line using the geometry and material
+  const rayLine = new THREE.Line(lineGeometry, lineMaterial);
+
+// Add the line to the scene
+  scene.add(rayLine);
+
+// Create a small sphere geometry to represent the collision point
+  const collisionGeometry = new THREE.SphereGeometry(0.05); // The radius of the sphere is 0.05 units
+  const collisionMaterial = new THREE.MeshBasicMaterial({color: 0xff0000}); // Red color for high visibility
+  const collisionPoint = new THREE.Mesh(collisionGeometry, collisionMaterial);
+
+// Initially, we don't want this sphere to be visible
+  collisionPoint.visible = false;
+
+// Add the sphere to the scene
+  scene.add(collisionPoint);
+
+  // Update the ray line's position to match the character's foot position plus the forward offset
+    rayLine.position.copy(footPosition);
+
+    // The line's end point is based on the upward direction
+    const endPoint = new THREE.Vector3(0, upwardRayLength, 0);  // end point straight up
+    lineGeometry.setFromPoints([new THREE.Vector3(), endPoint]);
+    lineGeometry.attributes.position.needsUpdate = true; // Required when updating line geometry after creation
+
+  for Stairs collision debugging purposes*/
 }
 
 
@@ -468,8 +481,10 @@ function updateMovement() {
         }
     }
 
-    // Call the checkStairs function
-    checkStairs(soldier, villaHouse);
+    if (isOnGround){
+        // Call the checkStairs function
+        checkStairs(soldier, villaHouse);
+    }
 
 // Jumping logic
     const jumpSpeed = 0.05; // Adjust the jump speed as needed
