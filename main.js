@@ -30,6 +30,39 @@ window.resumeGame = function() {
     }
 }
 
+window.gamelost = function(){
+   const overlay = document.getElementById('lost-screen');
+   overlay.style.display = 'block';
+
+}
+
+window.gamewon = function(){
+    const overlay = document.getElementById('won-screen');
+   overlay.style.display = 'block';
+}
+
+const retryButton = document.getElementById("retry-button");
+const menuButton = document.getElementById("menu-button");
+const continueButton = document.getElementById("continue-button");
+
+retryButton.addEventListener('click', () => {
+    // Handle retry button click
+    // You can replace this with your logic
+    console.log('Retry button clicked');
+});
+
+menuButton.addEventListener('click', () => {
+    // Handle main menu button click
+    // You can replace this with your logic
+    console.log('Main Menu button clicked');
+});
+
+continueButton.addEventListener('click', () => {
+    // Handle main menu button click
+    // You can replace this with your logic
+    console.log('Continue button clicked');
+});
+
 // Scene
 const scene = new THREE.Scene();
 
@@ -131,7 +164,7 @@ let soldierLoader = new GLTFLoader();
 let soldierBoxHelper;
 let dummyMesh;
 let yOffset;
-soldierLoader.load('models/Soldier.glb', function (gltf) {
+await soldierLoader.load('models/Soldier.glb', function (gltf) {
     soldier = gltf.scene;
     soldier.position.set(0,0,8);
     soldier.scale.set(0.25, 0.25, 0.25);
@@ -228,6 +261,8 @@ let boosts = [];
 let healths = [];
 
 function initLevel(level){
+
+    //soldier.position.set(0,0,8);
 
     if (level === 1){
         // Create multiple coins
@@ -591,7 +626,7 @@ function updateMovement() {
             console.log("Soldier collided with portal!");
         }
     }
-    console.log(soldier.position.x, soldier.position.y, soldier.position.z);
+    //console.log(soldier.position.x, soldier.position.y, soldier.position.z);
 }
 
 const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
@@ -740,20 +775,20 @@ function findPath() {
         // playAnimation('Running');
 
         let target = soldier.position.clone();
-        console.log("soldier pos:", target);
+        //console.log("soldier pos:", target);
 
         let monsterPos = monster.position.clone();
 
         //for (let i = 0; i < pathfinding.zones["villaHouse"].groups.length; i++) {
         groupId = pathfinding.getGroup('villaHouse', monsterPos);
-        console.log("Group Id:", groupId);
+        //console.log("Group Id:", groupId);
         const closest = pathfinding.getClosestNode(monsterPos, 'villaHouse', groupId);
-        console.log("closest node:", closest);
+        //console.log("closest node:", closest);
         const closest2 = pathfinding.getClosestNode(target, 'villaHouse', groupId);
-        console.log("closest node 2:", closest2);
+        //console.log("closest node 2:", closest2);
         if (closest) {
             navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
-            console.log("nav path :", navpath);
+            //console.log("nav path :", navpath);
             if (navpath && navpath.length > 0) {
                 pathfindinghelper.reset();
                 pathfindinghelper.setPlayerPosition(monster.position);
