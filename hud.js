@@ -12,7 +12,9 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     coinURLs = ["icons/coins/Coin0.png",
                      "icons/coins/Coin1.png",
                      "icons/coins/Coin2.png",
-                     "icons/coins/Coin3.png",];
+                     "icons/coins/Coin3.png",
+                     "icons/coins/Coin4.png",
+                     "icons/coins/Coin5.png"];
 
     //Create a texture from the image
     const coinTexture = new THREE.TextureLoader().load(coinURLs[numCoins]);
@@ -56,7 +58,9 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     speedURLs = ["icons/speed_boost/Speed0.png",
                       "icons/speed_boost/Speed1.png",
                       "icons/speed_boost/Speed2.png",
-                      "icons/speed_boost/Speed3.png",];
+                      "icons/speed_boost/Speed3.png",
+                      "icons/speed_boost/Speed4.png",
+                      "icons/speed_boost/Speed5.png"];
 
     //Create a texture from the image
     const speedTexture = new THREE.TextureLoader().load(speedURLs[numSpeed-1]);
