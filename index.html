@@ -60,16 +60,6 @@
 </div>
 
 <script type="module">
-    window.selectedLevel = 2;
-    loadMainScript();
-    function loadMainScript() {
-        // Import the main script
-        import('/main.js')
-            .catch((error) => {
-                console.error("An error occurred while loading the script: ", error);
-            });
-    }
-    /*
     function showIntermediateScreen(level) {
         // Set a global variable with the selected level
         window.selectedLevel = level;
@@ -121,7 +111,7 @@
 
         // Load the main script
         loadMainScript();
-    }); */
+    });
 
 
     document.addEventListener('keydown', function(event) {

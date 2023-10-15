@@ -229,7 +229,7 @@ let healths = [];
 
 function initLevel(level){
 
-    if (level === 1){
+    if (level == 1){
         // Create multiple coins
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
@@ -244,7 +244,7 @@ function initLevel(level){
         createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
         createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
         createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }else if (level === 2){
+    }else if (level == 2){
         // Create multiple coins
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
@@ -259,7 +259,7 @@ function initLevel(level){
         createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
         createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
         createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }else if (level === 3){
+    }else if (level == 3){
         // Create multiple coins
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
