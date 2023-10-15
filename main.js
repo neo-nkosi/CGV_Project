@@ -386,9 +386,9 @@ function updateMovement() {
 
 
 // Jumping logic
-    const jumpSpeed = 0.06; // Adjust the jump speed as needed
+    const jumpSpeed = 0.05; // Adjust the jump speed as needed
     const gravity = 0.005; // Adjust the gravity as needed
-    const collisionThreshold = 0.2;
+    const collisionThreshold = 0.13;
 
     if (keyState[32] && isOnGround) { // Spacebar is pressed and the character is on the ground
         verticalVelocity = jumpSpeed; // Set the vertical velocity to make the character jump
@@ -558,11 +558,11 @@ let navmesh;
 let groupId;
 let navpath;
 scene.add(pathfindinghelper);
-loader.load("navmesh/blendernavmesh8.glb", function(gltf){
+loader.load("navmesh/blendernavmesh4.glb", function(gltf){
 meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
 meshfloor.scale.set(1, 1, 1);
-// scene.add(meshfloor);
+ scene.add(meshfloor);
 gltf.scene.traverse(node =>{
          if(!navmesh && node.isObject3D && node.children && node.children.length > 0){
              navmesh = node.children[0];
@@ -759,7 +759,6 @@ function checkCollisionsWithCollectibles() {
          }
      }
 
-
      updateMovement();
      // Call the function after the exploration is done
      // visualizeGrid(grid);
@@ -773,7 +772,7 @@ function checkCollisionsWithCollectibles() {
          camera.position.set(a,b,c);
      } else {
          orbitControls.update();
-         maintainDistanceFromSoldier(soldier, camera, 2); // 10 is the desired distance from the soldier
+         maintainDistanceFromSoldier(soldier, camera, 1); // 10 is the desired distance from the soldier
 
      }
 
