@@ -358,9 +358,14 @@ function updateMovement() {
 // Update dummyMesh's position
     dummyMesh.position.copy(soldier.position);
     dummyMesh.position.y += yOffset;  // make sure to add yOffset again
+    MondummyMesh.position.copy(monster.position);
+    MondummyMesh.position.y += 0.3;
 // At the end of your movement updates, add:
     if (soldierBoxHelper) {
         soldierBoxHelper.update();
+    }
+    if (MonBoxHelper) {
+        MonBoxHelper.update();
     }
 
     checkCollisionsWithCollectibles();
