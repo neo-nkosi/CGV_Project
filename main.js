@@ -43,8 +43,6 @@ let firstPersonView = false;
 
 function toggleFirstPersonView() {
     firstPersonView = !firstPersonView;
-
-    // Disable OrbitControls in first-person mode and enable in third-person mode
     orbitControls.enabled = !firstPersonView;
     firstPersonControls.enabled = firstPersonView;
 
@@ -70,6 +68,7 @@ audioLoader.load('/audio/marching.mp3', function(buffer) {
     soldierMarchingSound.setLoop(true); // for continuous play
     soldierMarchingSound.setVolume(0.5);
 });
+
 
 
 // Renderer
@@ -228,20 +227,59 @@ let coins = []; // Array to store multiple coins
 let boosts = [];
 let healths = [];
 
-// Create multiple coins
-createCoin(-11, 0.1, 8, scene, coins);
-createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
-createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+function initLevel(level){
 
-//Create multiple boosts
-createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
-//createBoost(-3,0,0,scene,boosts);
-//createBoost(-4,0,-1,scene,boosts);
+    if (level === 1){
+        // Create multiple coins
+        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
 
-//Create multiple hearts
-createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
-createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
-createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
+        //createBoost(-3,0,0,scene,boosts);
+        //createBoost(-4,0,-1,scene,boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+    }else if (level === 2){
+        // Create multiple coins
+        //createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
+        //createBoost(-3,0,0,scene,boosts);
+        //createBoost(-4,0,-1,scene,boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+    }else if (level === 3){
+        // Create multiple coins
+        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
+        //createBoost(-3,0,0,scene,boosts);
+        //createBoost(-4,0,-1,scene,boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+    }
+
+
+}
+
+initLevel(window.selectedLevel);
 
 let portalMixer;
 let portalDummyMesh;
@@ -315,33 +353,76 @@ function checkSoldierStatus() {
     }
 }
 
-// Create a red line material
+let isSlowedDown = false;  // to check if the soldier is currently slowed down
+let timerStarted = false;
+
+let maxStepHeight = 0.15;
+
+function checkStairs(character, sceneObject) {
+
+    const rayStartHeight = 0;  // Start at the foot of the character
+    const upwardRayLength = 0.3;  // The length of the ray pointing upwards
+
+    // Setup the raycaster
+    // Compute the character's forward direction
+    const forwardOffset = new THREE.Vector3(0, 0, -0.2).applyQuaternion(character.quaternion);
+    const footPosition = character.position.clone().add(forwardOffset).add(new THREE.Vector3(0, rayStartHeight, 0)); // starts at the foot, but forward
+
+    // The direction of the ray remains pointing upwards
+    const rayDirection = new THREE.Vector3(0, 1, 0);
+    const upRay = new THREE.Raycaster(footPosition, rayDirection, 0, upwardRayLength);
+
+    // Check if the ray intersects any object in the scene
+    const intersects = upRay.intersectObject(sceneObject, true);
+
+    if (intersects.length > 0) {
+        const distanceToGround = intersects[0].distance;
+        if (distanceToGround < maxStepHeight) {
+            // Position the sphere at the collision point and make it visible
+            //collisionPoint.position.copy(intersects[0].point);
+            //collisionPoint.visible = true;
+
+            // Adjust the character's Y position to the collision point.
+            character.position.y = intersects[0].point.y + 0.07;
+        }
+    }
+
+    /*
+     // Create a red line material
 const lineMaterial = new THREE.LineBasicMaterial({
     color: 0xff0000
 });
 
-let maxStepHeight = 0.15;
-
-// Create a geometry that will be used for the line
-const lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, -maxStepHeight, 0)]);
+     // Create a geometry that will be used for the line
+  const lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, -maxStepHeight, 0)]);
 
 // Create the line using the geometry and material
-const rayLine = new THREE.Line(lineGeometry, lineMaterial);
+  const rayLine = new THREE.Line(lineGeometry, lineMaterial);
 
 // Add the line to the scene
-scene.add(rayLine);
+  scene.add(rayLine);
 
 // Create a small sphere geometry to represent the collision point
-const collisionGeometry = new THREE.SphereGeometry(0.05); // The radius of the sphere is 0.05 units
-const collisionMaterial = new THREE.MeshBasicMaterial({color: 0xff0000}); // Red color for high visibility
-const collisionPoint = new THREE.Mesh(collisionGeometry, collisionMaterial);
+  const collisionGeometry = new THREE.SphereGeometry(0.05); // The radius of the sphere is 0.05 units
+  const collisionMaterial = new THREE.MeshBasicMaterial({color: 0xff0000}); // Red color for high visibility
+  const collisionPoint = new THREE.Mesh(collisionGeometry, collisionMaterial);
 
 // Initially, we don't want this sphere to be visible
-collisionPoint.visible = false;
+  collisionPoint.visible = false;
 
 // Add the sphere to the scene
-scene.add(collisionPoint);
+  scene.add(collisionPoint);
 
+  // Update the ray line's position to match the character's foot position plus the forward offset
+    rayLine.position.copy(footPosition);
+
+    // The line's end point is based on the upward direction
+    const endPoint = new THREE.Vector3(0, upwardRayLength, 0);  // end point straight up
+    lineGeometry.setFromPoints([new THREE.Vector3(), endPoint]);
+    lineGeometry.attributes.position.needsUpdate = true; // Required when updating line geometry after creation
+
+  for Stairs collision debugging purposes*/
+}
 
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
@@ -357,8 +438,28 @@ function updateMovement() {
     let canMove = movementChecks.canMove;
     let isOnGround = movementChecks.isOnGround;
     verticalVelocity = movementChecks.verticalVelocity;
+    // Update the bounding boxes
+    dummyBox.setFromObject(dummyMesh);
+    MonBox.setFromObject(MondummyMesh);
 
     var moveDistance = 0.015 * boostFactor;
+
+    if (isSlowedDown) {
+        moveDistance= 0.005;  // slow the original speed
+
+    }
+
+    if (!dummyBox.intersectsBox(MonBox) && !timerStarted) {
+        timerStarted = true;  // Set the flag to true so that timer doesn't restart in the next frame
+        setTimeout(function() {
+            pursuing = true;
+            playAnimation('Running');
+            timerStarted = false;  // Reset the flag after the timer completes
+        }, 5000);  // Set the timer for 5 seconds (5000 milliseconds)
+
+        isSlowedDown = false;
+    }
+
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
@@ -429,37 +530,11 @@ function updateMovement() {
 
         }
     }
-    const rayStartHeight = 0;  // Start at the foot of the character
-    const upwardRayLength = 0.3;  // The length of the ray pointing upwards
 
-// Inside your update function, when you setup the raycaster
-    const footPosition = soldier.position.clone().add(new THREE.Vector3(0, rayStartHeight, -0.2)); // starts at the foot
-    const upRay = new THREE.Raycaster(footPosition, new THREE.Vector3(0, 1, 0), 0, upwardRayLength); // Ray points upwards
-
-// Update the ray line's position to start from the foot of the character
-    rayLine.position.copy(footPosition);
-
-// Update the line's end point based on the ray direction (pointing upwards now)
-    lineGeometry.setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, upwardRayLength, 0).applyQuaternion(soldier.quaternion)]);
-    lineGeometry.attributes.position.needsUpdate = true; // Required when updating line geometry after creation
-
-    const intersects = upRay.intersectObject(villaHouse, true);
-
-    if (intersects.length > 0) {
-        const distanceToGround = intersects[0].distance;
-        if (distanceToGround < maxStepHeight) {
-            // Position the sphere at the collision point and make it visible
-            collisionPoint.position.copy(intersects[0].point);
-            collisionPoint.visible = true;
-
-            // Adjust the character's Y position to the collision point.
-            soldier.position.y = intersects[0].point.y+0.07;
-        }
-    } else {
-        // If there's no collision, make sure the sphere is not visible
-        //collisionPoint.visible = false;
+    if (isOnGround){
+        // Call the checkStairs function
+        checkStairs(soldier, villaHouse);
     }
-
 
 // Jumping logic
     const jumpSpeed = 0.05; // Adjust the jump speed as needed
@@ -489,9 +564,14 @@ function updateMovement() {
 // Update dummyMesh's position
     dummyMesh.position.copy(soldier.position);
     dummyMesh.position.y += yOffset;  // make sure to add yOffset again
+    MondummyMesh.position.copy(monster.position);
+    MondummyMesh.position.y += 0.3;
 // At the end of your movement updates, add:
     if (soldierBoxHelper) {
         soldierBoxHelper.update();
+    }
+    if (MonBoxHelper) {
+        MonBoxHelper.update();
     }
 
     checkCollisionsWithCollectibles();
@@ -511,7 +591,6 @@ function updateMovement() {
             console.log("Soldier collided with portal!");
         }
     }
-
     console.log(soldier.position.x, soldier.position.y, soldier.position.z);
 }
 
@@ -582,7 +661,7 @@ let MonBoxHelper;
 
 monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
     monster = gltf.scene;
-    monster.position.set(0.3, 0, 8); // Set initial position here
+    monster.position.set(0.9, 0, 8); // Set initial position here
     monster.scale.set(0.35, 0.35, 0.35);
 
     monsterMixer = new THREE.AnimationMixer(monster);
@@ -602,7 +681,7 @@ monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf)
     MonBoxHelper = new THREE.BoxHelper(MondummyMesh, 0x00ff00);
 
 // 4. Add the BoxHelper to the scene.
-    scene.add(MonBoxHelper);
+//     scene.add(MonBoxHelper);
 
 
     monsterAnimations.Idle = gltf.animations[0];
@@ -647,15 +726,18 @@ gltf.scene.traverse(node =>{
              console.log("navmesh object:", navmesh);
              pathfinding.setZoneData(ZONE, Pathfinding.createZone(navmesh.geometry));
              console.log("pathfinding zones", pathfinding.zones);
-
          }
      })
  })
 
+let dummyBox = new THREE.Box3();
+let MonBox = new THREE.Box3();
 
 function findPath() {
 
     if (pursuing) {
+
+        // playAnimation('Running');
 
         let target = soldier.position.clone();
         console.log("soldier pos:", target);
@@ -685,7 +767,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() <   0.5) {
+                if (distance.lengthSq() < 0.7) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
@@ -700,7 +782,7 @@ function findPath() {
                 const direction = distance.normalize();
 
                 // Set monster speed (adjust the 0.05 value to your preference)
-                const speed = 0.035;
+                const speed = 0.03;
 
                 // Update the monster's position
                 monster.position.add(direction.multiplyScalar(speed));
@@ -708,16 +790,18 @@ function findPath() {
                 // Make the monster face the direction it's heading
                 monster.lookAt(monster.position.clone().add(direction));
 
-                // Check if monster is close enough to soldier to play smashing animation
-                const distanceToSoldier = monster.position.distanceTo(soldier.position);
-                const closeEnoughThreshold = 0.6; // Adjust this value based on your requirements
+                // Update the bounding boxes
+                dummyBox.setFromObject(dummyMesh);
+                MonBox.setFromObject(MondummyMesh);
 
-                // if (distanceToSoldier < closeEnoughThreshold) {
-                //
-                //     let event = new KeyboardEvent('keydown', {key: 'G', code: 'KeyG', which: 71});
-                //     document.dispatchEvent(event);
-                //
-                // }
+                // Then, check for intersections.
+                if (dummyBox.intersectsBox(MonBox)) {
+                    pursuing = false;
+                    isSlowedDown = true;
+                    playAnimation("Idle");
+                    playAnimation('Smashing');
+                }
+
             }
         }
 
