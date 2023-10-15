@@ -469,7 +469,8 @@ let navmesh;
 let groupId;
 let navpath;
 scene.add(pathfindinghelper);
-loader.load("navmesh/blendernavmesh4.glb", function(gltf){
+
+loader.load("navmesh/blendernavmesh8.glb", function(gltf){
 meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
 meshfloor.scale.set(1, 1, 1);
