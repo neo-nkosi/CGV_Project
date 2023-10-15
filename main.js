@@ -8,8 +8,31 @@ import {createBoost, createCoin, createHealth} from './iconsCreation.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 
+if (window.selectedLevel) {
+
+    console.log("Selected level is: " + window.selectedLevel);
+} else {
+    // Handle case where no level is selected if necessary
+}
+
+let isGamePaused = false;
+
+window.pauseGame = function() {
+    isGamePaused = true;  // Set the game state to paused
+    // Here, handle anything else you need when the game is paused (e.g., stop sounds, etc.)
+}
+
+window.resumeGame = function() {
+    if (isGamePaused) {
+        isGamePaused = false; // Set the game state to running
+        animate(); // Restart the game loop
+        // Here, handle anything else you need when the game resumes
+    }
+}
+
 // Scene
 const scene = new THREE.Scene();
+
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -204,20 +227,59 @@ let coins = []; // Array to store multiple coins
 let boosts = [];
 let healths = [];
 
-// Create multiple coins
-createCoin(1, 0, 7, scene, coins);
-createCoin(-1, 0, 7, scene, coins);
-createCoin(0, 0, 7, scene, coins);
+function initLevel(level){
 
-//Create multiple boosts
-createBoost(-2,0,7,scene,boosts);
-//createBoost(-3,0,0,scene,boosts);
-//createBoost(-4,0,-1,scene,boosts);
+    if (level === 1){
+        // Create multiple coins
+        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
 
-//Create multiple hearts
-createHealth(2,0,0,scene,healths);
-createHealth(3,0,0,scene,healths);
-createHealth(4,0,0,scene,healths);
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
+        //createBoost(-3,0,0,scene,boosts);
+        //createBoost(-4,0,-1,scene,boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+    }else if (level === 2){
+        // Create multiple coins
+        //createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
+        //createBoost(-3,0,0,scene,boosts);
+        //createBoost(-4,0,-1,scene,boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+    }else if (level === 3){
+        // Create multiple coins
+        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
+        //createBoost(-3,0,0,scene,boosts);
+        //createBoost(-4,0,-1,scene,boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+    }
+
+
+}
+
+initLevel(window.selectedLevel);
 
 let portalMixer;
 let portalDummyMesh;
@@ -252,16 +314,10 @@ function loadPortal() {
     }
 }
 
-function isColliding(box1, box2) {
-    return box1.intersectsBox(box2);
-}
-
 // Animation function
 var cameraPosition;
 
 let isJumping = false; // This will tell us if the character has initiated a jump
-
-
 //Monster Code
 
 function getCameraPositionBehindSoldier(soldier, distanceBehind) {
@@ -299,6 +355,74 @@ function checkSoldierStatus() {
 
 let isSlowedDown = false;  // to check if the soldier is currently slowed down
 let timerStarted = false;
+
+let maxStepHeight = 0.15;
+
+function checkStairs(character, sceneObject) {
+
+    const rayStartHeight = 0;  // Start at the foot of the character
+    const upwardRayLength = 0.3;  // The length of the ray pointing upwards
+
+    // Setup the raycaster
+    // Compute the character's forward direction
+    const forwardOffset = new THREE.Vector3(0, 0, -0.2).applyQuaternion(character.quaternion);
+    const footPosition = character.position.clone().add(forwardOffset).add(new THREE.Vector3(0, rayStartHeight, 0)); // starts at the foot, but forward
+
+    // The direction of the ray remains pointing upwards
+    const rayDirection = new THREE.Vector3(0, 1, 0);
+    const upRay = new THREE.Raycaster(footPosition, rayDirection, 0, upwardRayLength);
+
+    // Check if the ray intersects any object in the scene
+    const intersects = upRay.intersectObject(sceneObject, true);
+
+    if (intersects.length > 0) {
+        const distanceToGround = intersects[0].distance;
+        if (distanceToGround < maxStepHeight) {
+            // Position the sphere at the collision point and make it visible
+            //collisionPoint.position.copy(intersects[0].point);
+            //collisionPoint.visible = true;
+
+            // Adjust the character's Y position to the collision point.
+            character.position.y = intersects[0].point.y + 0.07;
+        }
+    }
+
+    /*
+     // Create a red line material
+const lineMaterial = new THREE.LineBasicMaterial({
+    color: 0xff0000
+});
+
+     // Create a geometry that will be used for the line
+  const lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, -maxStepHeight, 0)]);
+
+// Create the line using the geometry and material
+  const rayLine = new THREE.Line(lineGeometry, lineMaterial);
+
+// Add the line to the scene
+  scene.add(rayLine);
+
+// Create a small sphere geometry to represent the collision point
+  const collisionGeometry = new THREE.SphereGeometry(0.05); // The radius of the sphere is 0.05 units
+  const collisionMaterial = new THREE.MeshBasicMaterial({color: 0xff0000}); // Red color for high visibility
+  const collisionPoint = new THREE.Mesh(collisionGeometry, collisionMaterial);
+
+// Initially, we don't want this sphere to be visible
+  collisionPoint.visible = false;
+
+// Add the sphere to the scene
+  scene.add(collisionPoint);
+
+  // Update the ray line's position to match the character's foot position plus the forward offset
+    rayLine.position.copy(footPosition);
+
+    // The line's end point is based on the upward direction
+    const endPoint = new THREE.Vector3(0, upwardRayLength, 0);  // end point straight up
+    lineGeometry.setFromPoints([new THREE.Vector3(), endPoint]);
+    lineGeometry.attributes.position.needsUpdate = true; // Required when updating line geometry after creation
+
+  for Stairs collision debugging purposes*/
+}
 
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
@@ -407,11 +531,15 @@ function updateMovement() {
         }
     }
 
+    if (isOnGround){
+        // Call the checkStairs function
+        checkStairs(soldier, villaHouse);
+    }
 
 // Jumping logic
     const jumpSpeed = 0.05; // Adjust the jump speed as needed
     const gravity = 0.005; // Adjust the gravity as needed
-    const collisionThreshold = 0.13;
+    const collisionThreshold = 0.1;
 
     if (keyState[32] && isOnGround) { // Spacebar is pressed and the character is on the ground
         verticalVelocity = jumpSpeed; // Set the vertical velocity to make the character jump
@@ -463,8 +591,7 @@ function updateMovement() {
             console.log("Soldier collided with portal!");
         }
     }
-
-
+    console.log(soldier.position.x, soldier.position.y, soldier.position.z);
 }
 
 const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
@@ -767,6 +894,11 @@ function checkCollisionsWithCollectibles() {
 
      const clock = new THREE.Clock();
  function animate() {
+     if (isGamePaused) {
+         // If the game is paused, simply return without doing anything
+         return;
+     }
+
      requestAnimationFrame(animate);
 
      if (mixer) mixer.update(0.016);
