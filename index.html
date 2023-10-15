@@ -4,11 +4,50 @@
     <meta charset="utf-8">
     <title>My first three.js app</title>
     <style>
-        body { margin: 0; }
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #level-select {
+            display: flex;
+            flex-direction: column;
+        }
+        button {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-<script type="module" src="/main.js"></script>
-<!--<div id="explorationNotification">Exploration Completed!</div>-->
+<div id="level-select">
+    <!-- Add buttons for each level you have -->
+    <button id="level-1">Level 1</button>
+    <button id="level-2">Level 2</button>
+    <button id="level-3">Level 3</button>
+    <!-- Add more buttons here for more levels -->
+</div>
+
+<script type="module">
+    // Listen for a click on the level buttons
+    document.getElementById('level-1').addEventListener('click', function() {
+        // Remove level selection screen after choosing a level
+        document.getElementById('level-select').style.display = 'none';
+
+        // Dynamically import the main.js module
+        import('/main.js')
+            .then((module) => {
+                // main.js loaded
+                // You can access exports from main.js via module if exported
+            })
+            .catch((error) => {
+                // Handle the error
+                console.error("An error occurred while loading the script: ", error);
+            });
+    });
+
+    // Add similar event listeners for other level buttons when you have them
+</script>
 </body>
 </html>

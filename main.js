@@ -253,16 +253,10 @@ function loadPortal() {
     }
 }
 
-function isColliding(box1, box2) {
-    return box1.intersectsBox(box2);
-}
-
 // Animation function
 var cameraPosition;
 
 let isJumping = false; // This will tell us if the character has initiated a jump
-
-
 //Monster Code
 
 function getCameraPositionBehindSoldier(soldier, distanceBehind) {
