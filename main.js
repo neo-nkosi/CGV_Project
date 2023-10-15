@@ -343,6 +343,44 @@ collisionPoint.visible = false;
 scene.add(collisionPoint);
 
 
+function checkStairs(character, sceneObject) {
+    const rayStartHeight = 0;  // Start at the foot of the character
+    const upwardRayLength = 0.3;  // The length of the ray pointing upwards
+
+    // Setup the raycaster
+    const footPosition = character.position.clone().add(new THREE.Vector3(0, rayStartHeight, -0.2)); // starts at the foot
+    // The direction of the ray should now be relative to the character's rotation
+    const rayDirection = new THREE.Vector3(0, 1, 0).applyQuaternion(character.quaternion);
+    const upRay = new THREE.Raycaster(footPosition, rayDirection, 0, upwardRayLength);
+
+    // Update the ray line's position and rotation to match the character
+    rayLine.position.copy(footPosition);
+
+    // Update the line's end point based on the ray direction
+    lineGeometry.setFromPoints([new THREE.Vector3(), rayDirection.multiplyScalar(upwardRayLength)]);
+    lineGeometry.attributes.position.needsUpdate = true; // Required when updating line geometry after creation
+
+    // Check if the ray intersects any object in the scene
+    const intersects = upRay.intersectObject(sceneObject, true);
+
+    if (intersects.length > 0) {
+        const distanceToGround = intersects[0].distance;
+        if (distanceToGround < maxStepHeight) {
+            // Position the sphere at the collision point and make it visible
+            collisionPoint.position.copy(intersects[0].point);
+            collisionPoint.visible = true;
+
+            // Adjust the character's Y position to the collision point.
+            character.position.y = intersects[0].point.y + 0.07;
+        }
+    } else {
+        // If there's no collision, make sure the sphere is not visible
+        //collisionPoint.visible = false;
+    }
+}
+
+
+
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
     const cameraDirection = new THREE.Vector3();
@@ -429,37 +467,9 @@ function updateMovement() {
 
         }
     }
-    const rayStartHeight = 0;  // Start at the foot of the character
-    const upwardRayLength = 0.3;  // The length of the ray pointing upwards
 
-// Inside your update function, when you setup the raycaster
-    const footPosition = soldier.position.clone().add(new THREE.Vector3(0, rayStartHeight, -0.2)); // starts at the foot
-    const upRay = new THREE.Raycaster(footPosition, new THREE.Vector3(0, 1, 0), 0, upwardRayLength); // Ray points upwards
-
-// Update the ray line's position to start from the foot of the character
-    rayLine.position.copy(footPosition);
-
-// Update the line's end point based on the ray direction (pointing upwards now)
-    lineGeometry.setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, upwardRayLength, 0).applyQuaternion(soldier.quaternion)]);
-    lineGeometry.attributes.position.needsUpdate = true; // Required when updating line geometry after creation
-
-    const intersects = upRay.intersectObject(villaHouse, true);
-
-    if (intersects.length > 0) {
-        const distanceToGround = intersects[0].distance;
-        if (distanceToGround < maxStepHeight) {
-            // Position the sphere at the collision point and make it visible
-            collisionPoint.position.copy(intersects[0].point);
-            collisionPoint.visible = true;
-
-            // Adjust the character's Y position to the collision point.
-            soldier.position.y = intersects[0].point.y+0.07;
-        }
-    } else {
-        // If there's no collision, make sure the sphere is not visible
-        //collisionPoint.visible = false;
-    }
-
+    // Call the checkStairs function
+    checkStairs(soldier, villaHouse);
 
 // Jumping logic
     const jumpSpeed = 0.05; // Adjust the jump speed as needed
