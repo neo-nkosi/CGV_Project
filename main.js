@@ -228,20 +228,59 @@ let coins = []; // Array to store multiple coins
 let boosts = [];
 let healths = [];
 
-// Create multiple coins
-createCoin(-11, 0.1, 8, scene, coins);
-createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
-createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+function initLevel(level){
 
-//Create multiple boosts
-createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
-//createBoost(-3,0,0,scene,boosts);
-//createBoost(-4,0,-1,scene,boosts);
+    if (level === 1){
+        // Create multiple coins
+        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
 
-//Create multiple hearts
-createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
-createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
-createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
+        //createBoost(-3,0,0,scene,boosts);
+        //createBoost(-4,0,-1,scene,boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+    }else if (level === 2){
+        // Create multiple coins
+        //createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
+        //createBoost(-3,0,0,scene,boosts);
+        //createBoost(-4,0,-1,scene,boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+    }else if (level === 3){
+        // Create multiple coins
+        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
+        //createBoost(-3,0,0,scene,boosts);
+        //createBoost(-4,0,-1,scene,boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+    }
+
+
+}
+
+initLevel(window.selectedLevel);
 
 let portalMixer;
 let portalDummyMesh;
@@ -339,10 +378,6 @@ function checkStairs(character, sceneObject) {
     const rayDirection = new THREE.Vector3(0, 1, 0);
     const upRay = new THREE.Raycaster(footPosition, rayDirection, 0, upwardRayLength);
 
-
-
-
-
     // Check if the ray intersects any object in the scene
     const intersects = upRay.intersectObject(sceneObject, true);
 
@@ -356,9 +391,6 @@ function checkStairs(character, sceneObject) {
             // Adjust the character's Y position to the collision point.
             character.position.y = intersects[0].point.y + 0.07;
         }
-    } else {
-        // If there's no collision, make sure the sphere is not visible
-        //collisionPoint.visible = false;
     }
 
     /*  // Create a geometry that will be used for the line
