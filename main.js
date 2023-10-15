@@ -275,8 +275,9 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
     return new THREE.Vector3().addVectors(soldier.position, offset);
 }
 
+let invunerable = 0;
 let boostFactor = 1;
-let soldierHealth = 1;
+let soldierHealth = 10;
 let numCoins = 0;
 let verticalVelocity = 0;
 let collectedAllCoinsMessage = false;
@@ -297,6 +298,12 @@ function checkSoldierStatus() {
         source.playbackRate.value = 1.0; // Normal tempo for walking
     }
 }
+
+function getDistance(x,y){
+    return Math.sqrt(Math.pow((x.position.x-y.position.x),2)+Math.pow((x.position.y-y.position.y),2)+Math.pow((x.position.z-y.position.z),2));
+}
+
+
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
     const cameraDirection = new THREE.Vector3();
@@ -435,6 +442,23 @@ function updateMovement() {
             console.log("Soldier collided with portal!");
         }
     }
+
+
+//Check if monster is close to soldier, and damage if yes
+    if(getDistance(soldier,monster)<0.1){
+        
+        if(invunerable>100){
+            console.log("Player damaged");
+            invunerable=0;
+            soldierHealth--;
+            if(soldierHealth<0)soldierHealth=0;
+            updateHUDHP(soldierHealth);
+            animate();
+        }else{
+            console.log("Player hit but involnerable");
+        }
+        
+    }    
 }
 
 const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
@@ -733,6 +757,9 @@ function checkCollisionsWithCollectibles() {
      const clock = new THREE.Clock();
  function animate() {
      requestAnimationFrame(animate);
+
+     //Add to the invunerable counter for player damage
+     invunerable++;
 
      if (mixer) mixer.update(0.016);
      if (monsterMixer) monsterMixer.update(0.015);
