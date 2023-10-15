@@ -68,9 +68,11 @@ button {
 #level-objective, #level-modifiers {
     margin-bottom: 15px;
     text-align: center;
+    color: white;
 }
 #level-objective h3, #level-modifiers h3 {
     margin: 0 0 5px;
     font-size: 1.2em;
     text-align: center;
+    color: white;
 }
