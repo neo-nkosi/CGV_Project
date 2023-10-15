@@ -6,46 +6,81 @@
     <style>
         body {
             margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             height: 100vh;
         }
-        #level-select, #intermediate-screen {
+        header {
+            color: black;
+            padding: 20px 0;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 20px; /* Adjust this value to increase/decrease the space */
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.6em;
+        }
+        header h2 {
+            margin: 5px 0 0;
+            font-size: 1.4em;
+        }
+        #level-select {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%; /* This makes sure the container takes the full height */
         }
         button {
             margin-bottom: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
         }
-        /* Hide the intermediate screen by default */
+        #back-button {
+            margin-top: 10px;
+        }
         #intermediate-screen {
             display: none;
         }
-        /* Hide the pause screen by default */
         #pause-screen {
             display: none;
             flex-direction: column;
-            position: fixed; /* Ensure the pause screen is on top */
+            position: fixed;
             width: 100%;
             height: 100%;
             top: 0;
             left: 0;
-            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            background: rgba(0, 0, 0, 0.5);
             color: white;
             font-size: 2em;
             align-items: center;
             justify-content: center;
         }
+        #intermediate-screen {
+            display: none; /* It will be set to 'flex' in the JavaScript when needed */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%; /* Full height to center vertically */
+        }
+        #level-info {
+            margin-bottom: 20px; /* Spacing between text and button */
+        }
     </style>
 </head>
 <body>
 <div id="level-select">
-    <!-- Add buttons for each level you have -->
+    <header>
+        <h1>Welcome To</h1>
+        <h2>ESCAPE THE SINGULARITY</h2>
+    </header>
     <button id="level-1">Level 1</button>
     <button id="level-2">Level 2</button>
     <button id="level-3">Level 3</button>
-    <!-- Add more buttons here for more levels -->
 </div>
 
 <div id="pause-screen">
@@ -57,6 +92,7 @@
 <div id="intermediate-screen">
     <p id="level-info">Get ready to start the adventure!</p> <!-- This will be changed based on level -->
     <button id="continue-button">Continue</button>
+    <button id="back-button">Back</button>
 </div>
 
 <script type="module">
@@ -80,6 +116,15 @@
 
         // Show the intermediate screen
         document.getElementById('intermediate-screen').style.display = 'flex';
+
+        // Back button event listener
+        document.getElementById('back-button').addEventListener('click', function() {
+            // Hide the intermediate screen
+            document.getElementById('intermediate-screen').style.display = 'none';
+
+            // Show the level select screen
+            document.getElementById('level-select').style.display = 'flex';
+        });
     }
 
     function loadMainScript() {
