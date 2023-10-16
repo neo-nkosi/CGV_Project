@@ -572,7 +572,7 @@ function updateMovement() {
             pursuing = true;
             playAnimation('Running');
             timerStarted = false;  // Reset the flag after the timer completes
-        }, 500000);  // Set the timer for 5 seconds (5000 milliseconds)
+        }, 5600);  // Set the timer for 5 seconds (5000 milliseconds)
 
         isSlowedDown = false;
     }
