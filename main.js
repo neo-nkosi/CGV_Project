@@ -29,10 +29,93 @@ window.resumeGame = function() {
         // Here, handle anything else you need when the game resumes
     }
 }
+function gamelost(){
+   const overlay = document.getElementById('lose-screen');
+   overlay.style.display = 'flex';
+   isGamePaused = true;
+}
+
+function gamewon(){
+    const overlay = document.getElementById('win-screen');
+   overlay.style.display = 'flex';
+   isGamePaused = true;
+}
+
+const retryButton = document.getElementById("retry-button");
+const menuButton = document.getElementById("menu-button");
+const continueButton = document.getElementById("continue-button");
+
+retryButton.addEventListener('click', () => {
+    // Handle retry button click
+    // You can replace this with your logic
+    soldier.position.set(0,0,8);
+    monster.position.set(0.9, 0, 8);
+    const overlay = document.getElementById('lose-screen');
+    overlay.style.display = 'none';
+    isGamePaused = false;
+    cleanIcons();
+    initLevel(window.selectedLevel);
+    updateHUDHP(soldierHealth);
+    updateHUDCoin(numCoins);
+    updateHUDSpeed(boostFactor);
+    animate();
+    //initLevel(level);
+});
+
+menuButton.addEventListener('click', () => {
+    // Handle main menu button click
+    // Show the level select screen
+    document.getElementById('level-select').style.display = 'flex';
+    document.getElementById('lose-screen').style.display = 'none';
+});
+
+continueButton.addEventListener('click', () => {
+    // Handle main menu button click
+    document.getElementById('level-select').style.display = 'flex';
+    document.getElementById('won-screen').style.display = 'none';
+});
+
+function coinsCollected(){
+    const overlay = document.getElementById('portalSpawn-screen');
+    overlay.style.display = 'flex';
+
+
+    var op = 1;  // initial opacity
+    var timer = setInterval(function () {
+        if (op <= 0.1){
+            clearInterval(timer);
+            overlay.style.display = 'none';
+        }
+        overlay.style.opacity = op;
+        overlay.style.filter = 'alpha(opacity=' + op * 100 + ")";
+        op -= op * 0.1;
+    }, 50);
+
+}
+
+function cleanIcons(){
+    console.log(coins);
+    for (var i = 0; i < coins.length; i++) {
+        var object = coins[i];
+        scene.remove(object.mesh);
+        object.collected=true;
+    }
+
+    for (var i = 0; i < boosts.length; i++) {
+        var object = boosts[i];
+        scene.remove(object.mesh);
+        object.collected=true;
+    }
+
+    for (var i = 0; i < healths.length; i++) {
+        var object = healths[i];
+        scene.remove(object.mesh);
+        object.collected=true;
+    }
+}
 
 // Scene
 const scene = new THREE.Scene();
-
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -131,7 +214,7 @@ let soldierLoader = new GLTFLoader();
 let soldierBoxHelper;
 let dummyMesh;
 let yOffset;
-soldierLoader.load('models/Soldier.glb', function (gltf) {
+await soldierLoader.load('models/Soldier.glb', function (gltf) {
     soldier = gltf.scene;
     soldier.position.set(0,0,8);
     soldier.scale.set(0.25, 0.25, 0.25);
@@ -222,14 +305,47 @@ loader.load('models/villaHouse.glb', function (gltf) {
     console.error(error);
 });
 
-
+let coinsNeeded;
 let coins = []; // Array to store multiple coins
 let boosts = [];
 let healths = [];
 
 function initLevel(level){
 
-    if (level === 1){
+    //soldier.position.set(0,0,8);
+    if (level == 1){
+        //Start of game parameters
+        invunerable=0;
+        boostFactor=1;
+        soldierHealth=3;
+        numCoins=0;
+
+        // Create multiple coins
+        coinsNeeded=3;
+        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
+        //createBoost(-3,0,0,scene,boosts);
+        //createBoost(-4,0,-1,scene,boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
+    }else if (level == 2){
+        //Start of game parameters
+        invunerable=0;
+        boostFactor=1;
+        soldierHealth=2;
+        numCoins=0;
+
+        // Create multiple coins
+        //createCoin(-11, 0.1, 8, scene, coins);
+        coinsNeeded=2;
+
         // Create multiple coins
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
@@ -244,23 +360,14 @@ function initLevel(level){
         createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
         createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
         createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }else if (level === 2){
+    }else if (level == 3){
+        //Start of game parameters
+        invunerable=0;
+        boostFactor=1;
+        soldierHealth=1;
+        numCoins=0;
         // Create multiple coins
-        createCoin(-11, 0.1, 8, scene, coins);
-        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
-        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
-
-        //Create multiple boosts
-        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
-        //createBoost(-3,0,0,scene,boosts);
-        //createBoost(-4,0,-1,scene,boosts);
-
-        //Create multiple hearts
-        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
-        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
-        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }else if (level === 3){
-        // Create multiple coins
+        coinsNeeded=3;
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
@@ -279,7 +386,7 @@ function initLevel(level){
 
 }
 
-initLevel(window.selectedLevel);
+
 
 let portalMixer;
 let portalDummyMesh;
@@ -330,14 +437,17 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
     return new THREE.Vector3().addVectors(soldier.position, offset);
 }
 
-let boostFactor = 1;
-let soldierHealth = 1;
-let numCoins = 0;
+let invunerable;
+let boostFactor;
+let soldierHealth;
+let numCoins;
 let verticalVelocity = 0;
 let collectedAllCoinsMessage = false;
 let portal;
 let coinCounter = 0;
 let jumpStartY = null;  // This will keep track of the Y position when the jump starts
+
+initLevel(window.selectedLevel);
 
 createHUD(camera,numCoins,boostFactor,soldierHealth);
 
@@ -423,6 +533,11 @@ const lineMaterial = new THREE.LineBasicMaterial({
 
   for Stairs collision debugging purposes*/
 }
+
+function getDistance(x,y){
+    return Math.sqrt(Math.pow((x.position.x-y.position.x),2)+Math.pow((x.position.y-y.position.y),2)+Math.pow((x.position.z-y.position.z),2));
+}
+
 
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
@@ -589,9 +704,28 @@ function updateMovement() {
         let portalBox = new THREE.Box3().setFromObject(portalDummyMesh);
         if (soldierBox.intersectsBox(portalBox)) {
             console.log("Soldier collided with portal!");
+            gamewon();
         }
     }
     //console.log(soldier.position.x, soldier.position.y, soldier.position.z);
+//Check if monster is close to soldier, and damage if yes
+    if(getDistance(soldier,monster)<0.1){
+
+        if(invunerable>100){
+            console.log("Player damaged");
+            invunerable=0;
+            soldierHealth--;
+            if(soldierHealth==0){
+                console.log("Player should be dead");
+                gamelost();
+            }
+            updateHUDHP(soldierHealth);
+            animate();
+        }else{
+            console.log("Player hit but involnerable");
+        }
+
+    }
 }
 
 const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
@@ -740,20 +874,20 @@ function findPath() {
         // playAnimation('Running');
 
         let target = soldier.position.clone();
-        console.log("soldier pos:", target);
+        //console.log("soldier pos:", target);
 
         let monsterPos = monster.position.clone();
 
         //for (let i = 0; i < pathfinding.zones["villaHouse"].groups.length; i++) {
         groupId = pathfinding.getGroup('villaHouse', monsterPos);
-        console.log("Group Id:", groupId);
+        //console.log("Group Id:", groupId);
         const closest = pathfinding.getClosestNode(monsterPos, 'villaHouse', groupId);
-        console.log("closest node:", closest);
+        //console.log("closest node:", closest);
         const closest2 = pathfinding.getClosestNode(target, 'villaHouse', groupId);
-        console.log("closest node 2:", closest2);
+        //console.log("closest node 2:", closest2);
         if (closest) {
             navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
-            console.log("nav path :", navpath);
+            //console.log("nav path :", navpath);
             if (navpath && navpath.length > 0) {
                 pathfindinghelper.reset();
                 pathfindinghelper.setPlayerPosition(monster.position);
@@ -828,8 +962,9 @@ function checkCollisionsWithCollectibles() {
             // Remove the coin from the scene
             scene.remove(coin.mesh);
 
-            // Load the portal if 3 coins have been collected
-            if (numCoins === 3) {
+            // Load the portal if all level coins have been collected
+            if (numCoins === coinsNeeded) {
+                coinsCollected();
                 loadPortal();
             }
         }
@@ -900,6 +1035,9 @@ function checkCollisionsWithCollectibles() {
      }
 
      requestAnimationFrame(animate);
+
+     //Add to the invunerable counter for player damage
+     invunerable++;
 
      if (mixer) mixer.update(0.016);
      if (monsterMixer) monsterMixer.update(0.015);
