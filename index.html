@@ -37,6 +37,21 @@
             align-items: center;
             justify-content: center;
         }
+        #portalSpawn-screen {
+            display: none;
+            flex-direction: column;
+            position: fixed; /* Ensure the pause screen is on top */
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            /*background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            color: white;
+            font-size: 2em;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
         #win-screen {
             display: none;
             flex-direction: column;
@@ -81,8 +96,12 @@
     <button id="resume-button">Continue</button>
 </div>
 
+<div id="portalSpawn-screen">
+    <p>All coins collected! Find portal and escape!</p>
+</div>
+
 <div id="win-screen">
-    <p>Game Won</p>
+    <p>You survive to see another day</p>
     <button id="continue-button">Continue</button>
 </div>
 

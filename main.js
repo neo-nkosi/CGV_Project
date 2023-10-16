@@ -33,13 +33,12 @@ function gamelost(){
    const overlay = document.getElementById('lose-screen');
    overlay.style.display = 'flex';
    isGamePaused = true;
-   console.log("here");
-
 }
 
 function gamewon(){
     const overlay = document.getElementById('won-screen');
    overlay.style.display = 'flex';
+   isGamePaused = true;
 }
 
 const retryButton = document.getElementById("retry-button");
@@ -65,15 +64,34 @@ retryButton.addEventListener('click', () => {
 
 menuButton.addEventListener('click', () => {
     // Handle main menu button click
-    // You can replace this with your logic
-    console.log('Main Menu button clicked');
+    // Show the level select screen
+    document.getElementById('level-select').style.display = 'flex';
+    document.getElementById('lose-screen').style.display = 'none';
 });
 
 continueButton.addEventListener('click', () => {
     // Handle main menu button click
-    // You can replace this with your logic
-    console.log('Continue button clicked');
+    document.getElementById('level-select').style.display = 'flex';
+    document.getElementById('won-screen').style.display = 'none';
 });
+
+function coinsCollected(){
+    const overlay = document.getElementById('portalSpawn-screen');
+    overlay.style.display = 'flex';
+
+
+    var op = 1;  // initial opacity
+    var timer = setInterval(function () {
+        if (op <= 0.1){
+            clearInterval(timer);
+            overlay.style.display = 'none';
+        }
+        overlay.style.opacity = op;
+        overlay.style.filter = 'alpha(opacity=' + op * 100 + ")";
+        op -= op * 0.1;
+    }, 50);
+   
+}
 
 function cleanIcons(){
     console.log(coins);
@@ -287,7 +305,7 @@ loader.load('models/villaHouse.glb', function (gltf) {
     console.error(error);
 });
 
-
+let coinsNeeded;
 let coins = []; // Array to store multiple coins
 let boosts = [];
 let healths = [];
@@ -304,6 +322,7 @@ function initLevel(level){
         numCoins=0;
 
         // Create multiple coins
+        coinsNeeded=3;
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
@@ -326,6 +345,7 @@ function initLevel(level){
 
         // Create multiple coins
         //createCoin(-11, 0.1, 8, scene, coins);
+        coinsNeeded=2;
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
 
@@ -346,6 +366,7 @@ function initLevel(level){
         numCoins=0;
 
         // Create multiple coins
+        coinsNeeded=3;
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
@@ -682,6 +703,7 @@ function updateMovement() {
         let portalBox = new THREE.Box3().setFromObject(portalDummyMesh);
         if (soldierBox.intersectsBox(portalBox)) {
             console.log("Soldier collided with portal!");
+            gamewon();
         }
     }
     //console.log(soldier.position.x, soldier.position.y, soldier.position.z);
@@ -941,8 +963,9 @@ function checkCollisionsWithCollectibles() {
             // Remove the coin from the scene
             scene.remove(coin.mesh);
 
-            // Load the portal if 3 coins have been collected
-            if (numCoins === 3) {
+            // Load the portal if all level coins have been collected
+            if (numCoins === coinsNeeded) {
+                coinsCollected();
                 loadPortal();
             }
         }
