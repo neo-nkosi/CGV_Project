@@ -36,7 +36,7 @@ function gamelost(){
 }
 
 function gamewon(){
-    const overlay = document.getElementById('won-screen');
+    const overlay = document.getElementById('win-screen');
    overlay.style.display = 'flex';
    isGamePaused = true;
 }
