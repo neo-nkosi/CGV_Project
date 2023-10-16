@@ -44,6 +44,7 @@ function gamewon(){
 const retryButton = document.getElementById("retry-button");
 const menuButton = document.getElementById("menu-button");
 const continueButton = document.getElementById("continue-button");
+const blindnessOverlay = document.getElementById("blindness-overlay");
 
 retryButton.addEventListener('click', () => {
     // Handle retry button click
@@ -62,18 +63,18 @@ retryButton.addEventListener('click', () => {
     //initLevel(level);
 });
 
-menuButton.addEventListener('click', () => {
+/*menuButton.addEventListener('click', () => {
     // Handle main menu button click
     // Show the level select screen
     document.getElementById('level-select').style.display = 'flex';
     document.getElementById('lose-screen').style.display = 'none';
-});
+});*/
 
-continueButton.addEventListener('click', () => {
+/*continueButton.addEventListener('click', () => {
     // Handle main menu button click
     document.getElementById('level-select').style.display = 'flex';
     document.getElementById('won-screen').style.display = 'none';
-});
+});*/
 
 function coinsCollected(){
     const overlay = document.getElementById('portalSpawn-screen');
@@ -362,7 +363,7 @@ function initLevel(level){
         //Start of game parameters
         invunerable=0;
         boostFactor=1;
-        soldierHealth=3;
+        soldierHealth=2;
         numCoins=0;
 
         // Create multiple coins
@@ -384,7 +385,7 @@ function initLevel(level){
         //Start of game parameters
         invunerable=0;
         boostFactor=1;
-        soldierHealth=2;
+        soldierHealth=1;
         numCoins=0;
 
         // Create multiple coins
@@ -430,7 +431,8 @@ function initLevel(level){
         createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
     }
 
-
+    blindnessOverlay.style.display = 'flex';
+    blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889;
 }
 
 
@@ -754,7 +756,7 @@ function updateMovement() {
             gamewon();
         }
     }
-    console.log(soldier.position.x, soldier.position.y, soldier.position.z);
+    //console.log(soldier.position.x, soldier.position.y, soldier.position.z);
 //Check if monster is close to soldier, and damage if yes
     if(getDistance(soldier,monster)<0.45){
 
@@ -762,10 +764,18 @@ function updateMovement() {
             console.log("Player damaged");
             invunerable=0;
             soldierHealth--;
+  
+            blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889;
+
             if(soldierHealth==0){
+                blindnessOverlay.style.display = 'none';
+                blindnessOverlay.style.opacity=0;
                 console.log("Player should be dead");
                 gamelost();
             }
+            
+            console.log(blindnessOverlay);
+
             updateHUDHP(soldierHealth);
             animate();
         }else{
@@ -1049,6 +1059,7 @@ function checkCollisionsWithCollectibles() {
             soldierHealth += 1;
             h.mesh.visible = false;
             h.collected = true;
+            blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889; // Update blindness overlay
             updateHUDHP(soldierHealth);
             animate();
         }
@@ -1095,7 +1106,7 @@ function checkCollisionsWithCollectibles() {
      requestAnimationFrame(animate);
 
      //Add to the invunerable counter for player damage
-     invunerable++;
+     if(invunerable<101)invunerable++;
 
      if (mixer) mixer.update(0.016);
      if (monsterMixer) monsterMixer.update(0.015);

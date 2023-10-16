@@ -147,6 +147,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
 
     //Listen for window resize events and update the video screen position
     window.addEventListener('resize', updateHPScreenPosition);
+
     //=======================================================================================================================================
     createMinimap(camera, HUD);
     camera.add(HUD);
@@ -236,7 +237,6 @@ export function createMinimap(camera, scene) {
         }
     }
     
-
     window.addEventListener('resize', updateMinimapPosition);
     
 }
