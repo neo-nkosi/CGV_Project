@@ -101,7 +101,6 @@ function cleanIcons(){
         scene.remove(object.mesh);
         object.collected=true;
     }
-
     for (var i = 0; i < boosts.length; i++) {
         var object = boosts[i];
         scene.remove(object.mesh);
@@ -369,8 +368,8 @@ function loadPortal() {
 
             if (window.selectedLevel == 1){
                 gltf.scene.position.set(2.508606756460684, -0.3057145773003322, 19.9);
-            }else if (level == 2){
-                gltf.scene.position.set(-7,-0.3,8);
+            }else if (window.selectedLevel == 2){
+                gltf.scene.position.set(14.710548068720117,-0.3,7.8);
             }
             gltf.scene.scale.set(0.3, 0.3, 0.3);
             scene.add(gltf.scene);
@@ -448,6 +447,10 @@ async function initLevel(level) {
         //Set character position
         soldier.rotation.y = Math.PI;
         soldier.position.set(5.42934919320037, -0.19268887765808546, -7.5301149896237245);
+
+        //Set monster position
+        monster.position.set(12.344735516930285, 0.0, 23.321273620601847);
+
     } else if (level == 2) {
         //Start of game parameters
         invunerable = 0;
@@ -468,8 +471,6 @@ async function initLevel(level) {
 
         //Create multiple boosts
         createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
-        //createBoost(-3,0,0,scene,boosts);
-        //createBoost(-4,0,-1,scene,boosts);
 
         //Create multiple hearts
         createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
@@ -478,6 +479,9 @@ async function initLevel(level) {
 
         //Set character position
         soldier.position.set(12.344735516930285, 0.0, 23.321273620601847);
+
+        //Set Monster position
+        monster.position.set(-10.953637295548958, -0.16373699632400585, 8.058759585396883);
 
     } else if (level == 3) {
         //Start of game parameters
@@ -493,8 +497,6 @@ async function initLevel(level) {
 
         //Create multiple boosts
         createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
-        //createBoost(-3,0,0,scene,boosts);
-        //createBoost(-4,0,-1,scene,boosts);
 
         //Create multiple hearts
         createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
@@ -658,7 +660,7 @@ function updateMovement() {
             pursuing = true;
             playAnimation('Running');
             timerStarted = false;  // Reset the flag after the timer completes
-        }, 500000);  // Set the timer for 5 seconds (5000 milliseconds)
+        }, 5000);  // Set the timer for 5 seconds (5000 milliseconds)
 
         isSlowedDown = false;
     }
@@ -964,7 +966,7 @@ let navmesh;
 let groupId;
 let navpath;
 scene.add(pathfindinghelper);
-loader.load("navmesh/blendernavmesh9.glb", function(gltf){
+loader.load("navmesh/blendernavmesh4.glb", function(gltf){
 meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
 meshfloor.scale.set(1, 1, 1);
@@ -1016,7 +1018,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() < 0.8) {
+                if (distance.lengthSq() < 0.6) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
@@ -1058,8 +1060,6 @@ function findPath() {
 }
 
 
-loadPortal();
-
 function checkCollisionsWithCollectibles() {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
 
@@ -1080,7 +1080,7 @@ function checkCollisionsWithCollectibles() {
             // Load the portal if all level coins have been collected
             if (numCoins === coinsNeeded) {
                 coinsCollected();
-               // loadPortal();
+                loadPortal();
             }
 
         }
