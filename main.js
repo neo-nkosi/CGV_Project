@@ -176,7 +176,7 @@ const monsterSound = new THREE.PositionalAudio(listener);
 // Load a sound file (you need to have the horror sound in your game files)
 audioLoader.load('/audio/horrorMusic.mp3', function(buffer) {
     monsterSound.setBuffer(buffer);
-    monsterSound.setRefDistance(20); // Set reference distance for volume control
+    monsterSound.setRefDistance(10); // Set reference distance for volume control
     monsterSound.setDirectionalCone(180, 230, 0.1); // Optional: Set a directional sound cone (for a more realistic experience)
     monsterSound.play();
 });
@@ -872,10 +872,10 @@ monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf)
     monsterSound.setRefDistance(1);  // Smaller value means sound will diminish at a shorter distance.
 
 // Set the rolloff factor (how quickly the sound diminishes past the reference distance)
-    monsterSound.setRolloffFactor(2);  // Higher value means sound diminishes more rapidly.
+    monsterSound.setRolloffFactor(3);  // Higher value means sound diminishes more rapidly.
 
 // Optionally, set the maximum distance at which the sound can be heard at all.
-    monsterSound.setMaxDistance(3);  // The sound will not be heard beyond this distance.
+    monsterSound.setMaxDistance(10);  // The sound will not be heard beyond this distance.
 
 
 
