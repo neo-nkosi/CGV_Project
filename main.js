@@ -410,6 +410,16 @@ async function initLevel(level) {
             return; // Exit if the soldier couldn't be loaded.
         }
     }
+    if(!monster) {
+        try {
+            await loadMonster();
+            // Monster loaded successfully
+            // Proceed with the rest of your setup or game loop
+        } catch (error) {
+            // Handle error during monster loading
+            console.error('An error occurred while loading the monster:', error);
+        }
+    }
     //soldier.position.set(0,0,8);
 
     if (level == 1) {
@@ -878,50 +888,58 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
 
 let MondummyMesh;
 let MonBoxHelper;
+async function loadMonster() {
+    // Define a promise to handle the asynchronous loading
+    return new Promise((resolve, reject) => {
+        monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
+        monster = gltf.scene;
+        monster.position.set(0.9, 0, 8); // Set initial position here
+        monster.scale.set(0.35, 0.35, 0.35);
 
-monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
-    monster = gltf.scene;
-    monster.position.set(0.9, 0, 8); // Set initial position here
-    monster.scale.set(0.35, 0.35, 0.35);
+        monsterMixer = new THREE.AnimationMixer(monster);
+        scene.add(monster);
 
-    monsterMixer = new THREE.AnimationMixer(monster);
-    scene.add(monster);
+        // 1. Create a dummy mesh with a BoxGeometry of your desired size.
+        let MonboxSize = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box (width, height, depth)
+        MondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize.x, MonboxSize.y, MonboxSize.z));
 
-    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
-    let MonboxSize = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box (width, height, depth)
-    MondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize.x, MonboxSize.y, MonboxSize.z));
-
-// 2. Position this mesh at the position of the soldier.
-    MondummyMesh.position.copy(new Vector3(monster.position.x, monster.position.y, monster.position.z));
-    yOffset = 0.1;  // or any value you deem appropriate
-    MondummyMesh.position.y += yOffset;
-
-
-// 3. Create a BoxHelper using this dummy mesh.
-    MonBoxHelper = new THREE.BoxHelper(MondummyMesh, 0x00ff00);
-
-// 4. Add the BoxHelper to the scene.
-//     scene.add(MonBoxHelper);
+        // 2. Position this mesh at the position of the soldier.
+        MondummyMesh.position.copy(new Vector3(monster.position.x, monster.position.y, monster.position.z));
+        yOffset = 0.1;  // or any value you deem appropriate
+        MondummyMesh.position.y += yOffset;
 
 
-    monsterAnimations.Idle = gltf.animations[0];
-    playAnimation('Idle');
-    monster.add(monsterSound);
-    // Set the reference distance (the distance at which the sound is at full volume)
-    monsterSound.setRefDistance(1);  // Smaller value means sound will diminish at a shorter distance.
+        // 3. Create a BoxHelper using this dummy mesh.
+        MonBoxHelper = new THREE.BoxHelper(MondummyMesh, 0x00ff00);
 
-// Set the rolloff factor (how quickly the sound diminishes past the reference distance)
-    monsterSound.setRolloffFactor(3);  // Higher value means sound diminishes more rapidly.
-
-// Optionally, set the maximum distance at which the sound can be heard at all.
-    monsterSound.setMaxDistance(10);  // The sound will not be heard beyond this distance.
+        // 4. Add the BoxHelper to the scene.
+        //     scene.add(MonBoxHelper);
 
 
+        monsterAnimations.Idle = gltf.animations[0];
+        playAnimation('Idle');
+        monster.add(monsterSound);
+        // Set the reference distance (the distance at which the sound is at full volume)
+        monsterSound.setRefDistance(1);  // Smaller value means sound will diminish at a shorter distance.
 
-    // Adjust the monster's y position based on bounding box here
-    const box = new THREE.Box3().setFromObject(monster);
-    monster.position.y = -0.4 - box.min.y;
-});
+        // Set the rolloff factor (how quickly the sound diminishes past the reference distance)
+        monsterSound.setRolloffFactor(3);  // Higher value means sound diminishes more rapidly.
+
+        // Optionally, set the maximum distance at which the sound can be heard at all.
+        monsterSound.setMaxDistance(10);  // The sound will not be heard beyond this distance.
+
+
+
+        // Adjust the monster's y position based on bounding box here
+        const box = new THREE.Box3().setFromObject(monster);
+        monster.position.y = -0.4 - box.min.y;
+        resolve(monster); // Resolve the promise with the loaded monster
+        }, undefined, (error) => {
+                console.error(error);
+                reject(error); // Reject the promise on error
+            });
+    });
+}
 
 monsterloader.load('monster models/Monster warrior/MW Running gltf/MW Running.gltf', (gltf) => {
     // Store the running animation
