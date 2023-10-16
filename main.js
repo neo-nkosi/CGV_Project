@@ -150,13 +150,13 @@ wallTexture.repeat.set(20, 20);
 
 
 // Light
-const light = new THREE.AmbientLight(0xffffff, 0.3);
+const light = new THREE.AmbientLight(0xffffff, 0.2);
 light.translateY(10);
 scene.add(light);
 
 
 
-const directionalLight = new THREE.DirectionalLight(0xffffff,2); // Adjust light color and intensity as needed
+const directionalLight = new THREE.DirectionalLight(0xffffff,0.1); // Adjust light color and intensity as needed
 directionalLight.position.copy(camera.position);
 //directionalLight.position.set(1, 1, 1);
 directionalLight.castShadow = true;
@@ -237,7 +237,7 @@ loader.load('models/villaHouse.glb', function (gltf) {
     if (floor) {
         // Create a new material with the floorTexture
         const floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
-
+        floorMaterial.color = new THREE.Color(0x333333);
         // Assign the new material to the floor
         floor.material = floorMaterial;
 
