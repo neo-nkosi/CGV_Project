@@ -115,13 +115,22 @@ function cleanIcons(){
 }
 
 const skyBoxLoader = new THREE.CubeTextureLoader();
+/*const skyBoxTexture = skyBoxLoader.load([
+    'textures/Spacebox4/SkyBlue_right1.png',
+    'textures/Spacebox4/SkyBlue_left2.png',
+    'textures/Spacebox4/SkyBlue_top3.png',
+    'textures/Spacebox4/SkyBlue_bottom4.png',
+    'textures/Spacebox4/SkyBlue_front5.png',
+    'textures/Spacebox4/SkyBlue_back6.png'
+]);*/
+
 const skyBoxTexture = skyBoxLoader.load([
-    'textures/skybox/SkyBlue_right1.png',
-    'textures/skybox/SkyBlue_left2.png',
-    'textures/skybox/SkyBlue_top3.png',
-    'textures/skybox/SkyBlue_bottom4.png',
-    'textures/skybox/SkyBlue_front5.png',
-    'textures/skybox/SkyBlue_back6.png'
+    'textures/Spacebox2/Spacebox_left.png',
+    'textures/Spacebox2/Spacebox_right.png',
+    'textures/Spacebox2/Spacebox_top.png',
+    'textures/Spacebox2/Spacebox_bottom.png',
+    'textures/Spacebox2/Spacebox_front.png',
+    'textures/Spacebox2/Spacebox_back.png'
 ]);
 
 // Scene
