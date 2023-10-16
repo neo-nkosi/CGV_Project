@@ -917,7 +917,7 @@ let navmesh;
 let groupId;
 let navpath;
 scene.add(pathfindinghelper);
-loader.load("navmesh/blendernavmesh9.glb", function(gltf){
+loader.load("navmesh/blendernavmesh4.glb", function(gltf){
 meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
 meshfloor.scale.set(1, 1, 1);
@@ -969,7 +969,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() < 0.8) {
+                if (distance.lengthSq() < 1.5) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
