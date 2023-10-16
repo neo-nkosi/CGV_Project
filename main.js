@@ -62,7 +62,7 @@ retryButton.addEventListener('click', () => {
     //initLevel(level);
 });
 
-menuButton.addEventListener('click', () => {
+/*menuButton.addEventListener('click', () => {
     // Handle main menu button click
    const lose= document.getElementById('lose-screen');
     lose.style.display = 'none';
@@ -74,7 +74,7 @@ continueButton.addEventListener('click', () => {
     const win = document.getElementById('win-screen');
     win.style.display = 'none';
     
-});
+});*/
 
 function coinsCollected(){
     const overlay = document.getElementById('portalSpawn-screen');
@@ -318,7 +318,7 @@ function initLevel(level){
         //Start of game parameters
         invunerable=0;
         boostFactor=1;
-        soldierHealth=3;
+        soldierHealth=10;
         numCoins=0;
 
         // Create multiple coins
@@ -340,12 +340,12 @@ function initLevel(level){
         //Start of game parameters
         invunerable=0;
         boostFactor=1;
-        soldierHealth=2;
+        soldierHealth=5;
         numCoins=0;
 
         // Create multiple coins
         //createCoin(-11, 0.1, 8, scene, coins);
-        coinsNeeded=2;
+        coinsNeeded=3;
 
         // Create multiple coins
         createCoin(-11, 0.1, 8, scene, coins);
@@ -719,7 +719,7 @@ function updateMovement() {
             invunerable=0;
             soldierHealth--;
             if(soldierHealth==0){
-                console.log("Player should be dead");
+                //console.log("Player should be dead");
                 gamelost();
             }
             updateHUDHP(soldierHealth);
@@ -989,7 +989,7 @@ function checkCollisionsWithCollectibles() {
     // Check collision with healths
     healths.forEach(h => {
         const healthBoundingBox = new THREE.Box3().setFromObject(h.dummyMesh);
-        if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !h.collected) {
+        if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !h.collected && (soldierHealth < 10)) {
             console.log("Collision between character and health");
             soldierHealth += 1;
             h.mesh.visible = false;

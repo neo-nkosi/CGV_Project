@@ -19,6 +19,7 @@
 <div id="pause-screen">
     <p>Game Paused</p>
     <button id="resume-button">Continue</button>
+    <button id="pause-exit-button">Exit to Main Menu</button>
 </div>
 
 <div id="portalSpawn-screen">
@@ -54,11 +55,11 @@
     const levelDetails = {
         '1': {
             objective: 'Collect 3 coins. When all coins are collected, run to the portal to escape.',
-            modifiers: 'You begin with 20 health. There is 1 monster.',
+            modifiers: 'You begin with 10 health. There is 1 monster.',
         },
         '2': {
             objective: 'Collect 5 coins. When all coins are collected, run to the portal to escape.',
-            modifiers: 'You begin with 10 health. There is 1 monster.',
+            modifiers: 'You begin with 5 health. There is 1 monster.',
         },
         // ... more levels
     };
@@ -133,6 +134,19 @@
         document.getElementById('pause-screen').style.display = 'none'; // hide the pause screen
         window.resumeGame(); // this calls the resumeGame function from your main.js
     });
+
+    document.getElementById('continue-button').addEventListener('click', function() {
+        location.reload(); // This will force the page to reload
+    });
+    
+    document.getElementById('menu-button').addEventListener('click', function() {
+        location.reload(); // This will force the page to reload
+    });
+
+    document.getElementById('pause-exit-button').addEventListener('click', function() {
+        location.reload(); // This will force the page to reload
+    });
+
 </script>
 </body>
 </html>
