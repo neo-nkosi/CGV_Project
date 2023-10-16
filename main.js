@@ -279,6 +279,14 @@ let grid; // We've already initialized this in the villa loader
 const cellSize = 0.3  // Declare this variable here, at the top level
 const navMeshName = "SampleScene_Exported_NavMesh";  // Replace with your navmesh name
 
+// Land texture
+const textureLoader = new THREE.TextureLoader();
+const floorTexture = textureLoader.load('textures/wall.png');
+floorTexture.minFilter = THREE.LinearMipmapLinearFilter;
+floorTexture.wrapS = THREE.RepeatWrapping;
+floorTexture.wrapT = THREE.RepeatWrapping;
+floorTexture.repeat.set(300, 300);
+
 loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse = gltf.scene;
 
@@ -295,7 +303,15 @@ loader.load('models/villaHouse.glb', function (gltf) {
     // Find the child named "floor" and set its material to use the floorTexture
     const floor = villaHouse.getObjectByName("floor");
     if (floor) {
-        floor.material = new THREE.MeshBasicMaterial({color: 0xffffff});
+        // // Create a new material with the floorTexture
+         const floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
+         floorMaterial.color = new THREE.Color(0x333333);
+         // Assign the new material to the floor
+         floor.material = floorMaterial;
+
+        // // Ensure that the floor doesn't cast shadows on itself
+        floor.receiveShadow = true; // Enable shadow receiving for the floor
+        floor.castShadow = false;
     } else {
         console.warn('Floor not found in the villaHouse model.');
     }
