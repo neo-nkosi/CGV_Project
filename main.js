@@ -290,7 +290,7 @@ await soldierLoader.load('models/Soldier.glb', function (gltf) {
 
 
 // Light
-const light = new THREE.AmbientLight(0xffffff, 0.2);
+const light = new THREE.AmbientLight(0xffffff, 0.3);
 light.translateY(10);
 scene.add(light);
 // Directional Lights for skybox
@@ -322,19 +322,9 @@ directionalLight2.shadow.camera.far = 100;
 directionalLight2.position.normalize();
 scene.add(directionalLight2);
 // light on staircase
-// Directional Lights
-const directionalLightstairs = new THREE.DirectionalLight("red",0.1); // Adjust light color and intensity as needed
-directionalLightstairs.position.set(-0.22, -0.19, -0.25);
-// directionalLight.position.copy(soldier.position);
-directionalLightstairs.castShadow = true;
-directionalLightstairs.shadow.bias = -0.005; // Adjust shadow bias
-directionalLightstairs.shadow.radius = 1;
-directionalLightstairs.shadow.mapSize.width = 2; // Shadow map size
-directionalLightstairs.shadow.mapSize.height = 2;
-directionalLightstairs.shadow.camera.near = 0.00001; // Near and far planes for the shadow camera
-directionalLightstairs.shadow.camera.far = 50;
-directionalLightstairs.position.normalize();
-scene.add(directionalLightstairs);
+const pointLightstairs = new THREE.PointLight("red", 1); // Adjust light color and intensity as needed
+pointLightstairs.position.set(0.1, 2.2, 0.06); // Position as per the original directional light
+scene.add(pointLightstairs);
 
 
 let villaHouse;
