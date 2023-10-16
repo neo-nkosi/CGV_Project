@@ -133,6 +133,17 @@
         document.getElementById('pause-screen').style.display = 'none'; // hide the pause screen
         window.resumeGame(); // this calls the resumeGame function from your main.js
     });
+
+    // In your HTML file
+    document.getElementById('continue-button').addEventListener('click', function() {
+        location.reload(); // This will force the page to reload
+    });
+
+    // In your HTML file
+    document.getElementById('menu-button').addEventListener('click', function() {
+        location.reload(); // This will force the page to reload
+    });
+
 </script>
 </body>
 </html>
