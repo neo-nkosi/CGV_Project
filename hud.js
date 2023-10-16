@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-let coinScreen, speedScreen, hpScreen, coinURLs, speedURLs, hpURLs, minimapScreen;
+let coinScreen, speedScreen, hpScreen, coinURLs, speedURLs, hpURLs, minimapScreen, redDot;
 export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     const HUD = new THREE.Scene();
 
@@ -11,7 +11,9 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     coinURLs = ["icons/coins/Coin0.png",
                      "icons/coins/Coin1.png",
                      "icons/coins/Coin2.png",
-                     "icons/coins/Coin3.png",];
+                     "icons/coins/Coin3.png",
+                     "icons/coins/Coin4.png",
+                     "icons/coins/Coin5.png"];
 
     //Create a texture from the image
     const coinTexture = new THREE.TextureLoader().load(coinURLs[numCoins]);
@@ -55,7 +57,9 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     speedURLs = ["icons/speed_boost/Speed0.png",
                       "icons/speed_boost/Speed1.png",
                       "icons/speed_boost/Speed2.png",
-                      "icons/speed_boost/Speed3.png",];
+                      "icons/speed_boost/Speed3.png",
+                      "icons/speed_boost/Speed4.png",
+                      "icons/speed_boost/Speed5.png"];
 
     //Create a texture from the image
     const speedTexture = new THREE.TextureLoader().load(speedURLs[numSpeed-1]);
@@ -175,22 +179,35 @@ export function updateHUDSpeed(numSpeed){
     speedScreen.material.needsUpdate = true;
 }
 
+/*export function updateRedDotPosition(x,y,z) {
+    // Assuming `soldierPosition` is a 2D position (x, y) in the minimap space
+    //as x decreases soldier moves further away from villa
+    //as z decreasesSoldier moves further away from one house side
+    redDot.position.set(6+(-1*x*0.1),-5+(0.2*y), -1);
+}*/
+
 export function createMinimap(camera, scene) {
-    const minimapURL = "icons/minimap/mapv2.png"; // Replace with the actual path to your minimap image
+    const minimapURL = "icons/minimap/mapv4.png"; // Replace with the actual path to your minimap image
 
     const minimapTexture = new THREE.TextureLoader().load(minimapURL);
     minimapTexture.encoding = THREE.sRGBEncoding;
 
     const minimapPlaneGeometry = new THREE.PlaneGeometry(2, 1.5);
-    const minimapPlaneMaterial = new THREE.MeshBasicMaterial({ map: minimapTexture, transparent: true });
+    const minimapPlaneMaterial = new THREE.MeshBasicMaterial({
+        map: minimapTexture,
+        transparent: true, // Make the material transparent
+        opacity: 0.5 // Adjust the opacity level as needed
+    });
+
     minimapScreen = new THREE.Mesh(minimapPlaneGeometry, minimapPlaneMaterial);
-    minimapScreen.renderOrder = 999;
+    minimapScreen.renderOrder = 899;
     minimapScreen.material.depthTest = false;
     minimapScreen.material.depthWrite = false;
-    minimapScreen.scale.set(0.35, 0.18, 1);
-
+    minimapScreen.scale.set(0.25, 0.18, 1);
     scene.add(minimapScreen);
-
+    //const redDotGeometry = new THREE.SphereGeometry(0.05, 32, 32); // Adjust size and segments
+    //const redDotMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    //redDot = new THREE.Mesh(redDotGeometry, redDotMaterial);
     // Ensure the minimapScreen has loaded its geometry and bounding box
     minimapScreen.geometry.computeBoundingBox();
 
@@ -210,8 +227,17 @@ export function createMinimap(camera, scene) {
             minimapScreen.position.x = (width / 2) - 0.42;
             minimapScreen.position.y = (-height / 2) + 0.18;
             minimapScreen.position.z = -1;
+           
+            //redDot.position.set(((width / 2) -1.42) +2 ,  (-height / 2) - 1.18,     -1);
+            //redDot.renderOrder = 999;
+            //redDot.material.depthTest = false;
+            //redDot.material.depthWrite = false;
+            //minimapScreen.add(redDot);
         }
     }
+    
 
     window.addEventListener('resize', updateMinimapPosition);
+    
 }
+
