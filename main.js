@@ -176,7 +176,7 @@ const monsterSound = new THREE.PositionalAudio(listener);
 // Load a sound file (you need to have the horror sound in your game files)
 audioLoader.load('/audio/horrorMusic.mp3', function(buffer) {
     monsterSound.setBuffer(buffer);
-    monsterSound.setRefDistance(10); // Set reference distance for volume control
+    monsterSound.setRefDistance(20); // Set reference distance for volume control
     monsterSound.setDirectionalCone(180, 230, 0.1); // Optional: Set a directional sound cone (for a more realistic experience)
     monsterSound.play();
 });
