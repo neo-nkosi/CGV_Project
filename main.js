@@ -157,8 +157,11 @@ audioLoader.load('/audio/marching.mp3', function(buffer) {
 // Renderer
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
+<<<<<<< HEAD
 // renderer.shadowMap.enabled = true;
 // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+=======
+>>>>>>> main
 document.body.appendChild(renderer.domElement);
 
 // Resize event
@@ -207,8 +210,6 @@ orbitControls.maxAzimuthAngle = Infinity;
 
 // Soldier geometry
 let soldier;
-
-
 let mixer;
 let animations = {};
 let currentAnimation = 'Idle';
@@ -222,10 +223,13 @@ await soldierLoader.load('models/Soldier.glb', function (gltf) {
     soldier = gltf.scene;
     soldier.position.set(0,0,8);
     soldier.scale.set(0.25, 0.25, 0.25);
+<<<<<<< HEAD
     
     // Enable shadow casting and receiving for the soldier
     // soldier.castShadow = true;
     // soldier.receiveShadow = true;
+=======
+>>>>>>> main
 
     scene.add(soldier);
 
@@ -266,6 +270,7 @@ await soldierLoader.load('models/Soldier.glb', function (gltf) {
     console.error(error);
 });
 
+<<<<<<< HEAD
 // Land texture
 const textureLoader = new THREE.TextureLoader();
 const floorTexture = textureLoader.load('textures/wall.png');
@@ -288,12 +293,15 @@ wall.position.set(3, 0, 0);
 //scene.add(wall);
 
 
+=======
+>>>>>>> main
 
 // Light
-const light = new THREE.AmbientLight(0xffffff, 0.2);
-light.translateY(10);
+const light = new THREE.AmbientLight(0xffffff);
+light.translateY(5);
 scene.add(light);
 
+<<<<<<< HEAD
 
 
 const directionalLight = new THREE.DirectionalLight(0xffffff,0.1); // Adjust light color and intensity as needed
@@ -323,6 +331,8 @@ scene.add(directionalLight);
 
 // shader for water 
 
+=======
+>>>>>>> main
 let villaHouse;
 let meshfloor;
 
@@ -341,10 +351,13 @@ const navMeshName = "SampleScene_Exported_NavMesh";  // Replace with your navmes
 loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse = gltf.scene;
 
-    villaHouse.position.set(0, 0, 0);
-    villaHouse.scale.set(1, 1, 1);
+    gltf.scene.position.set(0, 0, 0);
+    gltf.scene.scale.set(1, 1, 1);
+    // Set the villaHouse to be invisible
+    //villaHouse.visible = false;
 
-    scene.add(villaHouse);
+    scene.add(gltf.scene);
+    //
 
     // Find and configure shadow properties for child objects
     villaHouse.traverse((child) => {
@@ -371,6 +384,7 @@ loader.load('models/villaHouse.glb', function (gltf) {
             }
         }
     });
+    console.log(soldier.position);
 
     // Find the child named "floor" and set its material to use the floorTexture
     const floor = villaHouse.getObjectByName("floor");
@@ -384,9 +398,12 @@ loader.load('models/villaHouse.glb', function (gltf) {
         // // Ensure that the floor doesn't cast shadows on itself
         // floor.receiveShadow = true; // Enable shadow receiving for the floor
         // floor.castShadow = false;
+        floor.material = new THREE.MeshBasicMaterial({color: 0xffffff});
     } else {
         console.warn('Floor not found in the villaHouse model.');
     }
+
+
 }, undefined, function (error) {
     console.error(error);
 });
@@ -976,9 +993,7 @@ meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
 // meshfloor.receiveShadow = true; // Enable shadow receiving for the floor
 meshfloor.scale.set(1, 1, 1);
-mesh.material = floorMaterial;
-
-scene.add(meshfloor);
+ // scene.add(meshfloor);
 gltf.scene.traverse(node =>{
          if(!navmesh && node.isObject3D && node.children && node.children.length > 0){
              navmesh = node.children[0];
