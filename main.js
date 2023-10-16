@@ -49,7 +49,7 @@ const blindnessOverlay = document.getElementById("blindness-overlay");
 retryButton.addEventListener('click', () => {
     // Handle retry button click
     // You can replace this with your logic
-    soldier.position.set(0,0,8);
+    //soldier.position.set(0,0,8);
     monster.position.set(0.9, 0, 8);
     const overlay = document.getElementById('lose-screen');
     overlay.style.display = 'none';
@@ -101,7 +101,6 @@ function cleanIcons(){
         scene.remove(object.mesh);
         object.collected=true;
     }
-
     for (var i = 0; i < boosts.length; i++) {
         var object = boosts[i];
         scene.remove(object.mesh);
@@ -244,55 +243,92 @@ let soldierLoader = new GLTFLoader();
 let soldierBoxHelper;
 let dummyMesh;
 let yOffset;
-await soldierLoader.load('models/Soldier.glb', function (gltf) {
-    soldier = gltf.scene;
-    soldier.position.set(0,0,8);
-    soldier.scale.set(0.25, 0.25, 0.25);
+async function loadSoldier() {
+    return new Promise((resolve, reject) => {
+    soldierLoader.load('models/Soldier.glb', function (gltf) {
+        soldier = gltf.scene;
 
-    scene.add(soldier);
 
-    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
-    let boxSize = new THREE.Vector3(0.2,0.5, 0.2); // Size of the box (width, height, depth)
-    dummyMesh = new THREE.Mesh(new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z));
+        soldier.scale.set(0.25, 0.25, 0.25);
+
+        scene.add(soldier);
+
+        // 1. Create a dummy mesh with a BoxGeometry of your desired size.
+        let boxSize = new THREE.Vector3(0.2, 0.5, 0.2); // Size of the box (width, height, depth)
+        dummyMesh = new THREE.Mesh(new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z));
 
 // 2. Position this mesh at the position of the soldier.
-    dummyMesh.position.copy(new Vector3(soldier.position.x, soldier.position.y, soldier.position.z));
-    yOffset = 0.2;  // or any value you deem appropriate
-    dummyMesh.position.y += yOffset;
+        dummyMesh.position.copy(new Vector3(soldier.position.x, soldier.position.y, soldier.position.z));
+        yOffset = 0.2;  // or any value you deem appropriate
+        dummyMesh.position.y += yOffset;
 
 
 // 3. Create a BoxHelper using this dummy mesh.
-    soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
+        soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
 
-    //scene.add(soldierBoxHelper);
+        //scene.add(soldierBoxHelper);
 
+        // Create a mixer for the soldier
+        mixer = new THREE.AnimationMixer(soldier);
 
+        // Store the animations in the animations object for quick lookup
+        animations = {}; // Reset the animations object
+        gltf.animations.forEach((clip) => {
+            animations[clip.name] = mixer.clipAction(clip);
+        });
 
-    // Create a mixer for the soldier
-    mixer = new THREE.AnimationMixer(soldier);
+        currentAnimationAction = animations[currentAnimation];
+        currentAnimationAction.play();
+        if (animations['Idle']) animations['Idle'].play();
 
-    // Store the animations in the animations object for quick lookup
-    animations = {}; // Reset the animations object
-    gltf.animations.forEach((clip) => {
-        animations[clip.name] = mixer.clipAction(clip);
+        // Set the target of OrbitControls after the soldier is loaded
+        orbitControls.target.copy(soldier.position);
+
+        resolve(soldier); // Resolve the promise with the loaded soldier.
+    }, undefined, function (error) {
+        console.error(error);
+        reject(error); // Reject the promise if there's an error.
     });
-
-    currentAnimationAction = animations[currentAnimation];
-    currentAnimationAction.play();
-    if (animations['Idle']) animations['Idle'].play();
-
-    // Set the target of OrbitControls after the soldier is loaded
-    orbitControls.target.copy(soldier.position);
-
-}, undefined, function (error) {
-    console.error(error);
-});
-
+    });
+}
 
 // Light
-const light = new THREE.AmbientLight(0xffffff);
-light.translateY(5);
+const light = new THREE.AmbientLight(0xffffff, 0.3);
+light.translateY(10);
 scene.add(light);
+// Directional Lights for skybox
+// purple light
+const directionalLight1 = new THREE.DirectionalLight("purple",0.2); // Adjust light color and intensity as needed
+directionalLight1.position.set(100, 15, 40);
+// directionalLight.position.copy(soldier.position);
+directionalLight1.castShadow = true;
+directionalLight1.shadow.bias = -0.005; // Adjust shadow bias
+directionalLight1.shadow.radius = 1;
+directionalLight1.shadow.mapSize.width = 1024; // Shadow map size
+directionalLight1.shadow.mapSize.height = 1024;
+directionalLight1.shadow.camera.near = 0.00001; // Near and far planes for the shadow camera
+directionalLight1.shadow.camera.far = 100;
+directionalLight1.position.normalize();
+scene.add(directionalLight1);
+// blue light 
+// purple light
+const directionalLight2 = new THREE.DirectionalLight("blue",0.2); // Adjust light color and intensity as needed
+directionalLight2.position.set(-100, 10, 40);
+// directionalLight.position.copy(soldier.position);
+directionalLight2.castShadow = true;
+directionalLight2.shadow.bias = -0.005; // Adjust shadow bias
+directionalLight2.shadow.radius = 1;
+directionalLight2.shadow.mapSize.width = 1024; // Shadow map size
+directionalLight2.shadow.mapSize.height = 1024;
+directionalLight2.shadow.camera.near = 0.00001; // Near and far planes for the shadow camera
+directionalLight2.shadow.camera.far = 100;
+directionalLight2.position.normalize();
+scene.add(directionalLight2);
+// light on staircase
+const pointLightstairs = new THREE.PointLight("red", 1); // Adjust light color and intensity as needed
+pointLightstairs.position.set(0.1, 2.2, 0.06); // Position as per the original directional light
+scene.add(pointLightstairs);
+
 
 let villaHouse;
 let meshfloor;
@@ -351,101 +387,23 @@ loader.load('models/villaHouse.glb', function (gltf) {
     console.error(error);
 });
 
-let coinsNeeded;
-let coins = []; // Array to store multiple coins
-let boosts = [];
-let healths = [];
-
-function initLevel(level){
-
-    //soldier.position.set(0,0,8);
-    if (level == 1){
-        //Start of game parameters
-        invunerable=0;
-        boostFactor=1;
-        soldierHealth=2;
-        numCoins=0;
-
-        // Create multiple coins
-        coinsNeeded=3;
-        createCoin(-11, 0.1, 8, scene, coins);
-        createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
-        createCoin(8.309663681895037 , -0.1712324325972956 ,-2.9527764209625995, scene, coins);
-
-        //Create multiple boosts
-        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
-        //createBoost(-3,0,0,scene,boosts);
-        //createBoost(-4,0,-1,scene,boosts);
-
-        //Create multiple hearts
-        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
-        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
-        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }else if (level == 2){
-        //Start of game parameters
-        invunerable=0;
-        boostFactor=1;
-        soldierHealth=1;
-        numCoins=0;
-
-        // Create multiple coins
-        //createCoin(-11, 0.1, 8, scene, coins);
-        coinsNeeded= 5;
-
-        // Create multiple coins
-        createCoin(-4.668858254609299, 0.19268887765808546, -3.666108506629987, scene, coins);
-        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
-        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
-        createCoin(15.313297791701023, -0.1057143266885793 ,21.623686900287876, scene, coins);
-        createCoin(2.4870020913648316 , -0.10571453306073826,  19.26306456486548, scene, coins);
-
-        //Create multiple boosts
-        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
-        //createBoost(-3,0,0,scene,boosts);
-        //createBoost(-4,0,-1,scene,boosts);
-
-        //Create multiple hearts
-        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
-        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
-        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }else if (level == 3){
-        //Start of game parameters
-        invunerable=0;
-        boostFactor=1;
-        soldierHealth=1;
-        numCoins=0;
-        // Create multiple coins
-        coinsNeeded=3;
-        createCoin(-11, 0.1, 8, scene, coins);
-        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
-        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
-
-        //Create multiple boosts
-        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
-        //createBoost(-3,0,0,scene,boosts);
-        //createBoost(-4,0,-1,scene,boosts);
-
-        //Create multiple hearts
-        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
-        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
-        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }
-
-    blindnessOverlay.style.display = 'flex';
-    blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889;
-}
-
 
 
 let portalMixer;
 let portalDummyMesh;
 
 function loadPortal() {
+    let portal;
     const portalLoader = new GLTFLoader();
     if (!portal) { // check if portal hasn't been loaded
         portalLoader.load('models/portal.glb', function (gltf) {
             portal = gltf.scene;
-            gltf.scene.position.set(-7,-0.3,8);
+
+            if (window.selectedLevel == 1){
+                gltf.scene.position.set(2.508606756460684, -0.3057145773003322, 19.9);
+            }else if (window.selectedLevel == 2){
+                gltf.scene.position.set(14.710548068720117,-0.3,7.8);
+            }
             gltf.scene.scale.set(0.3, 0.3, 0.3);
             scene.add(gltf.scene);
 
@@ -469,6 +427,123 @@ function loadPortal() {
         });
     }
 }
+
+let coinsNeeded;
+let coins = []; // Array to store multiple coins
+let boosts = [];
+let healths = [];
+
+async function initLevel(level) {
+    if(!soldier) {
+        try {
+            await loadSoldier(); // Wait for the soldier to be loaded.
+        } catch (error) {
+            console.error('An error occurred while loading the soldier:', error);
+            return; // Exit if the soldier couldn't be loaded.
+        }
+    }
+    if(!monster) {
+        try {
+            await loadMonster();
+            // Monster loaded successfully
+            // Proceed with the rest of your setup or game loop
+        } catch (error) {
+            // Handle error during monster loading
+            console.error('An error occurred while loading the monster:', error);
+        }
+    }
+    //soldier.position.set(0,0,8);
+
+    if (level == 1) {
+        //Start of game parameters
+        invunerable = 0;
+        boostFactor = 1;
+        soldierHealth = 2;
+        numCoins = 0;
+
+        // Create multiple coins
+        coinsNeeded = 3;
+        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
+        createCoin(8.309663681895037, -0.1712324325972956, -2.9527764209625995, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
+        //createBoost(-3,0,0,scene,boosts);
+        //createBoost(-4,0,-1,scene,boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513, scene, healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061, scene, healths);
+
+        //Set character position
+        soldier.rotation.y = Math.PI;
+        soldier.position.set(5.42934919320037, -0.19268887765808546, -7.5301149896237245);
+
+        //Set monster position
+        monster.position.set(12.344735516930285, 0.0, 23.321273620601847);
+
+    } else if (level == 2) {
+        //Start of game parameters
+        invunerable = 0;
+        boostFactor = 1;
+        soldierHealth = 1;
+        numCoins = 0;
+
+        // Create multiple coins
+        //createCoin(-11, 0.1, 8, scene, coins);
+        coinsNeeded = 5;
+
+        // Create multiple coins
+        createCoin(-4.668858254609299, 0.19268887765808546, -3.666108506629987, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+        createCoin(15.313297791701023, -0.1057143266885793, 21.623686900287876, scene, coins);
+        createCoin(2.4870020913648316, -0.10571453306073826, 19.26306456486548, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513, scene, healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061, scene, healths);
+
+        //Set character position
+        soldier.position.set(12.344735516930285, 0.0, 23.321273620601847);
+
+        //Set Monster position
+        monster.position.set(-10.953637295548958, -0.16373699632400585, 8.058759585396883);
+
+    } else if (level == 3) {
+        //Start of game parameters
+        invunerable = 0;
+        boostFactor = 1;
+        soldierHealth = 1;
+        numCoins = 0;
+        // Create multiple coins
+        coinsNeeded = 3;
+        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513, scene, healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061, scene, healths);
+    }
+
+    createHUD(camera,numCoins,boostFactor,soldierHealth);
+
+    blindnessOverlay.style.display = 'flex';
+    blindnessOverlay.style.opacity = -0.0889 * (soldierHealth) + 0.8889;
+}
+
+
 
 // Animation function
 var cameraPosition;
@@ -498,7 +573,6 @@ let jumpStartY = null;  // This will keep track of the Y position when the jump 
 
 initLevel(window.selectedLevel);
 
-createHUD(camera,numCoins,boostFactor,soldierHealth);
 
 let isRunning = false;
 
@@ -619,7 +693,7 @@ function updateMovement() {
             pursuing = true;
             playAnimation('Running');
             timerStarted = false;  // Reset the flag after the timer completes
-        }, 5600);  // Set the timer for 5 seconds (5000 milliseconds)
+        }, 5000);  // Set the timer for 5 seconds (5000 milliseconds)
 
         isSlowedDown = false;
     }
@@ -756,7 +830,7 @@ function updateMovement() {
             gamewon();
         }
     }
-    //console.log(soldier.position.x, soldier.position.y, soldier.position.z);
+    console.log(soldier.position.x, soldier.position.y, soldier.position.z);
 //Check if monster is close to soldier, and damage if yes
     if(getDistance(soldier,monster)<0.45){
 
@@ -764,7 +838,7 @@ function updateMovement() {
             console.log("Player damaged");
             invunerable=0;
             soldierHealth--;
-  
+
             blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889;
 
             if(soldierHealth==0){
@@ -773,7 +847,7 @@ function updateMovement() {
                 console.log("Player should be dead");
                 gamelost();
             }
-            
+
             console.log(blindnessOverlay);
 
             updateHUDHP(soldierHealth);
@@ -849,50 +923,58 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
 
 let MondummyMesh;
 let MonBoxHelper;
+async function loadMonster() {
+    // Define a promise to handle the asynchronous loading
+    return new Promise((resolve, reject) => {
+        monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
+        monster = gltf.scene;
+        monster.position.set(0.9, 0, 8); // Set initial position here
+        monster.scale.set(0.35, 0.35, 0.35);
 
-monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
-    monster = gltf.scene;
-    monster.position.set(0.9, 0, 8); // Set initial position here
-    monster.scale.set(0.35, 0.35, 0.35);
+        monsterMixer = new THREE.AnimationMixer(monster);
+        scene.add(monster);
 
-    monsterMixer = new THREE.AnimationMixer(monster);
-    scene.add(monster);
+        // 1. Create a dummy mesh with a BoxGeometry of your desired size.
+        let MonboxSize = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box (width, height, depth)
+        MondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize.x, MonboxSize.y, MonboxSize.z));
 
-    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
-    let MonboxSize = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box (width, height, depth)
-    MondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize.x, MonboxSize.y, MonboxSize.z));
-
-// 2. Position this mesh at the position of the soldier.
-    MondummyMesh.position.copy(new Vector3(monster.position.x, monster.position.y, monster.position.z));
-    yOffset = 0.1;  // or any value you deem appropriate
-    MondummyMesh.position.y += yOffset;
-
-
-// 3. Create a BoxHelper using this dummy mesh.
-    MonBoxHelper = new THREE.BoxHelper(MondummyMesh, 0x00ff00);
-
-// 4. Add the BoxHelper to the scene.
-//     scene.add(MonBoxHelper);
+        // 2. Position this mesh at the position of the soldier.
+        MondummyMesh.position.copy(new Vector3(monster.position.x, monster.position.y, monster.position.z));
+        yOffset = 0.1;  // or any value you deem appropriate
+        MondummyMesh.position.y += yOffset;
 
 
-    monsterAnimations.Idle = gltf.animations[0];
-    playAnimation('Idle');
-    monster.add(monsterSound);
-    // Set the reference distance (the distance at which the sound is at full volume)
-    monsterSound.setRefDistance(1);  // Smaller value means sound will diminish at a shorter distance.
+        // 3. Create a BoxHelper using this dummy mesh.
+        MonBoxHelper = new THREE.BoxHelper(MondummyMesh, 0x00ff00);
 
-// Set the rolloff factor (how quickly the sound diminishes past the reference distance)
-    monsterSound.setRolloffFactor(3);  // Higher value means sound diminishes more rapidly.
-
-// Optionally, set the maximum distance at which the sound can be heard at all.
-    monsterSound.setMaxDistance(10);  // The sound will not be heard beyond this distance.
+        // 4. Add the BoxHelper to the scene.
+        //     scene.add(MonBoxHelper);
 
 
+        monsterAnimations.Idle = gltf.animations[0];
+        playAnimation('Idle');
+        monster.add(monsterSound);
+        // Set the reference distance (the distance at which the sound is at full volume)
+        monsterSound.setRefDistance(1);  // Smaller value means sound will diminish at a shorter distance.
 
-    // Adjust the monster's y position based on bounding box here
-    const box = new THREE.Box3().setFromObject(monster);
-    monster.position.y = -0.4 - box.min.y;
-});
+        // Set the rolloff factor (how quickly the sound diminishes past the reference distance)
+        monsterSound.setRolloffFactor(3);  // Higher value means sound diminishes more rapidly.
+
+        // Optionally, set the maximum distance at which the sound can be heard at all.
+        monsterSound.setMaxDistance(10);  // The sound will not be heard beyond this distance.
+
+
+
+        // Adjust the monster's y position based on bounding box here
+        const box = new THREE.Box3().setFromObject(monster);
+        monster.position.y = -0.4 - box.min.y;
+        resolve(monster); // Resolve the promise with the loaded monster
+        }, undefined, (error) => {
+                console.error(error);
+                reject(error); // Reject the promise on error
+            });
+    });
+}
 
 monsterloader.load('monster models/Monster warrior/MW Running gltf/MW Running.gltf', (gltf) => {
     // Store the running animation
@@ -969,7 +1051,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() < 1.5) {
+                if (distance.lengthSq() < 0.6) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
@@ -1011,8 +1093,6 @@ function findPath() {
 }
 
 
-
-
 function checkCollisionsWithCollectibles() {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
 
@@ -1035,6 +1115,7 @@ function checkCollisionsWithCollectibles() {
                 coinsCollected();
                 loadPortal();
             }
+
         }
     });
 
