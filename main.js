@@ -114,8 +114,28 @@ function cleanIcons(){
     }
 }
 
+const skyBoxLoader = new THREE.CubeTextureLoader();
+/*const skyBoxTexture = skyBoxLoader.load([
+    'textures/Spacebox4/SkyBlue_right1.png',
+    'textures/Spacebox4/SkyBlue_left2.png',
+    'textures/Spacebox4/SkyBlue_top3.png',
+    'textures/Spacebox4/SkyBlue_bottom4.png',
+    'textures/Spacebox4/SkyBlue_front5.png',
+    'textures/Spacebox4/SkyBlue_back6.png'
+]);*/
+
+const skyBoxTexture = skyBoxLoader.load([
+    'textures/Spacebox2/Spacebox_left.png',
+    'textures/Spacebox2/Spacebox_right.png',
+    'textures/Spacebox2/Spacebox_top.png',
+    'textures/Spacebox2/Spacebox_bottom.png',
+    'textures/Spacebox2/Spacebox_front.png',
+    'textures/Spacebox2/Spacebox_back.png'
+]);
+
 // Scene
 const scene = new THREE.Scene();
+scene.background = skyBoxTexture;
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -288,6 +308,14 @@ let grid; // We've already initialized this in the villa loader
 const cellSize = 0.3  // Declare this variable here, at the top level
 const navMeshName = "SampleScene_Exported_NavMesh";  // Replace with your navmesh name
 
+// Land texture
+const textureLoader = new THREE.TextureLoader();
+const floorTexture = textureLoader.load('textures/wall.png');
+floorTexture.minFilter = THREE.LinearMipmapLinearFilter;
+floorTexture.wrapS = THREE.RepeatWrapping;
+floorTexture.wrapT = THREE.RepeatWrapping;
+floorTexture.repeat.set(300, 300);
+
 loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse = gltf.scene;
 
@@ -304,7 +332,15 @@ loader.load('models/villaHouse.glb', function (gltf) {
     // Find the child named "floor" and set its material to use the floorTexture
     const floor = villaHouse.getObjectByName("floor");
     if (floor) {
-        floor.material = new THREE.MeshBasicMaterial({color: 0xffffff});
+        // // Create a new material with the floorTexture
+         const floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
+         floorMaterial.color = new THREE.Color(0x333333);
+         // Assign the new material to the floor
+         floor.material = floorMaterial;
+
+        // // Ensure that the floor doesn't cast shadows on itself
+        floor.receiveShadow = true; // Enable shadow receiving for the floor
+        floor.castShadow = false;
     } else {
         console.warn('Floor not found in the villaHouse model.');
     }
@@ -332,8 +368,8 @@ function initLevel(level){
         // Create multiple coins
         coinsNeeded=3;
         createCoin(-11, 0.1, 8, scene, coins);
-        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
-        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+        createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
+        createCoin(8.309663681895037 , -0.1712324325972956 ,-2.9527764209625995, scene, coins);
 
         //Create multiple boosts
         createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
@@ -353,12 +389,14 @@ function initLevel(level){
 
         // Create multiple coins
         //createCoin(-11, 0.1, 8, scene, coins);
-        coinsNeeded=2;
+        coinsNeeded= 5;
 
         // Create multiple coins
-        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(-4.668858254609299, 0.19268887765808546, -3.666108506629987, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+        createCoin(15.313297791701023, -0.1057143266885793 ,21.623686900287876, scene, coins);
+        createCoin(2.4870020913648316 , -0.10571453306073826,  19.26306456486548, scene, coins);
 
         //Create multiple boosts
         createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
@@ -579,7 +617,7 @@ function updateMovement() {
             pursuing = true;
             playAnimation('Running');
             timerStarted = false;  // Reset the flag after the timer completes
-        }, 5000);  // Set the timer for 5 seconds (5000 milliseconds)
+        }, 5600);  // Set the timer for 5 seconds (5000 milliseconds)
 
         isSlowedDown = false;
     }
@@ -716,9 +754,9 @@ function updateMovement() {
             gamewon();
         }
     }
-    //console.log(soldier.position.x, soldier.position.y, soldier.position.z);
+    console.log(soldier.position.x, soldier.position.y, soldier.position.z);
 //Check if monster is close to soldier, and damage if yes
-    if(getDistance(soldier,monster)<0.1){
+    if(getDistance(soldier,monster)<0.45){
 
         if(invunerable>100){
             console.log("Player damaged");
@@ -910,9 +948,9 @@ function findPath() {
             //console.log("nav path :", navpath);
             if (navpath && navpath.length > 0) {
                 pathfindinghelper.reset();
-                pathfindinghelper.setPlayerPosition(monster.position);
-                pathfindinghelper.setTargetPosition(target);
-                pathfindinghelper.setPath(navpath);
+                // pathfindinghelper.setPlayerPosition(monster.position);
+                // pathfindinghelper.setTargetPosition(target);
+                // pathfindinghelper.setPath(navpath);
 
                 // Target position
                 let targetPos = navpath[0];
