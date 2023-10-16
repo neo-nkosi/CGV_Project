@@ -9,18 +9,11 @@ export function createCoin(x, y, z, scene, coins) {
         let coin = gltf.scene;
         coin.position.set(x, y, z);
         coin.scale.set(0.02, 0.02, 0.02);
-        // Enable shadows for the object
-        coin.castShadow = true;
-
-        // Receive shadows on the object (if applicable)
-        coin.receiveShadow = true;
         scene.add(coin);
 
         // Create a dummy mesh for the coin's BoxHelper
         let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2);
         let coinDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(iconBoxSize.x, iconBoxSize.y, iconBoxSize.z));
-        coinDummyMesh.castShadow = true;
-        coinDummyMesh.receiveShadow = true;
 
         // Position this mesh at the position of the coin
         coinDummyMesh.position.copy(coin.position);
@@ -60,10 +53,6 @@ export function createBoost(x, y, z, scene, boosts) {
         let boost = gltf.scene;
         boost.position.set(x, y, z);
         boost.scale.set(0.02, 0.02, 0.02);  // Adjust scale if needed
-        boost.castShadow = true;
-
-        // Receive shadows on the object (if applicable)
-        boost.receiveShadow = true;
         scene.add(boost);
 
         let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2);
@@ -101,10 +90,6 @@ export function createHealth(x, y, z, scene, healths) {
         let health = gltf.scene;
         health.position.set(x, y, z);
         health.scale.set(0.02, 0.02, 0.02);  // Adjust scale if needed
-        health.castShadow = true;
-
-        // Receive shadows on the object (if applicable)
-        health.receiveShadow = true;
         scene.add(health);
 
         let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2);
