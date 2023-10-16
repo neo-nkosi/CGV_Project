@@ -295,8 +295,8 @@ light.translateY(10);
 scene.add(light);
 // Directional Lights for skybox
 // purple light
-const directionalLight1 = new THREE.DirectionalLight("purple",0.1); // Adjust light color and intensity as needed
-directionalLight1.position.set(100, 100, 20);
+const directionalLight1 = new THREE.DirectionalLight("purple",0.2); // Adjust light color and intensity as needed
+directionalLight1.position.set(100, 15, 40);
 // directionalLight.position.copy(soldier.position);
 directionalLight1.castShadow = true;
 directionalLight1.shadow.bias = -0.005; // Adjust shadow bias
@@ -304,13 +304,13 @@ directionalLight1.shadow.radius = 1;
 directionalLight1.shadow.mapSize.width = 1024; // Shadow map size
 directionalLight1.shadow.mapSize.height = 1024;
 directionalLight1.shadow.camera.near = 0.00001; // Near and far planes for the shadow camera
-directionalLight1.shadow.camera.far = 50;
+directionalLight1.shadow.camera.far = 100;
 directionalLight1.position.normalize();
 scene.add(directionalLight1);
 // blue light 
 // purple light
-const directionalLight2 = new THREE.DirectionalLight("blue",0.1); // Adjust light color and intensity as needed
-directionalLight2.position.set(-100, 100, 10);
+const directionalLight2 = new THREE.DirectionalLight("blue",0.2); // Adjust light color and intensity as needed
+directionalLight2.position.set(-100, 10, 40);
 // directionalLight.position.copy(soldier.position);
 directionalLight2.castShadow = true;
 directionalLight2.shadow.bias = -0.005; // Adjust shadow bias
@@ -318,13 +318,13 @@ directionalLight2.shadow.radius = 1;
 directionalLight2.shadow.mapSize.width = 1024; // Shadow map size
 directionalLight2.shadow.mapSize.height = 1024;
 directionalLight2.shadow.camera.near = 0.00001; // Near and far planes for the shadow camera
-directionalLight2.shadow.camera.far = 50;
+directionalLight2.shadow.camera.far = 100;
 directionalLight2.position.normalize();
 scene.add(directionalLight2);
 // light on staircase
 // Directional Lights
 const directionalLightstairs = new THREE.DirectionalLight("red",0.1); // Adjust light color and intensity as needed
-directionalLightstairs.position.set(-0.22, 0.19, -0.29);
+directionalLightstairs.position.set(-0.22, -0.19, -0.25);
 // directionalLight.position.copy(soldier.position);
 directionalLightstairs.castShadow = true;
 directionalLightstairs.shadow.bias = -0.005; // Adjust shadow bias
