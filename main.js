@@ -157,8 +157,8 @@ audioLoader.load('/audio/marching.mp3', function(buffer) {
 // Renderer
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+// renderer.shadowMap.enabled = true;
+// renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 // Resize event
@@ -224,8 +224,8 @@ await soldierLoader.load('models/Soldier.glb', function (gltf) {
     soldier.scale.set(0.25, 0.25, 0.25);
     
     // Enable shadow casting and receiving for the soldier
-    soldier.castShadow = true;
-    soldier.receiveShadow = true;
+    // soldier.castShadow = true;
+    // soldier.receiveShadow = true;
 
     scene.add(soldier);
 
@@ -282,9 +282,9 @@ const wallMaterial = new THREE.MeshBasicMaterial({ map: wallTexture });
 const wall = new THREE.Mesh(wallGeometry, wallMaterial);
 wall.position.set(3, 0, 0);
 // Set the number of times you want to repeat the texture in the horizontal and vertical directions
-wallTexture.wrapS = THREE.RepeatWrapping;
-wallTexture.wrapT = THREE.RepeatWrapping;
-wallTexture.repeat.set(20, 20);
+// wallTexture.wrapS = THREE.RepeatWrapping;
+// wallTexture.wrapT = THREE.RepeatWrapping;
+// wallTexture.repeat.set(20, 20);
 //scene.add(wall);
 
 
@@ -299,13 +299,13 @@ scene.add(light);
 const directionalLight = new THREE.DirectionalLight(0xffffff,0.1); // Adjust light color and intensity as needed
 directionalLight.position.copy(camera.position);
 //directionalLight.position.set(1, 1, 1);
-directionalLight.castShadow = true;
-directionalLight.shadow.bias = -0.02; // Adjust shadow bias
-directionalLight.shadow.radius = 1;
-directionalLight.shadow.mapSize.width = 1024; // Shadow map size
-directionalLight.shadow.mapSize.height = 1024;
-directionalLight.shadow.camera.near = 1; // Near and far planes for the shadow camera
-directionalLight.shadow.camera.far = 50;
+// directionalLight.castShadow = true;
+// directionalLight.shadow.bias = -0.02; // Adjust shadow bias
+// directionalLight.shadow.radius = 1;
+// directionalLight.shadow.mapSize.width = 1024; // Shadow map size
+// directionalLight.shadow.mapSize.height = 1024;
+// directionalLight.shadow.camera.near = 1; // Near and far planes for the shadow camera
+// directionalLight.shadow.camera.far = 50;
 
 // Set the direction the light is pointing
 const lightDirection = new THREE.Vector3(); // Adjust this vector to change the direction
@@ -350,9 +350,9 @@ loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse.traverse((child) => {
         if (child.isMesh) {
             // Enable shadow casting for child objects
-            child.castShadow = true;
+            // child.castShadow = true;
             // Set other material properties as needed
-            child.receiveShadow = true; // Enable shadow receiving for child objects
+            // child.receiveShadow = true; // Enable shadow receiving for child objects
             
             // Log information about the child object
             console.log('Child Object:', child);
@@ -366,8 +366,8 @@ loader.load('models/villaHouse.glb', function (gltf) {
                 child.material = wallMaterial;
 
                 // Ensure that the wall doesn't cast shadows on itself
-                child.receiveShadow = true; // Enable shadow receiving for the wall
-                child.castShadow = true;
+                // child.receiveShadow = true; // Enable shadow receiving for the wall
+                // child.castShadow = true;
             }
         }
     });
@@ -375,15 +375,15 @@ loader.load('models/villaHouse.glb', function (gltf) {
     // Find the child named "floor" and set its material to use the floorTexture
     const floor = villaHouse.getObjectByName("floor");
     if (floor) {
-        // Create a new material with the floorTexture
-        const floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
-        floorMaterial.color = new THREE.Color(0x333333);
-        // Assign the new material to the floor
-        floor.material = floorMaterial;
+        // // Create a new material with the floorTexture
+        // const floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
+        // floorMaterial.color = new THREE.Color(0x333333);
+        // // Assign the new material to the floor
+        // floor.material = floorMaterial;
 
-        // Ensure that the floor doesn't cast shadows on itself
-        floor.receiveShadow = true; // Enable shadow receiving for the floor
-        floor.castShadow = false;
+        // // Ensure that the floor doesn't cast shadows on itself
+        // floor.receiveShadow = true; // Enable shadow receiving for the floor
+        // floor.castShadow = false;
     } else {
         console.warn('Floor not found in the villaHouse model.');
     }
@@ -420,9 +420,9 @@ if (villaHouse) {
     villaHouse.traverse((child) => {
         if (child.isMesh) {
             // Enable shadow casting for child objects of the villa model
-            child.castShadow = true;
+            // child.castShadow = true;
             // Set other material properties as needed
-            child.receiveShadow = true; // Enable shadow receiving for child objects
+            // child.receiveShadow = true; // Enable shadow receiving for child objects
         }
     });
 }
@@ -974,7 +974,7 @@ scene.add(pathfindinghelper);
 loader.load("navmesh/blendernavmesh4.glb", function(gltf){
 meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
-meshfloor.receiveShadow = true; // Enable shadow receiving for the floor
+// meshfloor.receiveShadow = true; // Enable shadow receiving for the floor
 meshfloor.scale.set(1, 1, 1);
 mesh.material = floorMaterial;
 
