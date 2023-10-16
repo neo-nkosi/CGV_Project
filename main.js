@@ -114,8 +114,28 @@ function cleanIcons(){
     }
 }
 
+const skyBoxLoader = new THREE.CubeTextureLoader();
+/*const skyBoxTexture = skyBoxLoader.load([
+    'textures/Spacebox4/SkyBlue_right1.png',
+    'textures/Spacebox4/SkyBlue_left2.png',
+    'textures/Spacebox4/SkyBlue_top3.png',
+    'textures/Spacebox4/SkyBlue_bottom4.png',
+    'textures/Spacebox4/SkyBlue_front5.png',
+    'textures/Spacebox4/SkyBlue_back6.png'
+]);*/
+
+const skyBoxTexture = skyBoxLoader.load([
+    'textures/Spacebox2/Spacebox_left.png',
+    'textures/Spacebox2/Spacebox_right.png',
+    'textures/Spacebox2/Spacebox_top.png',
+    'textures/Spacebox2/Spacebox_bottom.png',
+    'textures/Spacebox2/Spacebox_front.png',
+    'textures/Spacebox2/Spacebox_back.png'
+]);
+
 // Scene
 const scene = new THREE.Scene();
+scene.background = skyBoxTexture;
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
