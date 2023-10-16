@@ -711,7 +711,7 @@ function updateMovement() {
     }
     console.log(soldier.position.x, soldier.position.y, soldier.position.z);
 //Check if monster is close to soldier, and damage if yes
-    if(getDistance(soldier,monster)<0.1){
+    if(getDistance(soldier,monster)<0.45){
 
         if(invunerable>100){
             console.log("Player damaged");
