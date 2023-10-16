@@ -346,6 +346,7 @@ function initLevel(level){
         // Create multiple coins
         //createCoin(-11, 0.1, 8, scene, coins);
         coinsNeeded=2;
+        createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
 
@@ -902,7 +903,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() < 0.7) {
+                if (distance.lengthSq() < 0.75) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
@@ -917,7 +918,7 @@ function findPath() {
                 const direction = distance.normalize();
 
                 // Set monster speed (adjust the 0.05 value to your preference)
-                const speed = 0.03;
+                const speed = 0.021;
 
                 // Update the monster's position
                 monster.position.add(direction.multiplyScalar(speed));
