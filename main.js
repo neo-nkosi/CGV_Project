@@ -49,7 +49,7 @@ const blindnessOverlay = document.getElementById("blindness-overlay");
 retryButton.addEventListener('click', () => {
     // Handle retry button click
     // You can replace this with your logic
-    soldier.position.set(0,0,8);
+    //soldier.position.set(0,0,8);
     monster.position.set(0.9, 0, 8);
     const overlay = document.getElementById('lose-screen');
     overlay.style.display = 'none';
@@ -402,11 +402,13 @@ let boosts = [];
 let healths = [];
 
 async function initLevel(level) {
-    try {
-        await loadSoldier(); // Wait for the soldier to be loaded.
-    } catch (error) {
-        console.error('An error occurred while loading the soldier:', error);
-        return; // Exit if the soldier couldn't be loaded.
+    if(!soldier) {
+        try {
+            await loadSoldier(); // Wait for the soldier to be loaded.
+        } catch (error) {
+            console.error('An error occurred while loading the soldier:', error);
+            return; // Exit if the soldier couldn't be loaded.
+        }
     }
     //soldier.position.set(0,0,8);
 
@@ -465,7 +467,7 @@ async function initLevel(level) {
         createHealth(14.03279715663051, 0.08, 8.672422194858061, scene, healths);
 
         //Set character position
-
+        soldier.position.set(12.344735516930285, 0.0, 23.321273620601847);
 
     } else if (level == 3) {
         //Start of game parameters
