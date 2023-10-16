@@ -310,7 +310,7 @@ directionalLight1.shadow.camera.near = 0.00001; // Near and far planes for the s
 directionalLight1.shadow.camera.far = 100;
 directionalLight1.position.normalize();
 scene.add(directionalLight1);
-// blue light 
+// blue light
 // purple light
 const directionalLight2 = new THREE.DirectionalLight("blue",0.2); // Adjust light color and intensity as needed
 directionalLight2.position.set(-100, 10, 40);
@@ -830,7 +830,7 @@ function updateMovement() {
             gamewon();
         }
     }
-    console.log(soldier.position.x, soldier.position.y, soldier.position.z);
+    //console.log(soldier.position.x, soldier.position.y, soldier.position.z);
 //Check if monster is close to soldier, and damage if yes
     if(getDistance(soldier,monster)<0.45){
 
