@@ -114,8 +114,28 @@ function cleanIcons(){
     }
 }
 
+const skyBoxLoader = new THREE.CubeTextureLoader();
+/*const skyBoxTexture = skyBoxLoader.load([
+    'textures/Spacebox4/SkyBlue_right1.png',
+    'textures/Spacebox4/SkyBlue_left2.png',
+    'textures/Spacebox4/SkyBlue_top3.png',
+    'textures/Spacebox4/SkyBlue_bottom4.png',
+    'textures/Spacebox4/SkyBlue_front5.png',
+    'textures/Spacebox4/SkyBlue_back6.png'
+]);*/
+
+const skyBoxTexture = skyBoxLoader.load([
+    'textures/Spacebox2/Spacebox_left.png',
+    'textures/Spacebox2/Spacebox_right.png',
+    'textures/Spacebox2/Spacebox_top.png',
+    'textures/Spacebox2/Spacebox_bottom.png',
+    'textures/Spacebox2/Spacebox_front.png',
+    'textures/Spacebox2/Spacebox_back.png'
+]);
+
 // Scene
 const scene = new THREE.Scene();
+scene.background = skyBoxTexture;
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -150,6 +170,15 @@ audioLoader.load('/audio/marching.mp3', function(buffer) {
     soldierMarchingSound.setBuffer(buffer);
     soldierMarchingSound.setLoop(true); // for continuous play
     soldierMarchingSound.setVolume(0.5);
+});
+
+const monsterSound = new THREE.PositionalAudio(listener);
+// Load a sound file (you need to have the horror sound in your game files)
+audioLoader.load('/audio/horrorMusic.mp3', function(buffer) {
+    monsterSound.setBuffer(buffer);
+    monsterSound.setRefDistance(10); // Set reference distance for volume control
+    monsterSound.setDirectionalCone(180, 230, 0.1); // Optional: Set a directional sound cone (for a more realistic experience)
+    monsterSound.play();
 });
 
 
@@ -838,6 +867,17 @@ monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf)
 
     monsterAnimations.Idle = gltf.animations[0];
     playAnimation('Idle');
+    monster.add(monsterSound);
+    // Set the reference distance (the distance at which the sound is at full volume)
+    monsterSound.setRefDistance(1);  // Smaller value means sound will diminish at a shorter distance.
+
+// Set the rolloff factor (how quickly the sound diminishes past the reference distance)
+    monsterSound.setRolloffFactor(3);  // Higher value means sound diminishes more rapidly.
+
+// Optionally, set the maximum distance at which the sound can be heard at all.
+    monsterSound.setMaxDistance(10);  // The sound will not be heard beyond this distance.
+
+
 
     // Adjust the monster's y position based on bounding box here
     const box = new THREE.Box3().setFromObject(monster);
@@ -1083,6 +1123,9 @@ function checkCollisionsWithCollectibles() {
      }
 
      updateMovement();
+
+     listener.position.copy(camera.position);
+
      // Call the function after the exploration is done
      // visualizeGrid(grid);
 
