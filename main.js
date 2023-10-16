@@ -29,16 +29,17 @@ window.resumeGame = function() {
         // Here, handle anything else you need when the game resumes
     }
 }
-
-window.gamelost = function(){
-   const overlay = document.getElementById('lost-screen');
-   overlay.style.display = 'block';
+function gamelost(){
+   const overlay = document.getElementById('lose-screen');
+   overlay.style.display = 'flex';
+   isGamePaused = true;
+   console.log("here");
 
 }
 
-window.gamewon = function(){
+function gamewon(){
     const overlay = document.getElementById('won-screen');
-   overlay.style.display = 'block';
+   overlay.style.display = 'flex';
 }
 
 const retryButton = document.getElementById("retry-button");
@@ -48,7 +49,18 @@ const continueButton = document.getElementById("continue-button");
 retryButton.addEventListener('click', () => {
     // Handle retry button click
     // You can replace this with your logic
-    console.log('Retry button clicked');
+    soldier.position.set(0,0,8);
+    monster.position.set(0.9, 0, 8);
+    const overlay = document.getElementById('lose-screen');
+    overlay.style.display = 'none';
+    isGamePaused = false;
+    cleanIcons();
+    initLevel(window.selectedLevel);
+    updateHUDHP(soldierHealth);
+    updateHUDCoin(numCoins);
+    updateHUDSpeed(boostFactor);
+    animate();  
+    //initLevel(level);
 });
 
 menuButton.addEventListener('click', () => {
@@ -63,9 +75,29 @@ continueButton.addEventListener('click', () => {
     console.log('Continue button clicked');
 });
 
+function cleanIcons(){
+    console.log(coins);
+    for (var i = 0; i < coins.length; i++) {
+        var object = coins[i];
+        scene.remove(object.mesh); 
+        object.collected=true;
+    }
+
+    for (var i = 0; i < boosts.length; i++) {
+        var object = boosts[i];
+        scene.remove(object.mesh);
+        object.collected=true; 
+    }
+
+    for (var i = 0; i < healths.length; i++) {
+        var object = healths[i];
+        scene.remove(object.mesh);
+        object.collected=true; 
+    }
+}
+
 // Scene
 const scene = new THREE.Scene();
-
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -265,6 +297,12 @@ function initLevel(level){
     //soldier.position.set(0,0,8);
 
     if (level === 1){
+        //Start of game parameters
+        invunerable=0;
+        boostFactor=1;
+        soldierHealth=3;
+        numCoins=0;
+
         // Create multiple coins
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
@@ -280,6 +318,12 @@ function initLevel(level){
         createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
         createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
     }else if (level === 2){
+        //Start of game parameters
+        invunerable=0;
+        boostFactor=1;
+        soldierHealth=2;
+        numCoins=0;
+
         // Create multiple coins
         //createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
@@ -295,6 +339,12 @@ function initLevel(level){
         createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
         createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
     }else if (level === 3){
+        //Start of game parameters
+        invunerable=0;
+        boostFactor=1;
+        soldierHealth=1;
+        numCoins=0;
+
         // Create multiple coins
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
@@ -314,7 +364,7 @@ function initLevel(level){
 
 }
 
-initLevel(window.selectedLevel);
+
 
 let portalMixer;
 let portalDummyMesh;
@@ -365,15 +415,17 @@ function getCameraPositionBehindSoldier(soldier, distanceBehind) {
     return new THREE.Vector3().addVectors(soldier.position, offset);
 }
 
-let invunerable = 0;
-let boostFactor = 1;
-let soldierHealth = 10;
-let numCoins = 0;
+let invunerable;
+let boostFactor;
+let soldierHealth;
+let numCoins;
 let verticalVelocity = 0;
 let collectedAllCoinsMessage = false;
 let portal;
 let coinCounter = 0;
 let jumpStartY = null;  // This will keep track of the Y position when the jump starts
+
+initLevel(window.selectedLevel);
 
 createHUD(camera,numCoins,boostFactor,soldierHealth);
 
@@ -642,7 +694,10 @@ function updateMovement() {
             console.log("Player damaged");
             invunerable=0;
             soldierHealth--;
-            if(soldierHealth<0)soldierHealth=0;
+            if(soldierHealth==0){
+                console.log("Player should be dead");
+                gamelost();
+            }
             updateHUDHP(soldierHealth);
             animate();
         }else{
