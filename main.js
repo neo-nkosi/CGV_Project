@@ -64,15 +64,16 @@ retryButton.addEventListener('click', () => {
 
 menuButton.addEventListener('click', () => {
     // Handle main menu button click
-    // Show the level select screen
-    document.getElementById('level-select').style.display = 'flex';
-    document.getElementById('lose-screen').style.display = 'none';
+   const lose= document.getElementById('lose-screen');
+    lose.style.display = 'none';
+    
 });
 
 continueButton.addEventListener('click', () => {
     // Handle main menu button click
-    document.getElementById('level-select').style.display = 'flex';
-    document.getElementById('won-screen').style.display = 'none';
+    const win = document.getElementById('win-screen');
+    win.style.display = 'none';
+    
 });
 
 function coinsCollected(){
@@ -321,7 +322,7 @@ function initLevel(level){
         numCoins=0;
 
         // Create multiple coins
-        coinsNeeded=3;
+        coinsNeeded=1;
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
