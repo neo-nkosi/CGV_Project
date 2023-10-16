@@ -58,7 +58,7 @@ retryButton.addEventListener('click', () => {
     updateHUDHP(soldierHealth);
     updateHUDCoin(numCoins);
     updateHUDSpeed(boostFactor);
-    animate();  
+    animate();
     //initLevel(level);
 });
 
@@ -90,27 +90,27 @@ function coinsCollected(){
         overlay.style.filter = 'alpha(opacity=' + op * 100 + ")";
         op -= op * 0.1;
     }, 50);
-   
+
 }
 
 function cleanIcons(){
     console.log(coins);
     for (var i = 0; i < coins.length; i++) {
         var object = coins[i];
-        scene.remove(object.mesh); 
+        scene.remove(object.mesh);
         object.collected=true;
     }
 
     for (var i = 0; i < boosts.length; i++) {
         var object = boosts[i];
         scene.remove(object.mesh);
-        object.collected=true; 
+        object.collected=true;
     }
 
     for (var i = 0; i < healths.length; i++) {
         var object = healths[i];
         scene.remove(object.mesh);
-        object.collected=true; 
+        object.collected=true;
     }
 }
 
@@ -313,8 +313,7 @@ let healths = [];
 function initLevel(level){
 
     //soldier.position.set(0,0,8);
-
-    if (level === 1){
+    if (level == 1){
         //Start of game parameters
         invunerable=0;
         boostFactor=1;
@@ -336,7 +335,7 @@ function initLevel(level){
         createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
         createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
         createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }else if (level === 2){
+    }else if (level == 2){
         //Start of game parameters
         invunerable=0;
         boostFactor=1;
@@ -346,6 +345,9 @@ function initLevel(level){
         // Create multiple coins
         //createCoin(-11, 0.1, 8, scene, coins);
         coinsNeeded=2;
+
+        // Create multiple coins
+        createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
 
@@ -358,13 +360,12 @@ function initLevel(level){
         createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
         createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
         createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }else if (level === 3){
+    }else if (level == 3){
         //Start of game parameters
         invunerable=0;
         boostFactor=1;
         soldierHealth=1;
         numCoins=0;
-
         // Create multiple coins
         coinsNeeded=3;
         createCoin(-11, 0.1, 8, scene, coins);
@@ -707,11 +708,9 @@ function updateMovement() {
         }
     }
     //console.log(soldier.position.x, soldier.position.y, soldier.position.z);
-
-
 //Check if monster is close to soldier, and damage if yes
     if(getDistance(soldier,monster)<0.1){
-        
+
         if(invunerable>100){
             console.log("Player damaged");
             invunerable=0;
@@ -725,8 +724,8 @@ function updateMovement() {
         }else{
             console.log("Player hit but involnerable");
         }
-        
-    }    
+
+    }
 }
 
 const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
