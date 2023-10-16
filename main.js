@@ -114,8 +114,19 @@ function cleanIcons(){
     }
 }
 
+const skyBoxLoader = new THREE.CubeTextureLoader();
+const skyBoxTexture = skyBoxLoader.load([
+    'textures/skybox/SkyBlue_right1.png',
+    'textures/skybox/SkyBlue_left2.png',
+    'textures/skybox/SkyBlue_top3.png',
+    'textures/skybox/SkyBlue_bottom4.png',
+    'textures/skybox/SkyBlue_front5.png',
+    'textures/skybox/SkyBlue_back6.png'
+]);
+
 // Scene
 const scene = new THREE.Scene();
+scene.background = skyBoxTexture;
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
