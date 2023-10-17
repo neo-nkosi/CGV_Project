@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import {createHUD, updateHUDCoin, updateHUDHP, updateHUDSpeed} from './hud';
+import {createHUD, removeHUD, updateHUDCoin, updateHUDHP, updateHUDSpeed} from './hud';
 import {checkMovement} from "./collisionCheck";
 import {Vector3} from "three";
 import {createBoost, createCoin, createHealth} from './iconsCreation.js';
@@ -54,6 +54,7 @@ retryButton.addEventListener('click', () => {
     const overlay = document.getElementById('lose-screen');
     overlay.style.display = 'none';
     isGamePaused = false;
+    removeHUD(camera);
     cleanIcons();
     initLevel(window.selectedLevel);
     updateHUDHP(soldierHealth);

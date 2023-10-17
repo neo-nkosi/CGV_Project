@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
-let coinScreen, speedScreen, hpScreen, coinURLs, speedURLs, hpURLs, minimapScreen, redDot;
+let coinScreen, speedScreen, hpScreen, coinURLs, speedURLs, hpURLs, minimapScreen, redDot,HUD;
 export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
-    const HUD = new THREE.Scene();
+    HUD = new THREE.Scene();
 
     //===========================================Coins==========================================================
 
@@ -151,6 +151,10 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     //=======================================================================================================================================
     createMinimap(camera, HUD);
     camera.add(HUD);
+}
+
+export function removeHUD(camera){
+    camera.remove(HUD);
 }
 
 export function updateHUDHP(currentHPlevel){
