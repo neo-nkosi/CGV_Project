@@ -1119,16 +1119,32 @@ function checkCollisionsWithCollectibles() {
         }
     });
 
+    // Define a variable to keep track of the active boost timeout
+    let boostTimeout = null;
+
     // Check collision with boosts
     boosts.forEach(b => {
         const boostBoundingBox = new THREE.Box3().setFromObject(b.dummyMesh);
         if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !b.collected) {
             console.log("Collision between character and boost");
+
+            // Clear the existing timeout if it's still active, this will prevent the boostFactor from reverting while a new boost is active
+            if (boostTimeout) {
+                clearTimeout(boostTimeout);
+            }
+
             boostFactor += 1;  // or any other effect you want to give
             b.mesh.visible = false;
             b.collected = true;
             updateHUDSpeed(boostFactor);
             animate();
+
+            // Set a timeout to revert the boostFactor after 10 seconds (10000 milliseconds)
+            boostTimeout = setTimeout(() => {
+                boostFactor -= 1; // assuming the normal state is one less. Adjust as necessary.
+                updateHUDSpeed(boostFactor);
+                boostTimeout = null; // Clear the timeout variable
+            }, 8000); // 10000 milliseconds = 10 seconds
         }
     });
 
