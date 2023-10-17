@@ -1041,9 +1041,9 @@ function findPath() {
             //console.log("nav path :", navpath);
             if (navpath && navpath.length > 0) {
                 pathfindinghelper.reset();
-                pathfindinghelper.setPlayerPosition(monster.position);
-                pathfindinghelper.setTargetPosition(target);
-                pathfindinghelper.setPath(navpath);
+                // pathfindinghelper.setPlayerPosition(monster.position);
+                // pathfindinghelper.setTargetPosition(target);
+                // pathfindinghelper.setPath(navpath);
 
                 // Target position
                 let targetPos = navpath[0];
