@@ -19,6 +19,15 @@
 <img id="blindness-overlay" src="textures/blindness-vingnette.png">
 </img>
 
+<!-- New div for start screen -->
+<div id="start-screen">
+    <header>
+        <h1>Escape The Singularity</h1>
+    </header>
+    <button id="start-game-button">Start Game</button>
+</div>
+
+
 <div id="pause-screen">
     <p>Game Paused</p>
     <button id="resume-button">Continue</button>
@@ -141,7 +150,7 @@
     document.getElementById('continue-button').addEventListener('click', function() {
         location.reload(); // This will force the page to reload
     });
-    
+
     document.getElementById('menu-button').addEventListener('click', function() {
         location.reload(); // This will force the page to reload
     });
@@ -149,6 +158,18 @@
     document.getElementById('pause-exit-button').addEventListener('click', function() {
         location.reload(); // This will force the page to reload
     });
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        // Start game button event listener
+        document.getElementById('start-game-button').addEventListener('click', function() {
+            // Hide the start screen
+            document.getElementById('start-screen').style.display = 'none';
+
+            // Show the level select screen
+            document.getElementById('level-select').style.display = 'flex';
+        });
+    });
+
 
 </script>
 </body>

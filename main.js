@@ -64,19 +64,6 @@ retryButton.addEventListener('click', () => {
     //initLevel(level);
 });
 
-/*menuButton.addEventListener('click', () => {
-    // Handle main menu button click
-    // Show the level select screen
-    document.getElementById('level-select').style.display = 'flex';
-    document.getElementById('lose-screen').style.display = 'none';
-});*/
-
-/*continueButton.addEventListener('click', () => {
-    // Handle main menu button click
-    document.getElementById('level-select').style.display = 'flex';
-    document.getElementById('won-screen').style.display = 'none';
-});*/
-
 function coinsCollected(){
     const overlay = document.getElementById('portalSpawn-screen');
     overlay.style.display = 'flex';
@@ -116,14 +103,6 @@ function cleanIcons(){
 }
 
 const skyBoxLoader = new THREE.CubeTextureLoader();
-/*const skyBoxTexture = skyBoxLoader.load([
-    'textures/Spacebox4/SkyBlue_right1.png',
-    'textures/Spacebox4/SkyBlue_left2.png',
-    'textures/Spacebox4/SkyBlue_top3.png',
-    'textures/Spacebox4/SkyBlue_bottom4.png',
-    'textures/Spacebox4/SkyBlue_front5.png',
-    'textures/Spacebox4/SkyBlue_back6.png'
-]);*/
 
 const skyBoxTexture = skyBoxLoader.load([
     'textures/Spacebox2/Spacebox_left.png',
@@ -470,8 +449,6 @@ async function initLevel(level) {
 
         //Create multiple boosts
         createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
-        //createBoost(-3,0,0,scene,boosts);
-        //createBoost(-4,0,-1,scene,boosts);
 
         //Create multiple hearts
         createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
@@ -492,8 +469,6 @@ async function initLevel(level) {
         soldierHealth = 1;
         numCoins = 0;
 
-        // Create multiple coins
-        //createCoin(-11, 0.1, 8, scene, coins);
         coinsNeeded = 5;
 
         // Create multiple coins
@@ -542,6 +517,8 @@ async function initLevel(level) {
 
     blindnessOverlay.style.display = 'flex';
     blindnessOverlay.style.opacity = -0.0889 * (soldierHealth) + 0.8889;
+
+
 }
 
 
@@ -612,10 +589,6 @@ function checkStairs(character, sceneObject) {
     if (intersects.length > 0) {
         const distanceToGround = intersects[0].distance;
         if (distanceToGround < maxStepHeight) {
-            // Position the sphere at the collision point and make it visible
-            //collisionPoint.position.copy(intersects[0].point);
-            //collisionPoint.visible = true;
-
             // Adjust the character's Y position to the collision point.
             character.position.y = intersects[0].point.y + 0.07;
         }
@@ -872,10 +845,6 @@ function maintainDistanceFromSoldier(soldier, camera, distance) {
 
     camera.position.lerp(camera.position, 0.05);
 }
-
-
-
-
 
 let monster;
 let monsterMixer;
