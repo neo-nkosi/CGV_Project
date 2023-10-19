@@ -8,9 +8,12 @@ import {createBoost, createCoin, createHealth} from './iconsCreation.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 
+
+let currentLevel =1;
 if (window.selectedLevel) {
 
     console.log("Selected level is: " + window.selectedLevel);
+    currentLevel = window.selectedLevel;
 } else {
     // Handle case where no level is selected if necessary
 }
@@ -37,9 +40,41 @@ function gamelost(){
 
 function gamewon(){
     const overlay = document.getElementById('win-screen');
-   overlay.style.display = 'flex';
-   isGamePaused = true;
+    overlay.style.display = 'flex';
+    isGamePaused = true;
+
+    // Wait for some time or wait for a user action, then go to the next level
+    setTimeout(() => {
+        overlay.style.display = 'none'; // Hide the win overlay
+        isGamePaused = false; // Unpause the game
+        goToNextLevel(); // Go to the next level
+    }, 3000); // for example, wait 3 seconds
 }
+
+function goToNextLevel() {
+    currentLevel++; // Increment the level
+    if (currentLevel <= 3) { // If there are still levels left
+        // Clean up the previous level's objects like coins, boosts, healths, etc.
+        clearPreviousLevel();
+        // Start the next level
+        initLevel(currentLevel);
+    } else {
+        // If there are no more levels, you might want to display a "Game Completed" screen or loop back to the first level
+        console.log("Congratulations! You completed all levels!");
+        // gameCompleted(); // hypothetical function
+    }
+}
+
+function clearPreviousLevel() {
+    removeHUD(camera);
+    cleanIcons();
+    updateHUDHP(soldierHealth);
+    updateHUDCoin(numCoins);
+    updateHUDSpeed(boostFactor);
+    animate();
+}
+
+
 
 const retryButton = document.getElementById("retry-button");
 const menuButton = document.getElementById("menu-button");
@@ -593,42 +628,6 @@ function checkStairs(character, sceneObject) {
             character.position.y = intersects[0].point.y + 0.07;
         }
     }
-
-    /*
-     // Create a red line material
-const lineMaterial = new THREE.LineBasicMaterial({
-    color: 0xff0000
-});
-
-     // Create a geometry that will be used for the line
-  const lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, -maxStepHeight, 0)]);
-
-// Create the line using the geometry and material
-  const rayLine = new THREE.Line(lineGeometry, lineMaterial);
-
-// Add the line to the scene
-  scene.add(rayLine);
-
-// Create a small sphere geometry to represent the collision point
-  const collisionGeometry = new THREE.SphereGeometry(0.05); // The radius of the sphere is 0.05 units
-  const collisionMaterial = new THREE.MeshBasicMaterial({color: 0xff0000}); // Red color for high visibility
-  const collisionPoint = new THREE.Mesh(collisionGeometry, collisionMaterial);
-
-// Initially, we don't want this sphere to be visible
-  collisionPoint.visible = false;
-
-// Add the sphere to the scene
-  scene.add(collisionPoint);
-
-  // Update the ray line's position to match the character's foot position plus the forward offset
-    rayLine.position.copy(footPosition);
-
-    // The line's end point is based on the upward direction
-    const endPoint = new THREE.Vector3(0, upwardRayLength, 0);  // end point straight up
-    lineGeometry.setFromPoints([new THREE.Vector3(), endPoint]);
-    lineGeometry.attributes.position.needsUpdate = true; // Required when updating line geometry after creation
-
-  for Stairs collision debugging purposes*/
 }
 
 function getDistance(x,y){
