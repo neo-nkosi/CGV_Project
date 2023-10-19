@@ -90,8 +90,33 @@ retryButton.addEventListener('click', () => {
     overlay.style.display = 'none';
     isGamePaused = false;
     removeHUD(camera);
-    cleanIcons();
-    initLevel(window.selectedLevel);
+    // Clear coins
+    for (let i = coins.length - 1; i >= 0; i--) {
+        const coin = coins[i];
+        coin.geometry.dispose(); // Dispose of the geometry
+        coin.material.dispose(); // Dispose of the material
+        scene.remove(coin); // Remove the coin from the scene
+        coins.splice(i, 1); // Remove the coin from the coins array
+    }
+
+    // Clear boosts
+    for (let i = boosts.length - 1; i >= 0; i--) {
+        const boost = boosts[i];
+        boost.geometry.dispose();
+        boost.material.dispose();
+        scene.remove(boost);
+        boosts.splice(i, 1);
+    }
+
+    // Clear healths
+    for (let i = healths.length - 1; i >= 0; i--) {
+        const health = healths[i];
+        health.geometry.dispose();
+        health.material.dispose();
+        scene.remove(health);
+        healths.splice(i, 1);
+    };
+    initLevel(currentLevel);
     updateHUDHP(soldierHealth);
     updateHUDCoin(numCoins);
     updateHUDSpeed(boostFactor);
