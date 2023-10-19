@@ -41,6 +41,18 @@ header h2 {
     background-repeat: no-repeat;
 }
 
+#additional-buttons-container {
+    display: flex;
+    justify-content: center; /* Align the buttons to the center */
+    gap: 10px; /* Optional: if you want some space between the buttons */
+    margin-top: 10px;
+}
+
+#additional-buttons-container button {
+    flex: 1; /* Optional: if you want the buttons to take up the same amount of space */
+}
+
+
 #start-screen {
     width: 100%; /* Full width */
     height: 100vh; /* Full viewport height */
