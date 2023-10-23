@@ -81,47 +81,22 @@ const menuButton = document.getElementById("menu-button");
 const continueButton = document.getElementById("continue-button");
 const blindnessOverlay = document.getElementById("blindness-overlay");
 
-retryButton.addEventListener('click', () => {
+retryButton.addEventListener('click', async () => {
     // Handle retry button click
-    // You can replace this with your logic
-    //soldier.position.set(0,0,8);
-    monster.position.set(0.9, 0, 8);
     const overlay = document.getElementById('lose-screen');
     overlay.style.display = 'none';
-    isGamePaused = false;
-    removeHUD(camera);
-    // Clear coins
-    for (let i = coins.length - 1; i >= 0; i--) {
-        const coin = coins[i];
-        coin.geometry.dispose(); // Dispose of the geometry
-        coin.material.dispose(); // Dispose of the material
-        scene.remove(coin); // Remove the coin from the scene
-        coins.splice(i, 1); // Remove the coin from the coins array
+    isGamePaused = true;  // Pause the game while setting up the level
+
+    try {
+        await clearPreviousLevel();  // Await any necessary cleanup
+        await initLevel(currentLevel);  // Await level initialization
+    } catch (error) {
+        console.error('An error occurred during level retry setup:', error);
+        // Handle the error, possibly by showing an error message to the user
     }
 
-    // Clear boosts
-    for (let i = boosts.length - 1; i >= 0; i--) {
-        const boost = boosts[i];
-        boost.geometry.dispose();
-        boost.material.dispose();
-        scene.remove(boost);
-        boosts.splice(i, 1);
-    }
-
-    // Clear healths
-    for (let i = healths.length - 1; i >= 0; i--) {
-        const health = healths[i];
-        health.geometry.dispose();
-        health.material.dispose();
-        scene.remove(health);
-        healths.splice(i, 1);
-    };
-    initLevel(currentLevel);
-    updateHUDHP(soldierHealth);
-    updateHUDCoin(numCoins);
-    updateHUDSpeed(boostFactor);
+    isGamePaused = false;  // Unpause the game when setup is complete
     animate();
-    //initLevel(level);
 });
 
 function coinsCollected(){
@@ -502,10 +477,10 @@ async function initLevel(level) {
         numCoins = 0;
 
         // Create multiple coins
-        coinsNeeded = 3;
+        coinsNeeded = 1;
         createCoin(-11, 0.1, 8, scene, coins);
-        createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
-        createCoin(8.309663681895037, -0.1712324325972956, -2.9527764209625995, scene, coins);
+        //createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
+        //createCoin(8.309663681895037, -0.1712324325972956, -2.9527764209625995, scene, coins);
 
         //Create multiple boosts
         createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
@@ -578,7 +553,7 @@ async function initLevel(level) {
     blindnessOverlay.style.display = 'flex';
     blindnessOverlay.style.opacity = -0.0889 * (soldierHealth) + 0.8889;
 
-
+    return Promise.resolve();
 }
 
 
