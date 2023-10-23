@@ -67,6 +67,13 @@
     <button id="back-button">Back</button>
 </div>
 
+<!-- Controls screen content -->
+<div id="controls-screen" style="display: none;">
+    <img src="icons/gameControls.png" alt="Controls" /> <!-- Replace with your image path -->
+    <button id="controls-back-button">Back</button>
+</div>
+
+
 <script type="module">
     const levelDetails = {
         '1': {
@@ -172,6 +179,24 @@
             // Show the level select screen
             document.getElementById('level-select').style.display = 'flex';
         });
+
+        document.getElementById('controls-button').addEventListener('click', function() {
+            // Hide the level select screen
+            document.getElementById('level-select').style.display = 'none';
+
+            // Show the controls screen
+            document.getElementById('controls-screen').style.display = 'flex'; // or 'flex', if you prefer
+        });
+
+        document.getElementById('controls-back-button').addEventListener('click', function() {
+            // Hide the controls screen
+            document.getElementById('controls-screen').style.display = 'none';
+
+            // Show the level select screen
+            document.getElementById('level-select').style.display = 'flex'; // or 'block', if that's what you're using
+        });
+
+
     });
 
 
