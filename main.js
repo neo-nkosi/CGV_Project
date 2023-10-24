@@ -593,7 +593,6 @@ let boostFactor;
 let soldierHealth;
 let numCoins;
 let verticalVelocity = 0;
-let collectedAllCoinsMessage = false;
 let coinCounter = 0;
 let jumpStartY = null;  // This will keep track of the Y position when the jump starts
 
@@ -799,13 +798,6 @@ function updateMovement() {
     }
 
     checkCollisionsWithCollectibles();
-
-    let allCoinsCollected = coins.every(coin => coin.collected);
-
-    if (allCoinsCollected && !collectedAllCoinsMessage) {
-        console.log("You have collected all the coins");
-        collectedAllCoinsMessage = true;  // This ensures the message is only printed once.
-    }
 
 // At the end of your movement updates:
     if (dummyMesh && portalDummyMesh) {
