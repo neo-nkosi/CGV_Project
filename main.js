@@ -61,6 +61,7 @@ window.goToNextLevel = function(){
 }
 
 function clearPreviousLevel() {
+    portal.visible = false;
     removeHUD(camera);
     cleanIcons();
     updateHUDHP(soldierHealth);
@@ -401,9 +402,9 @@ loader.load('models/villaHouse.glb', function (gltf) {
 
 let portalMixer;
 let portalDummyMesh;
-
+let portal;
 function loadPortal() {
-    let portal;
+
     const portalLoader = new GLTFLoader();
     if (!portal) { // check if portal hasn't been loaded
         portalLoader.load('models/portal.glb', function (gltf) {
@@ -432,6 +433,8 @@ function loadPortal() {
                 const action = portalMixer.clipAction(gltf.animations[0]);
                 action.play();
             }
+
+            portal.visible = false;
         }, undefined, function (error) {
             console.error(error);
         });
@@ -462,6 +465,14 @@ async function initLevel(level) {
             console.error('An error occurred while loading the monster:', error);
         }
     }
+    if(!portal) {
+        try {
+            await loadPortal(); // Wait for the portal to be loaded.
+        } catch (error) {
+            console.error('An error occurred while loading the portal:', error);
+            return; // Exit if the soldier couldn't be loaded.
+        }
+    }
     //soldier.position.set(0,0,8);
 
     if (level == 1) {
@@ -472,9 +483,9 @@ async function initLevel(level) {
         numCoins = 0;
 
         // Create multiple coins
-        coinsNeeded = 3;
-        createCoin(-11, 0.1, 8, scene, coins);
-        createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
+        coinsNeeded = 1;
+        //createCoin(-11, 0.1, 8, scene, coins);
+        //createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
         createCoin(8.309663681895037, -0.1712324325972956, -2.9527764209625995, scene, coins);
 
         //Create multiple boosts
@@ -578,7 +589,6 @@ let soldierHealth;
 let numCoins;
 let verticalVelocity = 0;
 let collectedAllCoinsMessage = false;
-let portal;
 let coinCounter = 0;
 let jumpStartY = null;  // This will keep track of the Y position when the jump starts
 
@@ -796,7 +806,7 @@ function updateMovement() {
     if (dummyMesh && portalDummyMesh) {
         let soldierBox = new THREE.Box3().setFromObject(dummyMesh);
         let portalBox = new THREE.Box3().setFromObject(portalDummyMesh);
-        if (soldierBox.intersectsBox(portalBox)) {
+        if (soldierBox.intersectsBox(portalBox) && portal.visible) {
             console.log("Soldier collided with portal!");
             gamewon();
         }
@@ -1080,7 +1090,7 @@ function checkCollisionsWithCollectibles() {
             // Load the portal if all level coins have been collected
             if (numCoins === coinsNeeded) {
                 coinsCollected();
-                loadPortal();
+                portal.visible = true;
             }
 
         }
