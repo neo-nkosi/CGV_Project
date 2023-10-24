@@ -1097,6 +1097,22 @@ function checkCollisionsWithCollectibles() {
                 scene.remove(coin.dummyMesh);
             }
 
+            if (coin.mesh.geometry) {
+                coin.mesh.geometry.dispose();
+            }
+            if (coin.mesh.material) {
+                coin.mesh.material.dispose();
+            }
+
+            if (coin.mesh.material.map) {
+                coin.mesh.material.map.dispose();
+            }
+
+            coin.mesh = null;
+            coin.dummyMesh = null;
+            coin.mixer = null;
+
+
             // Load the portal if all level coins have been collected
             if (numCoins === coinsNeeded) {
                 coinsCollected();
