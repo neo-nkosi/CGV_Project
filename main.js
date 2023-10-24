@@ -508,12 +508,12 @@ async function initLevel(level) {
         soldierHealth = 1;
         numCoins = 0;
 
-        coinsNeeded = 2;
+        coinsNeeded = 5;
 
         // Create multiple coins
-        //createCoin(-4.668858254609299, 0.19268887765808546, -3.666108506629987, scene, coins);
-        //createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
-        //createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+        createCoin(-4.668858254609299, 0.19268887765808546, -3.666108506629987, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
         createCoin(15.313297791701023, -0.1057143266885793, 21.623686900287876, scene, coins);
         createCoin(2.4870020913648316, -0.10571453306073826, 19.26306456486548, scene, coins);
 
@@ -1091,6 +1091,19 @@ function checkCollisionsWithCollectibles() {
 
             // Remove the coin from the scene
             scene.remove(coin.mesh);
+
+            // Stop all animations and dispose of the mixer
+            if (coin.mixer) {
+                coin.mixer.stopAllAction();
+                coin.mixer.uncacheRoot(coin.mixer.getRoot());
+            }
+
+            // Remove the coin's dummy mesh
+            if (coin.dummyMesh) {
+                coin.dummyMesh.geometry.dispose();
+                coin.dummyMesh.material.dispose();
+                scene.remove(coin.dummyMesh);
+            }
 
             // Load the portal if all level coins have been collected
             if (numCoins === coinsNeeded) {
