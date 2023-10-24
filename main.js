@@ -1082,28 +1082,7 @@ function checkCollisionsWithCollectibles() {
             updateHUDCoin(numCoins);
             animate();
 
-            // Remove the coin from the scene
-            scene.remove(coin.mesh);
-
-            // Stop all animations and dispose of the mixer
-            if (coin.mixer) {
-                coin.mixer.stopAllAction();
-                coin.mixer.uncacheRoot(coin.mixer.getRoot());
-            }
-
-            // Remove the coin's dummy mesh
-            if (coin.dummyMesh) {
-                coin.dummyMesh.geometry.dispose();
-                coin.dummyMesh.material.dispose();
-                scene.remove(coin.dummyMesh);
-            }
-
-            if (coin.mesh.geometry) {
-                coin.mesh.geometry.dispose();
-            }
-            if (coin.mesh.material) {
-                coin.mesh.material.dispose();
-            }
+            disposeCollectible(coin);
 
             // Remove the coin from the array since it's collected
             coins.splice(i, 1); // remove the coin from the array
@@ -1121,46 +1100,78 @@ function checkCollisionsWithCollectibles() {
     let boostTimeout = null;
 
     // Check collision with boosts
-    boosts.forEach(b => {
-        const boostBoundingBox = new THREE.Box3().setFromObject(b.dummyMesh);
-        if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !b.collected) {
+    for (let i = boosts.length - 1; i >= 0; i--) {
+        let boost = boosts[i];
+        const boostBoundingBox = new THREE.Box3().setFromObject(boost.dummyMesh);
+        if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !boost.collected) {
             console.log("Collision between character and boost");
 
-            // Clear the existing timeout if it's still active, this will prevent the boostFactor from reverting while a new boost is active
+            // Clear the existing timeout if it's still active
             if (boostTimeout) {
                 clearTimeout(boostTimeout);
             }
 
-            boostFactor += 1;  // or any other effect you want to give
-            b.mesh.visible = false;
-            b.collected = true;
+            boostFactor += 1;  // Adjust effect as needed
+            boost.mesh.visible = false;
+            boost.collected = true;
             updateHUDSpeed(boostFactor);
             animate();
 
-            // Set a timeout to revert the boostFactor after 10 seconds (10000 milliseconds)
+            // Clean up and memory management
+            disposeCollectible(boost);
+
+            // Remove the boost from the array
+            boosts.splice(i, 1);
+
+            // Set a timeout to revert the boostFactor
             boostTimeout = setTimeout(() => {
-                boostFactor -= 1; // assuming the normal state is one less. Adjust as necessary.
+                boostFactor -= 1; // adjust as necessary
                 updateHUDSpeed(boostFactor);
-                boostTimeout = null; // Clear the timeout variable
-            }, 8000); // 10000 milliseconds = 10 seconds
+                boostTimeout = null;
+            }, 8000); // duration of the boost effect
         }
-    });
+    }
 
     // Check collision with healths
-    healths.forEach(h => {
-        const healthBoundingBox = new THREE.Box3().setFromObject(h.dummyMesh);
-        if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !h.collected) {
+    for (let i = healths.length - 1; i >= 0; i--) {
+        let health = healths[i];
+        const healthBoundingBox = new THREE.Box3().setFromObject(health.dummyMesh);
+        if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !health.collected) {
             console.log("Collision between character and health");
-            soldierHealth += 1;
-            h.mesh.visible = false;
-            h.collected = true;
+            soldierHealth += 1; // Adjust effect as needed
+            health.mesh.visible = false;
+            health.collected = true;
             blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889; // Update blindness overlay
             updateHUDHP(soldierHealth);
             animate();
+
+            // Clean up and memory management
+            disposeCollectible(health);
+
+            // Remove the health from the array
+            healths.splice(i, 1);
         }
-    });
+    }
+}
 
-
+// Helper function to dispose of geometry, material, and remove from scene
+function disposeCollectible(collectible) {
+    scene.remove(collectible.mesh);
+    if (collectible.mixer) {
+        collectible.mixer.stopAllAction();
+        collectible.mixer.uncacheRoot(collectible.mixer.getRoot());
+    }
+    if (collectible.dummyMesh) {
+        collectible.dummyMesh.geometry.dispose();
+        collectible.dummyMesh.material.dispose();
+        scene.remove(collectible.dummyMesh);
+    }
+    if (collectible.mesh.geometry) {
+        collectible.mesh.geometry.dispose();
+    }
+    if (collectible.mesh.material) {
+        collectible.mesh.material.dispose();
+    }
 }
 
 //play different animations
