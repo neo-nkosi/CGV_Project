@@ -404,29 +404,17 @@ let portalMixer;
 let portalDummyMesh;
 let portal;
 function loadPortal() {
-
+    return new Promise((resolve, reject) => { // Wrap your loader in a promise
     const portalLoader = new GLTFLoader();
     if (!portal) { // check if portal hasn't been loaded
         portalLoader.load('models/portal.glb', function (gltf) {
             portal = gltf.scene;
-
-            if (window.selectedLevel == 1){
-                gltf.scene.position.set(2.508606756460684, -0.3057145773003322, 19.9);
-            }else if (window.selectedLevel == 2){
-                gltf.scene.position.set(14.710548068720117,-0.3,7.8);
-            }
             gltf.scene.scale.set(0.3, 0.3, 0.3);
             scene.add(gltf.scene);
 
             // After adding the portal to the scene:
             portalDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 0.1));  // Adjust the size as necessary
-            portalDummyMesh.position.copy(portal.position);
-            portalDummyMesh.position.z -= 1.3;
             //scene.add(portalDummyMesh);
-
-            const portalBoxHelper = new THREE.BoxHelper(portalDummyMesh, 0xff0000);  // Making it red for visibility
-            //scene.add(portalBoxHelper);
-
 
             if (gltf.animations && gltf.animations.length) {
                 portalMixer = new THREE.AnimationMixer(portal);
@@ -435,10 +423,15 @@ function loadPortal() {
             }
 
             portal.visible = false;
+            resolve(portal); // resolve the promise with the loaded portal
         }, undefined, function (error) {
             console.error(error);
+            reject(error); // reject the promise if there's an error
         });
+    } else {
+        resolve(portal); // if portal is already loaded, resolve immediately
     }
+    });
 }
 
 let coinsNeeded;
@@ -470,7 +463,7 @@ async function initLevel(level) {
             await loadPortal(); // Wait for the portal to be loaded.
         } catch (error) {
             console.error('An error occurred while loading the portal:', error);
-            return; // Exit if the soldier couldn't be loaded.
+            return; // Exit if the portal couldn't be loaded.
         }
     }
     //soldier.position.set(0,0,8);
@@ -503,6 +496,11 @@ async function initLevel(level) {
         //Set monster position
         monster.position.set(12.344735516930285, 0.0, 23.321273620601847);
 
+        //Set portal position
+        portal.position.set(2.508606756460684, -0.3057145773003322, 19.9);
+        portalDummyMesh.position.copy(portal.position);
+        portalDummyMesh.position.z -= 1.3;
+
     } else if (level == 2) {
         //Start of game parameters
         invunerable = 0;
@@ -510,12 +508,12 @@ async function initLevel(level) {
         soldierHealth = 1;
         numCoins = 0;
 
-        coinsNeeded = 5;
+        coinsNeeded = 2;
 
         // Create multiple coins
-        createCoin(-4.668858254609299, 0.19268887765808546, -3.666108506629987, scene, coins);
-        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
-        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+        //createCoin(-4.668858254609299, 0.19268887765808546, -3.666108506629987, scene, coins);
+        //createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        //createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
         createCoin(15.313297791701023, -0.1057143266885793, 21.623686900287876, scene, coins);
         createCoin(2.4870020913648316, -0.10571453306073826, 19.26306456486548, scene, coins);
 
@@ -532,6 +530,11 @@ async function initLevel(level) {
 
         //Set Monster position
         monster.position.set(-10.953637295548958, -0.16373699632400585, 8.058759585396883);
+
+        //Set Portal Position
+        portal.position.set(14.710548068720117, -0.3, 7.8);
+        portalDummyMesh.position.copy(portal.position);
+        portalDummyMesh.position.z -= 1.3;
 
     } else if (level == 3) {
         //Start of game parameters
@@ -552,6 +555,8 @@ async function initLevel(level) {
         createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
         createHealth(9.123201360574695, 0.08, 0.41047471505580513, scene, healths);
         createHealth(14.03279715663051, 0.08, 8.672422194858061, scene, healths);
+
+
     }
 
     createHUD(camera,numCoins,boostFactor,soldierHealth);
