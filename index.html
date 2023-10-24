@@ -44,7 +44,7 @@
 
 <div id="win-screen">
     <p>You survive to see another day</p>
-    <button id="continue-button">Continue</button>
+    <button id="next-level-button">Next Level</button>
 </div>
 
 <div id="lose-screen">
@@ -158,9 +158,11 @@
         window.resumeGame(); // this calls the resumeGame function from your main.js
     });
 
-    document.getElementById('continue-button').addEventListener('click', function() {
-        location.reload(); // This will force the page to reload
+    document.getElementById('next-level-button').addEventListener('click', function() {
+        document.getElementById('win-screen').style.display = 'none'; // hide the win screen
+        window.goToNextLevel(); // proceed to the next level
     });
+
 
     document.getElementById('menu-button').addEventListener('click', function() {
         location.reload(); // This will force the page to reload

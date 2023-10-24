@@ -42,16 +42,11 @@ function gamewon(){
     const overlay = document.getElementById('win-screen');
     overlay.style.display = 'flex';
     isGamePaused = true;
-
-    // Wait for some time or wait for a user action, then go to the next level
-    setTimeout(() => {
-        overlay.style.display = 'none'; // Hide the win overlay
-        isGamePaused = false; // Unpause the game
-        goToNextLevel(); // Go to the next level
-    }, 3000); // for example, wait 3 seconds
+    // Removed timeout function here. The Next Level button will now handle proceeding to the next level
 }
 
-function goToNextLevel() {
+
+window.goToNextLevel = function(){
     currentLevel++; // Increment the level
     if (currentLevel <= 3) { // If there are still levels left
         // Clean up the previous level's objects like coins, boosts, healths, etc.
@@ -477,10 +472,10 @@ async function initLevel(level) {
         numCoins = 0;
 
         // Create multiple coins
-        coinsNeeded = 1;
+        coinsNeeded = 3;
         createCoin(-11, 0.1, 8, scene, coins);
-        //createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
-        //createCoin(8.309663681895037, -0.1712324325972956, -2.9527764209625995, scene, coins);
+        createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
+        createCoin(8.309663681895037, -0.1712324325972956, -2.9527764209625995, scene, coins);
 
         //Create multiple boosts
         createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
@@ -552,6 +547,9 @@ async function initLevel(level) {
 
     blindnessOverlay.style.display = 'flex';
     blindnessOverlay.style.opacity = -0.0889 * (soldierHealth) + 0.8889;
+
+    isGamePaused = false;
+    animate();
 
     return Promise.resolve();
 }
