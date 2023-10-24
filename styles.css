@@ -177,7 +177,19 @@ button {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    background-color: black;
+    position: fixed;  /* make it fixed */
+    top: 0;           /* place it at the top */
+    left: 0;          /* place it at the left */
+    width: 100%;      /* full width */
+    height: 100%;     /* full height */
+    z-index: 1000;    /* place it above other content */
 }
+#controls-screen img {
+    filter: invert(100%);
+}
+
+
 
 /* All for Credits */
 #credits-screen {
