@@ -36,6 +36,7 @@ header h2 {
     justify-content: center;
 }
 
+
 #additional-buttons-container {
     display: flex;
     justify-content: center; /* Align the buttons to the center */
@@ -118,10 +119,11 @@ button {
     margin-bottom: 15px;
     text-align: center;
     color: white;
+    font-size: 1.2em;
 }
 #level-objective h3, #level-modifiers h3 {
     margin: 0 0 5px;
-    font-size: 1.2em;
+    font-size: 1.4em;
     text-align: center;
     color: white;
 }
@@ -214,7 +216,7 @@ button {
     padding: 20px;
     color: white;
     transform: translateY(100%);
-    animation: scrollCredits 10s linear forwards;
+    animation: scrollCredits 25s linear forwards;
 }
 
 #credits-back-button {
@@ -234,6 +236,23 @@ button {
     0% { transform: translateY(100%); }
     100% { transform: translateY(-200%); } /* adjust as needed depending on your content */
 }
+
+.developer-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1em;
+}
+
+.developer-left, .developer-right {
+    flex: 0 0 auto; /* Allows the boxes to size based on content or set width, not the parent's width */
+    width: 150px;  /* Set to a fixed width or max-width depending on your design */
+}
+
+
+.developer-right {
+    padding-left: 40px; /* Optional: a little space between names if they get too close */
+}
+
 
 
 
