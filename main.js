@@ -8,7 +8,6 @@ import {createBoost, createCoin, createHealth} from './iconsCreation.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 
-
 let currentLevel =1;
 if (window.selectedLevel) {
 
@@ -268,13 +267,13 @@ async function loadSoldier() {
         let boxSize = new THREE.Vector3(0.2, 0.5, 0.2); // Size of the box (width, height, depth)
         dummyMesh = new THREE.Mesh(new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z));
 
-// 2. Position this mesh at the position of the soldier.
+        // 2. Position this mesh at the position of the soldier.
         dummyMesh.position.copy(new Vector3(soldier.position.x, soldier.position.y, soldier.position.z));
         yOffset = 0.2;  // or any value you deem appropriate
         dummyMesh.position.y += yOffset;
 
 
-// 3. Create a BoxHelper using this dummy mesh.
+        // 3. Create a BoxHelper using this dummy mesh.
         soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
 
         //scene.add(soldierBoxHelper);
@@ -296,10 +295,10 @@ async function loadSoldier() {
         orbitControls.target.copy(soldier.position);
 
         resolve(soldier); // Resolve the promise with the loaded soldier.
-    }, undefined, function (error) {
-        console.error(error);
-        reject(error); // Reject the promise if there's an error.
-    });
+        }, undefined, function (error) {
+            console.error(error);
+            reject(error); // Reject the promise if there's an error.
+        });
     });
 }
 

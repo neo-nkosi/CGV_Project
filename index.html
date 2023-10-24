@@ -73,6 +73,14 @@
     <button id="controls-back-button">Back</button>
 </div>
 
+<div id="credits-screen" style="display: none;">
+    <div class="credits-wrapper">
+        <div class="credits-content">
+            <!-- Content will be loaded dynamically from credits.html -->
+        </div>
+        <button id="credits-back-button">Back</button>
+    </div>
+</div>
 
 <script type="module">
     const levelDetails = {
@@ -196,6 +204,34 @@
 
             // Show the level select screen
             document.getElementById('level-select').style.display = 'flex'; // or 'block', if that's what you're using
+        });
+
+        document.getElementById('credits-button').addEventListener('click', async function() {
+            // Load credits content
+            const creditsContent = document.querySelector('.credits-content');
+            try {
+                const response = await fetch('credits.html');
+                if (response.ok) {
+                    const content = await response.text();
+                    creditsContent.innerHTML = content;
+                } else {
+                    console.error("Failed to load credits content. HTTP Status:", response.status);
+                }
+            } catch (error) {
+                console.error("Error fetching credits content:", error);
+            }
+
+            // Hide the level select screen
+            document.getElementById('level-select').style.display = 'none';
+
+            // Show the credits screen
+            document.getElementById('credits-screen').style.display = 'flex';
+
+            // Reset credits animation for a fresh start
+            creditsContent.style.animation = 'none';
+            setTimeout(() => {
+                creditsContent.style.animation = '';
+            }, 10); // Small delay to ensure the animation resets
         });
 
 
