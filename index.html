@@ -7,6 +7,11 @@
 </head>
 <body>
 <div id="level-select">
+    <video autoplay muted loop class="backgroundVideo">
+        <source src="videos/animated-corridor.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
     <header>
         <h1>Welcome To</h1>
         <h2>ESCAPE THE SINGULARITY</h2>
@@ -23,8 +28,14 @@
 <img id="blindness-overlay" src="textures/blindness-vingnette.png">
 </img>
 
-<!-- New div for start screen -->
+<!-- Updated div for start screen -->
 <div id="start-screen">
+    <!-- Video background -->
+    <video autoplay muted loop class="backgroundVideo">
+        <source src="videos/animated-corridor.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
     <header>
         <h1>Escape The Singularity</h1>
     </header>
@@ -55,6 +66,11 @@
 
 <!-- Intermediate screen content -->
 <div id="intermediate-screen">
+    <video autoplay muted loop class="backgroundVideo">
+        <source src="videos/animated-corridor.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
     <div id="level-objective">
         <h3>Objective:</h3>
         <p></p> <!-- Objective text will go here -->
@@ -83,6 +99,14 @@
 </div>
 
 <script type="module">
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const videos = document.querySelectorAll('.backgroundVideo');
+        videos.forEach(video => {
+            video.playbackRate = 0.5; // Half the normal speed
+        });
+    });
+
     const levelDetails = {
         '1': {
             objective: 'Collect 3 coins. When all coins are collected, run to the portal to escape.',

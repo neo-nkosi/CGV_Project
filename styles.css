@@ -13,7 +13,7 @@ body {
     justify-content: center; /* Add this to center content vertically */
 }
 header {
-    color: black;
+    color: white;
     padding: 20px 0;
     text-align: center;
     width: 100%;
@@ -34,11 +34,6 @@ header h2 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-
-    background-image: url('textures/level-background.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
 }
 
 #additional-buttons-container {
@@ -60,12 +55,21 @@ header h2 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-
-    background-image: url('textures/level-background.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    position: relative; /* Add this to position child elements with respect to this container */
+    overflow: hidden; /* Hide any overflow */
 }
+
+.backgroundVideo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This will ensure the video covers the entire container */
+    z-index: -1; /* This ensures the video stays behind other content */
+}
+
+
 #blindness-overlay{
     width: 100%;
     height: 100vh;
@@ -208,6 +212,7 @@ button {
 .credits-content {
     flex: 1;
     padding: 20px;
+    color: white;
     transform: translateY(100%);
     animation: scrollCredits 10s linear forwards;
 }
