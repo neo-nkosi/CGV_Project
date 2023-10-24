@@ -78,8 +78,8 @@
         <div class="credits-content">
             <!-- Content will be loaded dynamically from credits.html -->
         </div>
-        <button id="credits-back-button">Back</button>
     </div>
+    <button id="credits-back-button">Back</button>
 </div>
 
 <script type="module">
@@ -232,6 +232,14 @@
             setTimeout(() => {
                 creditsContent.style.animation = '';
             }, 10); // Small delay to ensure the animation resets
+        });
+
+        document.getElementById('credits-back-button').addEventListener('click', function() {
+            // Hide the intermediate screen
+            document.getElementById('credits-screen').style.display = 'none';
+
+            // Show the level select screen
+            document.getElementById('level-select').style.display = 'flex';
         });
 
 

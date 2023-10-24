@@ -185,6 +185,7 @@ button {
     align-items: center;   /* Center vertically */
     text-align: center;
     justify-content: center; /* Center horizontally */
+    flex-direction: column;
     overflow: hidden;
     z-index: 1000;
 }
@@ -196,7 +197,7 @@ button {
     -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
     scrollbar-width: none;     /* Hide scrollbar for Firefox */
     width: 80%;            /* Use a percentage or fixed width */
-    max-height: 80%;       /* Limit the height */
+    max-height: 90%;       /* Limit the height */
     overflow: auto;        /* If content exceeds the available space, it becomes scrollable */
     display: flex;
     flex-direction: column;
@@ -213,6 +214,7 @@ button {
 
 #credits-back-button {
     padding: 10px 20px;
+    margin-top: 50px;
     margin-bottom: 20px; /* Space from the bottom */
     cursor: pointer;
     border: none;
