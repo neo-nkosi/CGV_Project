@@ -1071,7 +1071,8 @@ function checkCollisionsWithCollectibles() {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
 
     // Check collision with coins
-    coins.forEach(coin => {
+    for (let i = coins.length - 1; i >= 0; i--) {
+        let coin = coins[i];
         const coinBoundingBox = new THREE.Box3().setFromObject(coin.dummyMesh);
         if (soldierBoundingBox.intersectsBox(coinBoundingBox) && !coin.collected) {
             console.log("Collision between character and coin");
@@ -1104,15 +1105,17 @@ function checkCollisionsWithCollectibles() {
                 coin.mesh.material.dispose();
             }
 
+            // Remove the coin from the array since it's collected
+            coins.splice(i, 1); // remove the coin from the array
 
             // Load the portal if all level coins have been collected
             if (numCoins === coinsNeeded) {
                 coinsCollected();
                 portal.visible = true;
             }
-
         }
-    });
+    }
+
 
     // Define a variable to keep track of the active boost timeout
     let boostTimeout = null;
