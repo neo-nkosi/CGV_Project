@@ -1073,13 +1073,36 @@ function findPath() {
 }
 let initialParticlePositions = [];
 let targetParticlePositions = [];
+function createCircleTexture(radius, fillColor) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    canvas.width = radius * 2;
+    canvas.height = radius * 2;
+
+    context.beginPath();
+    context.arc(radius, radius, radius, 0, 2 * Math.PI, false);
+    context.fillStyle = fillColor;
+    context.fill();
+
+    const texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+
+    return texture;
+}
+
 function createSparkEffect() {
     const particleCount = 50;
     const particles = new THREE.BufferGeometry();
     const particlePositions = [];
+
+    const circleTexture = createCircleTexture(64, 'white'); // White circle with a radius of 64 pixels
+
     const particleMaterial = new THREE.PointsMaterial({
         color: 0xffff40,
-        size: 0.03,
+        size: 0.02,
+        map: circleTexture,
+        alphaTest: 0.5, // Ensure the transparent parts of the texture are not rendered
         transparent: true,
         blending: THREE.AdditiveBlending
     });
@@ -1104,8 +1127,9 @@ function createSparkEffect() {
     return new THREE.Points(particles, particleMaterial);
 }
 
+
 const particleSystem = createSparkEffect();
-particleSystem.position.y += 0.4; // Adjust as necessary
+particleSystem.position.y += 0.4;
 
 
 function updateParticleSystem() {
@@ -1166,7 +1190,7 @@ function checkCollisionsWithCollectibles() {
             boostFactor -= 1; // adjust as necessary
             updateHUDSpeed(boostFactor);
             soldier.remove(particleSystem);
-        }, 3000); // duration of the boost effect
+        }, 12000); // duration of the boost effect
     }
 
     //if (boostFactor > 1){
@@ -1227,9 +1251,6 @@ const clock = new THREE.Clock();
 
      updateMovement();
 
-     // Update the particle system:
-     updateParticleSystem();
-
      listener.position.copy(camera.position);
 
      // Call the function after the exploration is done
@@ -1260,6 +1281,9 @@ const clock = new THREE.Clock();
      } else {
          orbitControls.update();
      }
+
+     // Update the particle system:
+     updateParticleSystem();
 
      renderer.render(scene, camera);
 
