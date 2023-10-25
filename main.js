@@ -7,6 +7,7 @@ import {Vector3} from "three";
 import {createBoost, createCoin, createHealth} from './iconsCreation.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
+import { enableBoostLight,enableHealthLight,disableBoostLight,disableHealthLight, healthLight, boostLight  } from './lightCreationEffect';
 
 let currentLevel =1;
 if (window.selectedLevel) {
@@ -154,6 +155,13 @@ camera.position.z = 1;
 scene.add(camera);
 let firstPersonView = false;
 
+// Define the directionalLight at the top of your script
+const directionalLight = new THREE.DirectionalLight('red',5 );
+directionalLight.position.set(0, 0, 0);
+directionalLight.target.position.set(0, 0, -1);
+directionalLight.distance = 0.7;
+directionalLight.decay = 0.01;
+
 function toggleFirstPersonView() {
     firstPersonView = !firstPersonView;
     orbitControls.enabled = !firstPersonView;
@@ -162,8 +170,23 @@ function toggleFirstPersonView() {
     if (firstPersonView) {
         // Adjust camera's position if needed (e.g., to set it at the soldier's eye level)
         camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
+        // Turn on the light
+        directionalLight.intensity = 1;
+        // Ensure the light follows the camera
+        directionalLight.position.set(0, 0, 0);
+        directionalLight.target.position.set(0, 0, -1);
+        // Add the light to the camera so it moves with the camera
+        camera.add(directionalLight);
+        camera.add(directionalLight.target);
+    } else {
+        // Turn off the light
+        directionalLight.intensity = 0;
+        // If not in first-person view, you might want to set the light back to its initial position
+        directionalLight.position.set(0, 0, 0);
+        directionalLight.target.position.set(0, 0, -1);
     }
 }
+
 
 // SOUND
 
@@ -1066,6 +1089,7 @@ function findPath() {
 }
 
 
+
 function checkCollisionsWithCollectibles() {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
 
@@ -1114,6 +1138,11 @@ function checkCollisionsWithCollectibles() {
             boost.mesh.visible = false;
             boost.collected = true;
             updateHUDSpeed(boostFactor);
+            // Enable the boost light
+            camera.add(boostLight);
+            camera.add(boostLight.target);
+            enableBoostLight();
+            setTimeout(disableBoostLight, 8000);
             animate();
 
             // Clean up and memory management
@@ -1126,8 +1155,11 @@ function checkCollisionsWithCollectibles() {
             boostTimeout = setTimeout(() => {
                 boostFactor -= 1; // adjust as necessary
                 updateHUDSpeed(boostFactor);
+               
                 boostTimeout = null;
             }, 8000); // duration of the boost effect
+            // Enable the boost light
+            
         }
     }
 
@@ -1137,6 +1169,11 @@ function checkCollisionsWithCollectibles() {
         const healthBoundingBox = new THREE.Box3().setFromObject(health.dummyMesh);
         if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !health.collected) {
             console.log("Collision between character and health");
+            // Enable the health light
+            // Add lights as children of the camera
+            camera.add(healthLight);
+            camera.add(healthLight.target);
+            enableHealthLight();
             soldierHealth += 1; // Adjust effect as needed
             health.mesh.visible = false;
             health.collected = true;
@@ -1149,6 +1186,8 @@ function checkCollisionsWithCollectibles() {
 
             // Remove the health from the array
             healths.splice(i, 1);
+            // Disable the health light when the interaction is complete
+            setTimeout(disableHealthLight, 2000);
         }
     }
 }
