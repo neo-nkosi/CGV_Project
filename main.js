@@ -1072,37 +1072,42 @@ function findPath() {
     }
 }
 
-// Helper function to create the sparks
-function createSparks(position) {
-    const particles = 100;
-    const geometry = new THREE.BufferGeometry();
-    const vertices = [];
+function createSparkEffect() {
+    const particleCount = 50;
+    const particles = new THREE.BufferGeometry();
+    const particlePositions = [];
+    const particleMaterial = new THREE.PointsMaterial({
+        color: 0xffff00,
+        size: 0.01,
+        transparent: true,
+        blending: THREE.AdditiveBlending
+    });
 
-    for (let i = 0; i < particles; i++) {
-        const x = position.x + (Math.random() - 0.5) * 2;
-        const y = position.y + (Math.random() - 0.5) * 2;
-        const z = position.z + (Math.random() - 0.5) * 2;
+    // Adjust these values to keep particles closer to the center
+    const maxDistanceFromCenter = 0.7;
 
-        vertices.push(x, y, z);
+    for (let i = 0; i < particleCount; i++) {
+        particlePositions.push(
+            (Math.random() - 0.5) * maxDistanceFromCenter,
+            (Math.random() - 0.5) * maxDistanceFromCenter,
+            (Math.random() - 0.5) * maxDistanceFromCenter
+        );
     }
 
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    particles.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
 
-    const material = new THREE.PointsMaterial({ color: 0xFFFF00, size: 0.1 });  // Yellow color
-
-    const points = new THREE.Points(geometry, material);
-    scene.add(points);
-
-    // Assuming you have a global clock or some animation loop
-    // Animate and remove after some time
-    setTimeout(() => {
-        scene.remove(points);
-        geometry.dispose();
-        material.dispose();
-    }, 2000); // remove after 2 seconds or adjust as needed
-
-    return points;
+    return new THREE.Points(particles, particleMaterial);
 }
+
+const particleSystem = createSparkEffect();
+
+function updateParticleSystem() {
+    particleSystem.position.copy(dummyMesh.position);
+
+    // Here, you can add logic to update other particle properties for a more dynamic effect.
+    // For example, you can change particle size, opacity, or move individual particles around.
+}
+
 // Define a variable to keep track of the active boost timeout
 let boostTimeout = null;
 
@@ -1127,8 +1132,12 @@ function checkCollisionsWithCollectibles() {
     if (result.initiateBoost) {
         if (boostTimeout) {
             clearTimeout(boostTimeout);
+            scene.remove(particleSystem);
             boostTimeout = null;
         }
+
+        // Add the particle system when the boost is initiated
+        scene.add(particleSystem);
 
         // Adjust boost effect as needed
         boostFactor += 1;
@@ -1138,6 +1147,7 @@ function checkCollisionsWithCollectibles() {
         boostTimeout = setTimeout(() => {
             boostFactor -= 1; // adjust as necessary
             updateHUDSpeed(boostFactor);
+            scene.remove(particleSystem);
         }, 3000); // duration of the boost effect
     }
 
@@ -1198,6 +1208,9 @@ const clock = new THREE.Clock();
      animateCollectibles(coins, boosts, healths, 0.016);
 
      updateMovement();
+
+     // Update the particle system:
+     updateParticleSystem();
 
      listener.position.copy(camera.position);
 
