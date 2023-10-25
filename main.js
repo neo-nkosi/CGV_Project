@@ -49,6 +49,7 @@ function gamelost(){
 }
 
 function gamewon(){
+    updateWinScreenWithNextLevel(window.selectedLevel);
     const overlay = document.getElementById('win-screen');
     overlay.style.display = 'flex';
     isGamePaused = true;

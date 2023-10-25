@@ -120,9 +120,27 @@
         '2': {
             objective: 'Collect 5 coins. When all coins are collected, run to the portal to escape.',
             modifiers: 'You begin with 10 health. There is 1 monster.',
+
         },
         // ... more levels
     };
+
+    window.updateWinScreenWithNextLevel = function(currentLevel) {
+        const nextLevel = (parseInt(currentLevel, 10) + 1).toString();
+        const details = levelDetails[nextLevel];
+
+        // Add Objective and Modifiers of the next level to the win screen
+        const objectiveElement = document.createElement('div');
+        objectiveElement.innerHTML = `<h3>Next Level Objective:</h3><p>${details.objective}</p>`;
+
+        const modifiersElement = document.createElement('div');
+        modifiersElement.innerHTML = `<h3>Modifiers:</h3><p>${details.modifiers}</p>`;
+
+        const winScreen = document.getElementById('win-screen');
+        winScreen.insertBefore(objectiveElement, winScreen.querySelector('#next-level-button'));
+        winScreen.insertBefore(modifiersElement, winScreen.querySelector('#next-level-button'));
+    }
+
     function showIntermediateScreen(level) {
         // Set a global variable with the selected level
         window.selectedLevel = level;
