@@ -1,10 +1,19 @@
 import * as THREE from 'three';
 function createDirectionalLight(color, intensity) {
     const directionalLight = new THREE.DirectionalLight(color, intensity);
-    directionalLight.castShadow = true; // Enable shadow casting if needed
+    directionalLight.castShadow = true; 
+    directionalLight.castShadow = true;
 
-    // You can adjust the light's position as needed based on your scene setup
-    // directionalLight.position.set(x, y, z);
+    // Set the shadow camera parameters to control the light's radius
+    directionalLight.shadow.camera.left = -shadowCameraSize;
+    directionalLight.shadow.camera.right = shadowCameraSize;
+    directionalLight.shadow.camera.top = shadowCameraSize;
+    directionalLight.shadow.camera.bottom = -shadowCameraSize;
+    directionalLight.shadow.camera.near = 0.5; // Adjust this 
+    directionalLight.shadow.camera.far = 2; // Adjust this 
+
+    
+    
 
     return directionalLight;
 }
