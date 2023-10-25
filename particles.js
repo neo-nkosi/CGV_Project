@@ -85,3 +85,35 @@ export function updateParticleSystem(particleSystem) {
 
     particleSystem.geometry.attributes.position.needsUpdate = true;
 }
+
+export function createHealthEffect() {
+    const particleCount = 50;
+    const particles = new THREE.BufferGeometry();
+    const particlePositions = [];
+
+    const circleTexture = createCircleTexture(64, 'white'); // White circle with a radius of 64 pixels
+
+    const particleMaterial = new THREE.PointsMaterial({
+        color: 0xff4040, // This is a shade of red. Adjust as needed.
+        size: 0.02,
+        map: circleTexture,
+        alphaTest: 0.5, // Ensure the transparent parts of the texture are not rendered
+        transparent: true,
+        blending: THREE.AdditiveBlending
+    });
+
+    const maxDistanceFromCenter = 1.5;
+
+    for (let i = 0; i < particleCount; i++) {
+        let x = (Math.random() - 0.5) * maxDistanceFromCenter;
+        let y = (Math.random() - 0.5) * maxDistanceFromCenter;
+        let z = (Math.random() - 0.5) * maxDistanceFromCenter;
+
+        particlePositions.push(x, y, z);
+    }
+
+    particles.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
+
+    return new THREE.Points(particles, particleMaterial);
+}
+

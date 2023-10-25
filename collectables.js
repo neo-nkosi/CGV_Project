@@ -187,7 +187,7 @@ export function checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor)
 
 export function checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth, blindnessOverlay) {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
-
+    let isHealthCollected = false;
     // Check collision with healths
     for (let i = healths.length - 1; i >= 0; i--) {
         let health = healths[i];
@@ -205,12 +205,14 @@ export function checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHea
 
             // Remove the health from the array
             healths.splice(i, 1);
+            isHealthCollected = true;
         }
     }
 
     return {
         healths,
-        soldierHealth
+        soldierHealth,
+        isHealthCollected
     };
 }
 

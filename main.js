@@ -14,7 +14,7 @@ import {
 } from './collectables.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
-import {createSparkEffect, updateParticleSystem} from "./particles";
+import {createHealthEffect, createSparkEffect, updateParticleSystem} from "./particles";
 
 import { createLights } from './lights.js';
 
@@ -1076,15 +1076,16 @@ function findPath() {
 
 const particleSystem = createSparkEffect();
 particleSystem.position.y += 0.4;
-
+const healthParticleSystem = createHealthEffect();
+particleSystem.position.y += 0.4;
 
 
 
 // Define a variable to keep track of the active boost timeout
 let boostTimeout = null;
+let healthTimeout = null;
 
 function checkCollisionsWithCollectibles() {
-
 
     let result;
 
@@ -1129,6 +1130,22 @@ function checkCollisionsWithCollectibles() {
     result = checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth, blindnessOverlay);
     healths = result.healths;
     soldierHealth = result.soldierHealth;
+
+    if (result.isHealthCollected) {  // Assuming there's a flag like this when health is increased
+        if (healthTimeout) {  // Similar to the boostTimeout for consistency
+            clearTimeout(healthTimeout);
+            soldier.remove(healthParticleSystem);
+            healthTimeout = null;
+        }
+
+        // Add the health particle system when health is increased
+        soldier.add(healthParticleSystem);
+
+        // Set a timeout to remove the particle system after some time
+        healthTimeout = setTimeout(() => {
+            soldier.remove(healthParticleSystem);
+        }, 8000); // adjust the duration as needed
+    }
 }
 
 
@@ -1213,6 +1230,7 @@ const clock = new THREE.Clock();
 
      // Update the particle system:
      updateParticleSystem(particleSystem);
+     updateParticleSystem(healthParticleSystem);
 
      renderer.render(scene, camera);
 
