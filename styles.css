@@ -206,6 +206,7 @@ button {
     flex-direction: column;
     overflow: hidden;
     z-index: 1000;
+    font-size : 1.5em;
 }
 .credits-wrapper::-webkit-scrollbar {
     display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
@@ -221,14 +222,15 @@ button {
     flex-direction: column;
     justify-content: center; /* Center content vertically within the wrapper */
     align-items: center;
+
 }
 
 .credits-content {
     flex: 1;
     padding: 20px;
     color: white;
-    transform: translateY(100%);
-    animation: scrollCredits 25s linear forwards;
+    transform: translateY(75%);
+    animation: scrollCredits 65s linear forwards;
 }
 
 #credits-back-button {
@@ -245,7 +247,7 @@ button {
 }
 
 @keyframes scrollCredits {
-    0% { transform: translateY(100%); }
+    0% { transform: translateY(75%); }
     100% { transform: translateY(-200%); } /* adjust as needed depending on your content */
 }
 
