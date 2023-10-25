@@ -1076,7 +1076,24 @@ function findPath() {
 
 const particleSystem = createSparkEffect();
 particleSystem.position.y += 0.4;
-const healthParticleSystem = createHealthEffect();
+let healthModelMesh;
+let healthParticleSystem;
+loader.load('models/miniHealth.glb', (gltf) => {
+    gltf.scene.traverse((child) => {
+        if (child.isMesh && child.name === "miniHealth") {
+            healthModelMesh = child;
+            const scaleFactor = 0.0001; // Adjust this value as needed
+            healthModelMesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+        }
+    });
+
+    if (healthModelMesh) {
+        healthParticleSystem = createHealthEffect(healthModelMesh);
+        console.log("Health particles created");
+    } else {
+        console.error("miniHealth mesh not found in the GLTF model!");
+    }
+});
 particleSystem.position.y += 0.4;
 
 
@@ -1230,7 +1247,7 @@ const clock = new THREE.Clock();
 
      // Update the particle system:
      updateParticleSystem(particleSystem);
-     updateParticleSystem(healthParticleSystem);
+     //updateParticleSystem(healthParticleSystem);
 
      renderer.render(scene, camera);
 

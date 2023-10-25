@@ -86,34 +86,40 @@ export function updateParticleSystem(particleSystem) {
     particleSystem.geometry.attributes.position.needsUpdate = true;
 }
 
-export function createHealthEffect() {
-    const particleCount = 50;
-    const particles = new THREE.BufferGeometry();
-    const particlePositions = [];
-
-    const circleTexture = createCircleTexture(64, 'white'); // White circle with a radius of 64 pixels
-
-    const particleMaterial = new THREE.PointsMaterial({
-        color: 0xff4040, // This is a shade of red. Adjust as needed.
-        size: 0.02,
-        map: circleTexture,
-        alphaTest: 0.5, // Ensure the transparent parts of the texture are not rendered
-        transparent: true,
-        blending: THREE.AdditiveBlending
-    });
-
-    const maxDistanceFromCenter = 1.5;
-
-    for (let i = 0; i < particleCount; i++) {
-        let x = (Math.random() - 0.5) * maxDistanceFromCenter;
-        let y = (Math.random() - 0.5) * maxDistanceFromCenter;
-        let z = (Math.random() - 0.5) * maxDistanceFromCenter;
-
-        particlePositions.push(x, y, z);
+export function createHealthEffect(modelMesh) {
+    if (!modelMesh){
+        console.log("no model loaded");
+        return null; // Ensure the model is loaded
     }
 
-    particles.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
+    const particleCount = 20;
+    const dummyObject = new THREE.Object3D(); // To apply transformations for each instance
 
-    return new THREE.Points(particles, particleMaterial);
+    const instancedMesh = new THREE.InstancedMesh(
+        modelMesh.geometry,
+        modelMesh.material,
+        particleCount
+    );
+
+    // Adjust these values to keep particles closer to the center
+    const maxDistanceFromCenter = 1.5;
+
+    const scaleFactor = 0.05; // Adjust this value as needed
+    dummyObject.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+    for (let i = 0; i < particleCount; i++) {
+        const x = (Math.random() - 0.5) * maxDistanceFromCenter;
+        const y = (Math.random() - 0.5) * maxDistanceFromCenter;
+        const z = (Math.random() - 0.5) * maxDistanceFromCenter;
+
+        dummyObject.position.set(x, y, z);
+        dummyObject.updateMatrix();
+        instancedMesh.setMatrixAt(i, dummyObject.matrix);
+    }
+
+    instancedMesh.instanceMatrix.needsUpdate = true;
+
+    return instancedMesh;
 }
+
 
