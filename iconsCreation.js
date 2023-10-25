@@ -1,5 +1,6 @@
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as THREE from "three";
+import {updateHUDCoin, updateHUDHP, updateHUDSpeed} from "./hud";
 
 //Coin
 export function createCoin(x, y, z, scene, coins) {
@@ -119,4 +120,131 @@ export function createHealth(x, y, z, scene, healths) {
         console.error(error);
     });
 }
+
+export function checkCollisionsWithCoins(scene, dummyMesh, coins, numCoins, coinsNeeded) {
+    var allCoinsCollected = false;
+    const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
+
+    // Check collision with coins
+    for (let i = coins.length - 1; i >= 0; i--) {
+        let coin = coins[i];
+        const coinBoundingBox = new THREE.Box3().setFromObject(coin.dummyMesh);
+        if (soldierBoundingBox.intersectsBox(coinBoundingBox) && !coin.collected) {
+            console.log("Collision between character and coin");
+            numCoins+=1;
+            coin.mesh.visible = false;
+            coin.collected = true;
+            updateHUDCoin(numCoins);
+
+            disposeCollectible(coin, scene);
+
+            // Remove the coin from the array since it's collected
+            coins.splice(i, 1); // remove the coin from the array
+
+            // Load the portal if all level coins have been collected
+            if (numCoins === coinsNeeded) {
+                allCoinsCollected = true;
+            }
+        }
+    }
+    return {
+        coins,
+        numCoins: numCoins,
+        allCoinsCollected
+    };
+}
+
+export function checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor, boostTimeout) {
+    const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
+    let newBoostFactor = boostFactor;
+
+    // Check collision with boosts
+    for (let i = boosts.length - 1; i >= 0; i--) {
+        let boost = boosts[i];
+        const boostBoundingBox = new THREE.Box3().setFromObject(boost.dummyMesh);
+        if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !boost.collected) {
+            console.log("Collision between character and boost");
+
+            // Clear the existing timeout if it's still active
+            if (boostTimeout) {
+                clearTimeout(boostTimeout);
+            }
+
+            boostFactor += 1;  // Adjust effect as needed
+            boost.mesh.visible = false;
+            boost.collected = true;
+            updateHUDSpeed(boostFactor);
+
+            // Clean up and memory management
+            disposeCollectible(boost, scene);
+
+            // Remove the boost from the array
+            boosts.splice(i, 1);
+
+            // Set a timeout to revert the boostFactor
+            boostTimeout = setTimeout(() => {
+                boostFactor -= 1; // adjust as necessary
+                updateHUDSpeed(boostFactor);
+                boostTimeout = null;
+            }, 8000); // duration of the boost effect
+        }
+    }
+
+    return {
+        boosts,
+        boostFactor: newBoostFactor,
+        boostTimeout
+    };
+}
+
+export function checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth, blindnessOverlay) {
+    const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
+
+    // Check collision with healths
+    for (let i = healths.length - 1; i >= 0; i--) {
+        let health = healths[i];
+        const healthBoundingBox = new THREE.Box3().setFromObject(health.dummyMesh);
+        if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !health.collected) {
+            console.log("Collision between character and health");
+            soldierHealth += 1; // Adjust effect as needed
+            health.mesh.visible = false;
+            health.collected = true;
+            blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889; // Update blindness overlay
+            updateHUDHP(soldierHealth);
+
+            // Clean up and memory management
+            disposeCollectible(health, scene);
+
+            // Remove the health from the array
+            healths.splice(i, 1);
+        }
+    }
+
+    return {
+        healths,
+        soldierHealth
+    };
+}
+
+// Helper function to dispose of geometry, material, and remove from scene
+function disposeCollectible(collectible, scene) {
+    scene.remove(collectible.mesh);
+    if (collectible.mixer) {
+        collectible.mixer.stopAllAction();
+        collectible.mixer.uncacheRoot(collectible.mixer.getRoot());
+    }
+    if (collectible.dummyMesh) {
+        collectible.dummyMesh.geometry.dispose();
+        collectible.dummyMesh.material.dispose();
+        scene.remove(collectible.dummyMesh);
+    }
+    if (collectible.mesh.geometry) {
+        collectible.mesh.geometry.dispose();
+    }
+    if (collectible.mesh.material) {
+        collectible.mesh.material.dispose();
+    }
+}
+
+
 

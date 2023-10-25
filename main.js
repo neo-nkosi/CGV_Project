@@ -4,7 +4,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {createHUD, removeHUD, updateHUDCoin, updateHUDHP, updateHUDSpeed} from './hud';
 import {checkMovement} from "./collisionCheck";
 import {Vector3} from "three";
-import {createBoost, createCoin, createHealth} from './iconsCreation.js';
+import {
+    checkCollisionsWithBoosts,
+    checkCollisionsWithCoins, checkCollisionsWithHealths,
+    createBoost,
+    createCoin,
+    createHealth
+} from './iconsCreation.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 
@@ -1067,112 +1073,28 @@ function findPath() {
 
 
 function checkCollisionsWithCollectibles() {
-    const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
-
-    // Check collision with coins
-    for (let i = coins.length - 1; i >= 0; i--) {
-        let coin = coins[i];
-        const coinBoundingBox = new THREE.Box3().setFromObject(coin.dummyMesh);
-        if (soldierBoundingBox.intersectsBox(coinBoundingBox) && !coin.collected) {
-            console.log("Collision between character and coin");
-            numCoins+=1;
-            coin.mesh.visible = false;
-            coin.collected = true;
-            updateHUDCoin(numCoins);
-            animate();
-
-            disposeCollectible(coin);
-
-            // Remove the coin from the array since it's collected
-            coins.splice(i, 1); // remove the coin from the array
-
-            // Load the portal if all level coins have been collected
-            if (numCoins === coinsNeeded) {
-                coinsCollected();
-                portal.visible = true;
-            }
-        }
-    }
-
-
     // Define a variable to keep track of the active boost timeout
     let boostTimeout = null;
 
-    // Check collision with boosts
-    for (let i = boosts.length - 1; i >= 0; i--) {
-        let boost = boosts[i];
-        const boostBoundingBox = new THREE.Box3().setFromObject(boost.dummyMesh);
-        if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !boost.collected) {
-            console.log("Collision between character and boost");
+    let result;
 
-            // Clear the existing timeout if it's still active
-            if (boostTimeout) {
-                clearTimeout(boostTimeout);
-            }
+    result = checkCollisionsWithCoins(scene, dummyMesh, coins, numCoins, coinsNeeded);
+    coins = result.coins;
+    numCoins = result.numCoins;
 
-            boostFactor += 1;  // Adjust effect as needed
-            boost.mesh.visible = false;
-            boost.collected = true;
-            updateHUDSpeed(boostFactor);
-            animate();
-
-            // Clean up and memory management
-            disposeCollectible(boost);
-
-            // Remove the boost from the array
-            boosts.splice(i, 1);
-
-            // Set a timeout to revert the boostFactor
-            boostTimeout = setTimeout(() => {
-                boostFactor -= 1; // adjust as necessary
-                updateHUDSpeed(boostFactor);
-                boostTimeout = null;
-            }, 8000); // duration of the boost effect
-        }
+    if (result.allCoinsCollected){
+        coinsCollected();
+        portal.visible = true;
     }
 
-    // Check collision with healths
-    for (let i = healths.length - 1; i >= 0; i--) {
-        let health = healths[i];
-        const healthBoundingBox = new THREE.Box3().setFromObject(health.dummyMesh);
-        if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !health.collected) {
-            console.log("Collision between character and health");
-            soldierHealth += 1; // Adjust effect as needed
-            health.mesh.visible = false;
-            health.collected = true;
-            blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889; // Update blindness overlay
-            updateHUDHP(soldierHealth);
-            animate();
+    result = checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor, boostTimeout);
+    boosts = result.boosts;
+    boostFactor = result.boostFactor;
 
-            // Clean up and memory management
-            disposeCollectible(health);
-
-            // Remove the health from the array
-            healths.splice(i, 1);
-        }
-    }
+    result = checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth, blindnessOverlay);
+    healths = result.healths;
+    soldierHealth = result.soldierHealth;
 }
-
-// Helper function to dispose of geometry, material, and remove from scene
-function disposeCollectible(collectible) {
-    scene.remove(collectible.mesh);
-    if (collectible.mixer) {
-        collectible.mixer.stopAllAction();
-        collectible.mixer.uncacheRoot(collectible.mixer.getRoot());
-    }
-    if (collectible.dummyMesh) {
-        collectible.dummyMesh.geometry.dispose();
-        collectible.dummyMesh.material.dispose();
-        scene.remove(collectible.dummyMesh);
-    }
-    if (collectible.mesh.geometry) {
-        collectible.mesh.geometry.dispose();
-    }
-    if (collectible.mesh.material) {
-        collectible.mesh.material.dispose();
-    }
-}
-
 //play different animations
  document.addEventListener('keydown', (event) => {
      switch (event.code) {
