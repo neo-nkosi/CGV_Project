@@ -64,6 +64,11 @@
     <button id="menu-button">Main Menu</button>
 </div>
 
+<div id="loading-screen" style="display:none;">
+    <img src="videos/Loading.gif" alt="Loading..." class="loader-gif">
+</div>
+
+
 <!-- Intermediate screen content -->
 <div id="intermediate-screen">
     <video autoplay muted loop class="backgroundVideo">
@@ -172,6 +177,8 @@
     document.getElementById('intermediate-continue-button').addEventListener('click', function() {
         // Hide the intermediate screen
         document.getElementById('intermediate-screen').style.display = 'none';
+        // Show the loading screen
+        document.getElementById('loading-screen').style.display = 'block';
 
         // Load the main script
         loadMainScript();

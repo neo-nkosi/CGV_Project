@@ -447,6 +447,7 @@ let boosts = [];
 let healths = [];
 
 async function initLevel(level) {
+    console.log("initlevel initiated");
     if(!soldier) {
         try {
             await loadSoldier(); // Wait for the soldier to be loaded.
@@ -573,6 +574,9 @@ async function initLevel(level) {
 
     isGamePaused = false;
     animate();
+
+    // Once everything is loaded, hide the loading screen
+    document.getElementById('loading-screen').style.display = 'none';
 
     return Promise.resolve();
 }
