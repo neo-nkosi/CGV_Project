@@ -5,12 +5,13 @@ import {createHUD, removeHUD, updateHUDCoin, updateHUDHP, updateHUDSpeed} from '
 import {checkMovement} from "./collisionCheck";
 import {Vector3} from "three";
 import {
+    animateCollectibles,
     checkCollisionsWithBoosts,
     checkCollisionsWithCoins, checkCollisionsWithHealths,
     createBoost,
     createCoin,
     createHealth
-} from './iconsCreation.js';
+} from './collectables.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 
@@ -1095,6 +1096,8 @@ function checkCollisionsWithCollectibles() {
     healths = result.healths;
     soldierHealth = result.soldierHealth;
 }
+
+
 //play different animations
  document.addEventListener('keydown', (event) => {
      switch (event.code) {
@@ -1121,12 +1124,10 @@ function checkCollisionsWithCollectibles() {
      }
  });
 
-//monster pursuit code:
-
-     const clock = new THREE.Clock();
+const clock = new THREE.Clock();
  function animate() {
      if (isGamePaused) {
-         // If the game is paused, simply return without doing anything
+         // If the game is paused, return without doing anything
          return;
      }
 
@@ -1139,26 +1140,7 @@ function checkCollisionsWithCollectibles() {
      if (monsterMixer) monsterMixer.update(0.015);
      if (portalMixer) portalMixer.update(0.016);
 
-     // Update mixers for all coins
-     for (const coin of coins) {
-         if (coin.mixer) {
-             coin.mixer.update(0.016);
-         }
-     }
-
-     // Update mixers for all boost
-     for (const boost of boosts) {
-         if (boost.mixer) {
-             boost.mixer.update(0.016);
-         }
-     }
-
-     // Update mixers for all boost
-     for (const health of healths) {
-         if (health.mixer) {
-             health.mixer.update(0.016);
-         }
-     }
+     animateCollectibles(coins, boosts, healths, 0.016);
 
      updateMovement();
 

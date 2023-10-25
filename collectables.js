@@ -170,10 +170,10 @@ export function checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor,
                 clearTimeout(boostTimeout);
             }
 
-            boostFactor += 1;  // Adjust effect as needed
+            newBoostFactor += 1;  // Adjust effect as needed
             boost.mesh.visible = false;
             boost.collected = true;
-            updateHUDSpeed(boostFactor);
+            updateHUDSpeed(newBoostFactor);
 
             // Clean up and memory management
             disposeCollectible(boost, scene);
@@ -243,6 +243,26 @@ function disposeCollectible(collectible, scene) {
     }
     if (collectible.mesh.material) {
         collectible.mesh.material.dispose();
+    }
+}
+
+export function animateCollectibles(coins, boosts, healths, updateSpeed) {
+    for (const coin of coins) {
+        if (coin.mixer) {
+            coin.mixer.update(updateSpeed);
+        }
+    }
+
+    for (const boost of boosts) {
+        if (boost.mixer) {
+            boost.mixer.update(updateSpeed);
+        }
+    }
+
+    for (const health of healths) {
+        if (health.mixer) {
+            health.mixer.update(updateSpeed);
+        }
     }
 }
 
