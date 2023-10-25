@@ -165,7 +165,7 @@ camera.position.z = 1;
 scene.add(camera);
 let firstPersonView = false;
 
-const spotlight = new THREE.SpotLight(0xFFFFFF, 10, 1.5, Math.PI / 7);
+const spotlight = new THREE.SpotLight(0xFFFFFF, 6, 1.5, Math.PI / 7);
 
 function toggleFirstPersonView() {
     firstPersonView = !firstPersonView;
@@ -176,7 +176,7 @@ function toggleFirstPersonView() {
         // Adjust camera's position if needed (e.g., to set it at the soldier's eye level)
         camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
         // Turn on the light
-        spotlight.intensity = 10;
+        spotlight.intensity = 6;
 
         // Set the spotlight's position to the camera's position
         spotlight.position.set(0,0.6,0);
@@ -443,6 +443,7 @@ let boosts = [];
 let healths = [];
 
 async function initLevel(level) {
+    console.log("initlevel initiated");
     if(!soldier) {
         try {
             await loadSoldier(); // Wait for the soldier to be loaded.
@@ -570,6 +571,9 @@ async function initLevel(level) {
     isGamePaused = false;
     animate();
 
+    // Once everything is loaded, hide the loading screen
+    document.getElementById('loading-screen').style.display = 'none';
+
     return Promise.resolve();
 }
 
@@ -652,7 +656,6 @@ function getDistance(x,y){
 
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
-    console.log(soldier.position)
     const cameraDirection = new THREE.Vector3();
     camera.getWorldDirection(cameraDirection);
 
