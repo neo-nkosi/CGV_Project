@@ -158,7 +158,20 @@ scene.background = skyBoxTexture;
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.y = 0.6; // adjust as necessary
 camera.position.z = 1;
+let minimapWidth = window.innerHeight/4
+let minimapHeight = window.innerHeight/4    
+const minimapCamera = new THREE.PerspectiveCamera(300, 1, 0.1, 1000);
+let redDot;
+scene.add(minimapCamera);
 scene.add(camera);
+//creating a redDot to track palyer position
+const material = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
+const radius = 0.3; // Adjust the size as needed
+const segments = 32; // The number of segments in the sphere
+const rings = 32; // The number of ringsin the sphere
+const geometry = new THREE.SphereGeometry(radius, segments, rings);
+redDot = new THREE.Mesh(geometry, material);
+scene.add(redDot);
 let firstPersonView = false;
 
 function toggleFirstPersonView() {
@@ -213,6 +226,13 @@ window.addEventListener('resize', () => {
     camera.aspect = newWidth / newHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(newWidth, newHeight);
+    minimapWidth = newHeight / 4; // Use newHeight to maintain a square aspect ratio
+    minimapHeight = newHeight / 4;
+    minimapCamera.aspect = 1; // Set a fixed aspect ratio of 1 for the minimap camera
+    minimapCamera.updateProjectionMatrix();
+    
+    // Adjust the minimap viewport to keep it square
+    renderer.setViewport(newWidth - minimapWidth, 0, minimapWidth, minimapHeight);
 });
 
 //CONTROLS
@@ -1230,7 +1250,16 @@ const clock = new THREE.Clock();
          orbitControls.update();
      }
 
-     renderer.render(scene, camera);
+     redDot.position.set(soldier.position.x,8,soldier.position.z);
+     minimapCamera.position.set(soldier.position.x,15,soldier.position.z)
+   minimapCamera.lookAt(soldier.position.x,soldier.position.y+5,soldier.position.z)
+    renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
+    renderer.render(scene, camera);
+    renderer.clearDepth();
+    renderer.setScissorTest(true);
+    renderer.setScissor(window.innerWidth - minimapWidth, 0, minimapWidth, minimapHeight);
+    renderer.render(scene,minimapCamera);
+    renderer.setScissorTest(false);
 
  }
 // Start animation
