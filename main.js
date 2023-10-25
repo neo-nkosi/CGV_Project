@@ -16,6 +16,9 @@ import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 import {createSparkEffect, updateParticleSystem} from "./particles";
 
+import { createLights } from './lights.js';
+
+
 let currentLevel =1;
 if (window.selectedLevel) {
 
@@ -162,6 +165,8 @@ camera.position.z = 1;
 scene.add(camera);
 let firstPersonView = false;
 
+const spotlight = new THREE.SpotLight(0xFFFFFF, 10, 1.5, Math.PI / 7);
+
 function toggleFirstPersonView() {
     firstPersonView = !firstPersonView;
     orbitControls.enabled = !firstPersonView;
@@ -170,8 +175,35 @@ function toggleFirstPersonView() {
     if (firstPersonView) {
         // Adjust camera's position if needed (e.g., to set it at the soldier's eye level)
         camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
+        // Turn on the light
+        spotlight.intensity = 10;
+
+        // Set the spotlight's position to the camera's position
+        spotlight.position.set(0,0.6,0);
+
+        // Calculate the direction the camera is facing
+        const cameraDirection = new THREE.Vector3();
+        camera.getWorldDirection(cameraDirection);
+
+        // Calculate the target position by adding the camera's position to the camera's direction vector
+        const targetPosition = new THREE.Vector3();
+        targetPosition.copy(camera.position).add(cameraDirection);
+
+        // Set the spotlight's target position
+        spotlight.target.position.set(0,0,-1);
+
+        // Add the light to the camera so it moves with the camera
+        camera.add(spotlight);
+        camera.add(spotlight.target)
+    } else {
+        // Turn off the light
+        spotlight.intensity = 0;
+        // If not in first-person view, you might want to set the light back to its initial position
+        spotlight.position.set(0, 0, 0);
+        spotlight.target.position.set(0, 0, -1);
     }
 }
+
 
 // SOUND
 
@@ -309,44 +341,8 @@ async function loadSoldier() {
         });
     });
 }
-
-// Light
-const light = new THREE.AmbientLight(0xffffff, 0.3);
-light.translateY(10);
-scene.add(light);
-// Directional Lights for skybox
-// purple light
-const directionalLight1 = new THREE.DirectionalLight("purple",0.2); // Adjust light color and intensity as needed
-directionalLight1.position.set(100, 15, 40);
-// directionalLight.position.copy(soldier.position);
-directionalLight1.castShadow = true;
-directionalLight1.shadow.bias = -0.005; // Adjust shadow bias
-directionalLight1.shadow.radius = 1;
-directionalLight1.shadow.mapSize.width = 1024; // Shadow map size
-directionalLight1.shadow.mapSize.height = 1024;
-directionalLight1.shadow.camera.near = 0.00001; // Near and far planes for the shadow camera
-directionalLight1.shadow.camera.far = 100;
-directionalLight1.position.normalize();
-scene.add(directionalLight1);
-// blue light
-// purple light
-const directionalLight2 = new THREE.DirectionalLight("blue",0.2); // Adjust light color and intensity as needed
-directionalLight2.position.set(-100, 10, 40);
-// directionalLight.position.copy(soldier.position);
-directionalLight2.castShadow = true;
-directionalLight2.shadow.bias = -0.005; // Adjust shadow bias
-directionalLight2.shadow.radius = 1;
-directionalLight2.shadow.mapSize.width = 1024; // Shadow map size
-directionalLight2.shadow.mapSize.height = 1024;
-directionalLight2.shadow.camera.near = 0.00001; // Near and far planes for the shadow camera
-directionalLight2.shadow.camera.far = 100;
-directionalLight2.position.normalize();
-scene.add(directionalLight2);
-// light on staircase
-const pointLightstairs = new THREE.PointLight("red", 1); // Adjust light color and intensity as needed
-pointLightstairs.position.set(0.1, 2.2, 0.06); // Position as per the original directional light
-scene.add(pointLightstairs);
-
+// add lights to scene
+createLights(scene);
 
 let villaHouse;
 let meshfloor;
@@ -660,6 +656,7 @@ function getDistance(x,y){
 
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
+    console.log(soldier.position)
     const cameraDirection = new THREE.Vector3();
     camera.getWorldDirection(cameraDirection);
 
