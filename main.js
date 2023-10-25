@@ -291,9 +291,7 @@ let currentAnimationAction;
 
 let soldierLoader = new GLTFLoader();
 let soldierBoxHelper;
-let flysoldierBoxHelper;
 let dummyMesh;
-let flydummyMesh;
 let yOffset;
 
 async function loadSoldier() {
@@ -350,7 +348,6 @@ createLights(scene);
 
 let villaHouse;
 let meshfloor;
-let skymeshfloor;
 
 // Load the maze model
 const loader = new GLTFLoader();
@@ -802,8 +799,11 @@ function updateMovement() {
     dummyMesh.position.y += yOffset;  // make sure to add yOffset again
     MondummyMesh.position.copy(monster.position);
     MondummyMesh.position.y += 0.3;
+
+    //level 3 code:
     MondummyMesh2.position.copy(monster2.position);
     MondummyMesh2.position.y += 0.3;
+    //level 3 code ends
 
 
 // At the end of your movement updates, add:
@@ -814,9 +814,11 @@ function updateMovement() {
         MonBoxHelper.update();
     }
 
-    if(MonBoxHelper2) {
+    //level 3:
+    if (MonBoxHelper2) {
         MonBoxHelper2.update();
     }
+    //level 3 ends
 
 
 
@@ -1007,6 +1009,9 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
     monsterAnimations.Smashing = gltf.animations[2];
 });
 
+
+//level 3 monster codes:
+
 //second monster for sky monster logic:
 const monsterloader2 = new GLTFLoader();
 let monster2;
@@ -1045,6 +1050,8 @@ monsterloader2.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf
     monster2.position.y = box2.min.y;
 });
 
+
+//flying monster
 
 let flyMondummyMesh;
 let flyMonBoxHelper;
@@ -1097,6 +1104,8 @@ flymonsterloader.load('flying monster/flying monster.glb', (gltf) => {
     flymonster.position.y = -0.4 - box.min.y;
 });
 
+//level 3 monster code ends
+
 
 const pathfinding = new Pathfinding();
 const pathfindinghelper = new PathfindingHelper();
@@ -1121,34 +1130,7 @@ gltf.scene.traverse(node =>{
          }
      })
  })
-const skymeshLoader = new GLTFLoader();
-const skypathfinding = new Pathfinding();
-const skypathfindinghelper = new PathfindingHelper();
 
-
-
-const SKYZONE = 'skyZone';
-let skymesh;
-let skygroupId;
-let skynavpath;
-scene.add(skypathfindinghelper);
-
-skymeshLoader.load("flying monster/flym navmesh 7.glb", function(gltf){
-skymeshfloor = gltf.scene;
-skymeshfloor.position.set(0, 0, 0);
-skymeshfloor.scale.set(1, 1, 1);
-// scene.add(skymeshfloor);
-gltf.scene.traverse(node =>{
-    if(!skymesh && node.isObject3D && node.children && node.children.length > 0){
-        skymesh = node.children[0];
-        console.log("skymesh object:", skymesh);
-        skypathfinding.setZoneData(SKYZONE, Pathfinding.createZone(skymesh.geometry));
-        console.log("skypathfinding zones", skypathfinding.zones);
-        // console.log("skypathmesh position:", skymesh.position);
-        // console.log("skymeshfloor:", skymeshfloor.position);
-    }
-})
-})
 
 let dummyBox = new THREE.Box3();
 let MonBox = new THREE.Box3();
@@ -1226,6 +1208,37 @@ function findPath() {
 
     }
 }
+
+
+
+//level 3 monster movement begins here:
+
+const skymeshLoader = new GLTFLoader();
+const skypathfinding = new Pathfinding();
+const skypathfindinghelper = new PathfindingHelper();
+let skymeshfloor;
+const SKYZONE = 'skyZone';
+let skymesh;
+let skygroupId;
+let skynavpath;
+scene.add(skypathfindinghelper);
+
+skymeshLoader.load("flying monster/flym navmesh 7.glb", function(gltf){
+skymeshfloor = gltf.scene;
+skymeshfloor.position.set(0, 0, 0);
+skymeshfloor.scale.set(1, 1, 1);
+// scene.add(skymeshfloor);
+gltf.scene.traverse(node =>{
+    if(!skymesh && node.isObject3D && node.children && node.children.length > 0){
+        skymesh = node.children[0];
+        console.log("skymesh object:", skymesh);
+        skypathfinding.setZoneData(SKYZONE, Pathfinding.createZone(skymesh.geometry));
+        console.log("skypathfinding zones", skypathfinding.zones);
+        // console.log("skypathmesh position:", skymesh.position);
+        // console.log("skymeshfloor:", skymeshfloor.position);
+    }
+})
+})
 
 let skyDummyBox = new THREE.Box3();
 let skyMonBox = new THREE.Box3();
@@ -1312,6 +1325,7 @@ function flyfindPath() {
     }
 }
 
+//level 3 monster movement code ends here
 
 
 const particleSystem = createSparkEffect();
