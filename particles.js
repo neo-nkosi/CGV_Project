@@ -65,7 +65,7 @@ export function updateParticleSystem(particleSystem) {
         // Instead of immediately changing the y position, we interpolate towards the target position
         positions[i * 3 + 1] += (targetParticlePositions[i].y - positions[i * 3 + 1]) * 0.05;
 
-        // Every now and then, choose a new target position
+        // Randomly choose a new target position
         if (Math.random() < 0.02) { // 2% chance to pick a new target position
             let yOffset = (Math.random() - 0.5) * 0.3; // Random value between -0.1 and 0.1
             targetParticlePositions[i].y = initialParticlePositions[i].y + yOffset;
