@@ -7,6 +7,11 @@
 </head>
 <body>
 <div id="level-select">
+    <video autoplay muted loop class="backgroundVideo">
+        <source src="videos/animated-corridor.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
     <header>
         <h1>Welcome To</h1>
         <h2>ESCAPE THE SINGULARITY</h2>
@@ -14,7 +19,29 @@
     <button id="level-1">Level 1</button>
     <button id="level-2">Level 2</button>
     <button id="level-3">Level 3</button>
+    <div id="additional-buttons-container">
+        <button id="controls-button">Controls</button>
+        <button id="credits-button">Credits</button>
+    </div>
 </div>
+
+<img id="blindness-overlay" src="textures/blindness-vingnette.png">
+</img>
+
+<!-- Updated div for start screen -->
+<div id="start-screen">
+    <!-- Video background -->
+    <video autoplay muted loop class="backgroundVideo">
+        <source src="videos/animated-corridor.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <header>
+        <h1>Escape The Singularity</h1>
+    </header>
+    <button id="start-game-button">Start Game</button>
+</div>
+
 
 <div id="pause-screen">
     <p>Game Paused</p>
@@ -28,7 +55,7 @@
 
 <div id="win-screen">
     <p>You survive to see another day</p>
-    <button id="continue-button">Continue</button>
+    <button id="next-level-button">Next Level</button>
 </div>
 
 <div id="lose-screen">
@@ -37,8 +64,18 @@
     <button id="menu-button">Main Menu</button>
 </div>
 
+<div id="loading-screen" style="display:none;">
+    <img src="videos/Loading.gif" alt="Loading..." class="loader-gif">
+</div>
+
+
 <!-- Intermediate screen content -->
 <div id="intermediate-screen">
+    <video autoplay muted loop class="backgroundVideo">
+        <source src="videos/animated-corridor.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
     <div id="level-objective">
         <h3>Objective:</h3>
         <p></p> <!-- Objective text will go here -->
@@ -51,7 +88,30 @@
     <button id="back-button">Back</button>
 </div>
 
+<!-- Controls screen content -->
+<div id="controls-screen" style="display: none;">
+    <img src="icons/gameControls.png" alt="Controls" /> <!-- Replace with your image path -->
+    <button id="controls-back-button">Back</button>
+</div>
+
+<div id="credits-screen" style="display: none;">
+    <div class="credits-wrapper">
+        <div class="credits-content">
+            <!-- Content will be loaded dynamically from credits.html -->
+        </div>
+    </div>
+    <button id="credits-back-button">Back</button>
+</div>
+
 <script type="module">
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const videos = document.querySelectorAll('.backgroundVideo');
+        videos.forEach(video => {
+            video.playbackRate = 0.5; // Half the normal speed
+        });
+    });
+
     const levelDetails = {
         '1': {
             objective: 'Collect 3 coins. When all coins are collected, run to the portal to escape.',
@@ -117,6 +177,8 @@
     document.getElementById('intermediate-continue-button').addEventListener('click', function() {
         // Hide the intermediate screen
         document.getElementById('intermediate-screen').style.display = 'none';
+        // Show the loading screen
+        document.getElementById('loading-screen').style.display = 'block';
 
         // Load the main script
         loadMainScript();
@@ -135,10 +197,12 @@
         window.resumeGame(); // this calls the resumeGame function from your main.js
     });
 
-    document.getElementById('continue-button').addEventListener('click', function() {
-        location.reload(); // This will force the page to reload
+    document.getElementById('next-level-button').addEventListener('click', function() {
+        document.getElementById('win-screen').style.display = 'none'; // hide the win screen
+        window.goToNextLevel(); // proceed to the next level
     });
-    
+
+
     document.getElementById('menu-button').addEventListener('click', function() {
         location.reload(); // This will force the page to reload
     });
@@ -146,6 +210,72 @@
     document.getElementById('pause-exit-button').addEventListener('click', function() {
         location.reload(); // This will force the page to reload
     });
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        // Start game button event listener
+        document.getElementById('start-game-button').addEventListener('click', function() {
+            // Hide the start screen
+            document.getElementById('start-screen').style.display = 'none';
+
+            // Show the level select screen
+            document.getElementById('level-select').style.display = 'flex';
+        });
+
+        document.getElementById('controls-button').addEventListener('click', function() {
+            // Hide the level select screen
+            document.getElementById('level-select').style.display = 'none';
+
+            // Show the controls screen
+            document.getElementById('controls-screen').style.display = 'flex'; // or 'flex', if you prefer
+        });
+
+        document.getElementById('controls-back-button').addEventListener('click', function() {
+            // Hide the controls screen
+            document.getElementById('controls-screen').style.display = 'none';
+
+            // Show the level select screen
+            document.getElementById('level-select').style.display = 'flex'; // or 'block', if that's what you're using
+        });
+
+        document.getElementById('credits-button').addEventListener('click', async function() {
+            // Load credits content
+            const creditsContent = document.querySelector('.credits-content');
+            try {
+                const response = await fetch('credits.html');
+                if (response.ok) {
+                    const content = await response.text();
+                    creditsContent.innerHTML = content;
+                } else {
+                    console.error("Failed to load credits content. HTTP Status:", response.status);
+                }
+            } catch (error) {
+                console.error("Error fetching credits content:", error);
+            }
+
+            // Hide the level select screen
+            document.getElementById('level-select').style.display = 'none';
+
+            // Show the credits screen
+            document.getElementById('credits-screen').style.display = 'flex';
+
+            // Reset credits animation for a fresh start
+            creditsContent.style.animation = 'none';
+            setTimeout(() => {
+                creditsContent.style.animation = '';
+            }, 10); // Small delay to ensure the animation resets
+        });
+
+        document.getElementById('credits-back-button').addEventListener('click', function() {
+            // Hide the intermediate screen
+            document.getElementById('credits-screen').style.display = 'none';
+
+            // Show the level select screen
+            document.getElementById('level-select').style.display = 'flex';
+        });
+
+
+    });
+
 
 </script>
 </body>

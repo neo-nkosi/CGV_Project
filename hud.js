@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
-let coinScreen, speedScreen, hpScreen, coinURLs, speedURLs, hpURLs, minimapScreen;
+let coinScreen, speedScreen, hpScreen, coinURLs, speedURLs, hpURLs, minimapScreen, redDot,HUD;
 export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
-    const HUD = new THREE.Scene();
+    HUD = new THREE.Scene();
 
     //===========================================Coins==========================================================
 
@@ -28,7 +28,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     coinScreen.material.depthWrite = false;
     coinScreen.scale.set(0.07,0.07,1);
     coinScreen.geometry.computeBoundingBox();
-    
+
     updateCoinScreenPosition();
     HUD.add(coinScreen);
 
@@ -37,16 +37,16 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
         box.copy(coinScreen.geometry.boundingBox).applyMatrix4(coinScreen.matrixWorld);
         let measure = new THREE.Vector3();
         box.getSize(measure);
-    
+
         const vFOV = THREE.MathUtils.degToRad(camera.fov);
         const height = 2 * Math.tan(vFOV/2);
         const width = height * camera.aspect;
-    
+
         //Set the position of the video screen to the bottom left corner
-        
+
         coinScreen.position.x = (-width / 2)+0.2;
         coinScreen.position.y = (height/ 2)-0.1;
-        coinScreen.position.z = -1;      
+        coinScreen.position.z = -1;
     }
 
     window.addEventListener('resize', updateCoinScreenPosition);
@@ -74,7 +74,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     speedScreen.material.depthWrite = false;
     speedScreen.scale.set(0.07,0.06,1);
     speedScreen.geometry.computeBoundingBox();
-    
+
     updateSpeedScreenPosition();
     HUD.add(speedScreen);
 
@@ -83,16 +83,16 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
         box.copy(speedScreen.geometry.boundingBox).applyMatrix4(speedScreen.matrixWorld);
         let measure = new THREE.Vector3();
         box.getSize(measure);
-    
+
         const vFOV = THREE.MathUtils.degToRad(camera.fov);
         const height = 2 * Math.tan(vFOV/2);
         const width = height * camera.aspect;
-    
+
         //Set the position of the video screen to the bottom left corner
-        
+
         speedScreen.position.x = (width / 2)-0.2;
         speedScreen.position.y = (height/ 2)-0.1;
-        speedScreen.position.z = -1;        
+        speedScreen.position.z = -1;
     }
 
     window.addEventListener('resize', updateSpeedScreenPosition);
@@ -124,7 +124,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     hpScreen.material.depthWrite = false;
     hpScreen.scale.set(0.35,0.18,1);
     hpScreen.geometry.computeBoundingBox();
-    
+
     updateHPScreenPosition();
     HUD.add(hpScreen);
 
@@ -133,35 +133,51 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
         box.copy(hpScreen.geometry.boundingBox).applyMatrix4(hpScreen.matrixWorld);
         let measure = new THREE.Vector3();
         box.getSize(measure);
-    
+
         const vFOV = THREE.MathUtils.degToRad(camera.fov);
         const height = 2 * Math.tan(vFOV/2);
         const width = height * camera.aspect;
-    
+
         //Set the position of the video screen to the bottom left corner
-        
+
         hpScreen.position.x = (-width / 2)+0.42;
         hpScreen.position.y = (-height/ 2)+0.18;
-        hpScreen.position.z = -1;       
+        hpScreen.position.z = -1;
     }
 
     //Listen for window resize events and update the video screen position
     window.addEventListener('resize', updateHPScreenPosition);
+
     //=======================================================================================================================================
     createMinimap(camera, HUD);
     camera.add(HUD);
 }
 
+export function removeHUD(camera){
+    camera.remove(HUD);
+}
+
 export function updateHUDHP(currentHPlevel){
+
+    // Check if the current material has a texture and if so, dispose of it
+    if (hpScreen.material.map) {
+        hpScreen.material.map.dispose();
+    }
+
     const hpTexture = new THREE.TextureLoader().load(hpURLs[currentHPlevel]);
     hpTexture.encoding = THREE.sRGBEncoding;
-    
+
     hpScreen.material.map = hpTexture;
-    
+
     hpScreen.material.needsUpdate = true;
 }
 
 export function updateHUDCoin(numCoins){
+    // Check if the current material has a texture and if so, dispose of it
+    if (coinScreen.material.map) {
+        coinScreen.material.map.dispose();
+    }
+
     const coinTexture = new THREE.TextureLoader().load(coinURLs[numCoins]);
     coinTexture.encoding = THREE.sRGBEncoding;
 
@@ -171,6 +187,11 @@ export function updateHUDCoin(numCoins){
 }
 
 export function updateHUDSpeed(numSpeed){
+    // Check if the current material has a texture and if so, dispose of it
+    if (speedScreen.material.map) {
+        speedScreen.material.map.dispose();
+    }
+
     const speedTexture = new THREE.TextureLoader().load(speedURLs[numSpeed-1]);
     speedTexture.encoding = THREE.sRGBEncoding;
 
@@ -179,22 +200,35 @@ export function updateHUDSpeed(numSpeed){
     speedScreen.material.needsUpdate = true;
 }
 
+/*export function updateRedDotPosition(x,y,z) {
+    // Assuming `soldierPosition` is a 2D position (x, y) in the minimap space
+    //as x decreases soldier moves further away from villa
+    //as z decreasesSoldier moves further away from one house side
+    redDot.position.set(6+(-1*x*0.1),-5+(0.2*y), -1);
+}*/
+
 export function createMinimap(camera, scene) {
-    const minimapURL = "icons/minimap/mapv2.png"; // Replace with the actual path to your minimap image
+    const minimapURL = "icons/minimap/mapv4.png"; // Replace with the actual path to your minimap image
 
     const minimapTexture = new THREE.TextureLoader().load(minimapURL);
     minimapTexture.encoding = THREE.sRGBEncoding;
 
     const minimapPlaneGeometry = new THREE.PlaneGeometry(2, 1.5);
-    const minimapPlaneMaterial = new THREE.MeshBasicMaterial({ map: minimapTexture, transparent: true });
+    const minimapPlaneMaterial = new THREE.MeshBasicMaterial({
+        map: minimapTexture,
+        transparent: true, // Make the material transparent
+        opacity: 0.5 // Adjust the opacity level as needed
+    });
+
     minimapScreen = new THREE.Mesh(minimapPlaneGeometry, minimapPlaneMaterial);
-    minimapScreen.renderOrder = 999;
+    minimapScreen.renderOrder = 899;
     minimapScreen.material.depthTest = false;
     minimapScreen.material.depthWrite = false;
-    minimapScreen.scale.set(0.35, 0.18, 1);
-
+    minimapScreen.scale.set(0.25, 0.18, 1);
     scene.add(minimapScreen);
-
+    //const redDotGeometry = new THREE.SphereGeometry(0.05, 32, 32); // Adjust size and segments
+    //const redDotMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    //redDot = new THREE.Mesh(redDotGeometry, redDotMaterial);
     // Ensure the minimapScreen has loaded its geometry and bounding box
     minimapScreen.geometry.computeBoundingBox();
 
@@ -214,8 +248,16 @@ export function createMinimap(camera, scene) {
             minimapScreen.position.x = (width / 2) - 0.42;
             minimapScreen.position.y = (-height / 2) + 0.18;
             minimapScreen.position.z = -1;
+
+            //redDot.position.set(((width / 2) -1.42) +2 ,  (-height / 2) - 1.18,     -1);
+            //redDot.renderOrder = 999;
+            //redDot.material.depthTest = false;
+            //redDot.material.depthWrite = false;
+            //minimapScreen.add(redDot);
         }
     }
 
     window.addEventListener('resize', updateMinimapPosition);
+
 }
+

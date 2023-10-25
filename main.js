@@ -1,16 +1,29 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import {createHUD, updateHUDCoin, updateHUDHP, updateHUDSpeed} from './hud';
+import {createHUD, removeHUD, updateHUDCoin, updateHUDHP, updateHUDSpeed} from './hud';
 import {checkMovement} from "./collisionCheck";
 import {Vector3} from "three";
-import {createBoost, createCoin, createHealth} from './iconsCreation.js';
+import {
+    animateCollectibles,
+    checkCollisionsWithBoosts,
+    checkCollisionsWithCoins, checkCollisionsWithHealths,
+    createBoost,
+    createCoin,
+    createHealth
+} from './collectables.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
+import {createHealthEffect, createSparkEffect, updateHealthEffect, updateParticleSystem} from "./particles";
 
+import { createLights } from './lights.js';
+
+
+let currentLevel =1;
 if (window.selectedLevel) {
 
     console.log("Selected level is: " + window.selectedLevel);
+    currentLevel = window.selectedLevel;
 } else {
     // Handle case where no level is selected if necessary
 }
@@ -37,42 +50,59 @@ function gamelost(){
 
 function gamewon(){
     const overlay = document.getElementById('win-screen');
-   overlay.style.display = 'flex';
-   isGamePaused = true;
+    overlay.style.display = 'flex';
+    isGamePaused = true;
+    // Removed timeout function here. The Next Level button will now handle proceeding to the next level
 }
 
-const retryButton = document.getElementById("retry-button");
-const menuButton = document.getElementById("menu-button");
-const continueButton = document.getElementById("continue-button");
 
-retryButton.addEventListener('click', () => {
-    // Handle retry button click
-    // You can replace this with your logic
-    soldier.position.set(0,0,8);
-    monster.position.set(0.9, 0, 8);
-    const overlay = document.getElementById('lose-screen');
-    overlay.style.display = 'none';
-    isGamePaused = false;
+window.goToNextLevel = function(){
+    currentLevel++; // Increment the level
+    if (currentLevel <= 3) { // If there are still levels left
+        // Clean up the previous level's objects like coins, boosts, healths, etc.
+        clearPreviousLevel();
+        // Start the next level
+        initLevel(currentLevel);
+    } else {
+        // If there are no more levels, you might want to display a "Game Completed" screen or loop back to the first level
+        console.log("Congratulations! You completed all levels!");
+        // gameCompleted(); // hypothetical function
+    }
+}
+
+function clearPreviousLevel() {
+    portal.visible = false;
+    removeHUD(camera);
     cleanIcons();
-    initLevel(window.selectedLevel);
     updateHUDHP(soldierHealth);
     updateHUDCoin(numCoins);
     updateHUDSpeed(boostFactor);
     animate();
-    //initLevel(level);
-});
+}
 
-menuButton.addEventListener('click', () => {
-    // Handle main menu button click
-    // Show the level select screen
-    document.getElementById('level-select').style.display = 'flex';
-    document.getElementById('lose-screen').style.display = 'none';
-});
 
-continueButton.addEventListener('click', () => {
-    // Handle main menu button click
-    document.getElementById('level-select').style.display = 'flex';
-    document.getElementById('won-screen').style.display = 'none';
+
+const retryButton = document.getElementById("retry-button");
+const menuButton = document.getElementById("menu-button");
+const continueButton = document.getElementById("continue-button");
+const blindnessOverlay = document.getElementById("blindness-overlay");
+
+retryButton.addEventListener('click', async () => {
+    // Handle retry button click
+    const overlay = document.getElementById('lose-screen');
+    overlay.style.display = 'none';
+    isGamePaused = true;  // Pause the game while setting up the level
+
+    try {
+        await clearPreviousLevel();  // Await any necessary cleanup
+        await initLevel(currentLevel);  // Await level initialization
+    } catch (error) {
+        console.error('An error occurred during level retry setup:', error);
+        // Handle the error, possibly by showing an error message to the user
+    }
+
+    isGamePaused = false;  // Unpause the game when setup is complete
+    animate();
 });
 
 function coinsCollected(){
@@ -100,7 +130,6 @@ function cleanIcons(){
         scene.remove(object.mesh);
         object.collected=true;
     }
-
     for (var i = 0; i < boosts.length; i++) {
         var object = boosts[i];
         scene.remove(object.mesh);
@@ -114,8 +143,20 @@ function cleanIcons(){
     }
 }
 
+const skyBoxLoader = new THREE.CubeTextureLoader();
+
+const skyBoxTexture = skyBoxLoader.load([
+    'textures/Spacebox2/Spacebox_left.png',
+    'textures/Spacebox2/Spacebox_right.png',
+    'textures/Spacebox2/Spacebox_top.png',
+    'textures/Spacebox2/Spacebox_bottom.png',
+    'textures/Spacebox2/Spacebox_front.png',
+    'textures/Spacebox2/Spacebox_back.png'
+]);
+
 // Scene
 const scene = new THREE.Scene();
+scene.background = skyBoxTexture;
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -123,6 +164,8 @@ camera.position.y = 0.6; // adjust as necessary
 camera.position.z = 1;
 scene.add(camera);
 let firstPersonView = false;
+
+const spotlight = new THREE.SpotLight(0xFFFFFF, 6, 1.5, Math.PI / 7);
 
 function toggleFirstPersonView() {
     firstPersonView = !firstPersonView;
@@ -132,8 +175,35 @@ function toggleFirstPersonView() {
     if (firstPersonView) {
         // Adjust camera's position if needed (e.g., to set it at the soldier's eye level)
         camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
+        // Turn on the light
+        spotlight.intensity = 6;
+
+        // Set the spotlight's position to the camera's position
+        spotlight.position.set(0,0.6,0);
+
+        // Calculate the direction the camera is facing
+        const cameraDirection = new THREE.Vector3();
+        camera.getWorldDirection(cameraDirection);
+
+        // Calculate the target position by adding the camera's position to the camera's direction vector
+        const targetPosition = new THREE.Vector3();
+        targetPosition.copy(camera.position).add(cameraDirection);
+
+        // Set the spotlight's target position
+        spotlight.target.position.set(0,0,-1);
+
+        // Add the light to the camera so it moves with the camera
+        camera.add(spotlight);
+        camera.add(spotlight.target)
+    } else {
+        // Turn off the light
+        spotlight.intensity = 0;
+        // If not in first-person view, you might want to set the light back to its initial position
+        spotlight.position.set(0, 0, 0);
+        spotlight.target.position.set(0, 0, -1);
     }
 }
+
 
 // SOUND
 
@@ -150,6 +220,15 @@ audioLoader.load('/audio/marching.mp3', function(buffer) {
     soldierMarchingSound.setBuffer(buffer);
     soldierMarchingSound.setLoop(true); // for continuous play
     soldierMarchingSound.setVolume(0.5);
+});
+
+const monsterSound = new THREE.PositionalAudio(listener);
+// Load a sound file (you need to have the horror sound in your game files)
+audioLoader.load('/audio/horrorMusic.mp3', function(buffer) {
+    monsterSound.setBuffer(buffer);
+    monsterSound.setRefDistance(20); // Set reference distance for volume control
+    monsterSound.setDirectionalCone(180, 230, 0.1); // Optional: Set a directional sound cone (for a more realistic experience)
+    monsterSound.play();
 });
 
 
@@ -216,61 +295,58 @@ let flysoldierBoxHelper;
 let dummyMesh;
 let flydummyMesh;
 let yOffset;
-let y2Offset;
-await soldierLoader.load('models/Soldier.glb', function (gltf) {
-    soldier = gltf.scene;
-    soldier.position.set(0,0,8);
-    soldier.scale.set(0.25, 0.25, 0.25);
 
-    //-10.4
-    //
-    // y: 0.42
-    //
-    // z: 26.11
-
-    scene.add(soldier);
-
-    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
-    let boxSize = new THREE.Vector3(0.2,0.5, 0.2); // Size of the box (width, height, depth)
-    dummyMesh = new THREE.Mesh(new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z));
-
-// 2. Position this mesh at the position of the soldier.
-    dummyMesh.position.copy(new Vector3(soldier.position.x, soldier.position.y, soldier.position.z));
-    yOffset = 0.2;  // or any value you deem appropriate
-    dummyMesh.position.y += yOffset;
-
-// 3. Create a BoxHelper using this dummy mesh.
-    soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
-
-    //scene.add(soldierBoxHelper);
+async function loadSoldier() {
+    return new Promise((resolve, reject) => {
+    soldierLoader.load('models/Soldier.glb', function (gltf) {
+        soldier = gltf.scene;
 
 
+        soldier.scale.set(0.25, 0.25, 0.25);
 
-    // Create a mixer for the soldier
-    mixer = new THREE.AnimationMixer(soldier);
 
-    // Store the animations in the animations object for quick lookup
-    animations = {}; // Reset the animations object
-    gltf.animations.forEach((clip) => {
-        animations[clip.name] = mixer.clipAction(clip);
+        scene.add(soldier);
+
+        // 1. Create a dummy mesh with a BoxGeometry of your desired size.
+        let boxSize = new THREE.Vector3(0.2, 0.5, 0.2); // Size of the box (width, height, depth)
+        dummyMesh = new THREE.Mesh(new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z));
+
+        // 2. Position this mesh at the position of the soldier.
+        dummyMesh.position.copy(new Vector3(soldier.position.x, soldier.position.y, soldier.position.z));
+        yOffset = 0.2;  // or any value you deem appropriate
+        dummyMesh.position.y += yOffset;
+
+
+        // 3. Create a BoxHelper using this dummy mesh.
+        soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
+
+        //scene.add(soldierBoxHelper);
+
+        // Create a mixer for the soldier
+        mixer = new THREE.AnimationMixer(soldier);
+
+        // Store the animations in the animations object for quick lookup
+        animations = {}; // Reset the animations object
+        gltf.animations.forEach((clip) => {
+            animations[clip.name] = mixer.clipAction(clip);
+        });
+
+        currentAnimationAction = animations[currentAnimation];
+        currentAnimationAction.play();
+        if (animations['Idle']) animations['Idle'].play();
+
+        // Set the target of OrbitControls after the soldier is loaded
+        orbitControls.target.copy(soldier.position);
+
+        resolve(soldier); // Resolve the promise with the loaded soldier.
+        }, undefined, function (error) {
+            console.error(error);
+            reject(error); // Reject the promise if there's an error.
+        });
     });
-
-    currentAnimationAction = animations[currentAnimation];
-    currentAnimationAction.play();
-    if (animations['Idle']) animations['Idle'].play();
-
-    // Set the target of OrbitControls after the soldier is loaded
-    orbitControls.target.copy(soldier.position);
-
-}, undefined, function (error) {
-    console.error(error);
-});
-
-
-// Light
-const light = new THREE.AmbientLight(0xffffff);
-light.translateY(5);
-scene.add(light);
+}
+// add lights to scene
+createLights(scene);
 
 let villaHouse;
 let meshfloor;
@@ -287,6 +363,14 @@ let pursuing = false; // Flag to check if monster is in pursuit mode
 let grid; // We've already initialized this in the villa loader
 const cellSize = 0.3  // Declare this variable here, at the top level
 const navMeshName = "SampleScene_Exported_NavMesh";  // Replace with your navmesh name
+
+// Land texture
+const textureLoader = new THREE.TextureLoader();
+const floorTexture = textureLoader.load('textures/wall.png');
+floorTexture.minFilter = THREE.LinearMipmapLinearFilter;
+floorTexture.wrapS = THREE.RepeatWrapping;
+floorTexture.wrapT = THREE.RepeatWrapping;
+floorTexture.repeat.set(300, 300);
 
 loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse = gltf.scene;
@@ -305,7 +389,15 @@ loader.load('models/villaHouse.glb', function (gltf) {
     // Find the child named "floor" and set its material to use the floorTexture
     const floor = villaHouse.getObjectByName("floor");
     if (floor) {
-        floor.material = new THREE.MeshBasicMaterial({color: 0xffffff});
+        // // Create a new material with the floorTexture
+         const floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
+         floorMaterial.color = new THREE.Color(0x333333);
+         // Assign the new material to the floor
+         floor.material = floorMaterial;
+
+        // // Ensure that the floor doesn't cast shadows on itself
+        floor.receiveShadow = true; // Enable shadow receiving for the floor
+        floor.castShadow = false;
     } else {
         console.warn('Floor not found in the villaHouse model.');
     }
@@ -315,123 +407,183 @@ loader.load('models/villaHouse.glb', function (gltf) {
     console.error(error);
 });
 
-let coinsNeeded;
-let coins = []; // Array to store multiple coins
-let boosts = [];
-let healths = [];
-
-function initLevel(level){
-
-    //soldier.position.set(0,0,8);
-    if (level == 1){
-        //Start of game parameters
-        invunerable=0;
-        boostFactor=1;
-        soldierHealth=3;
-        numCoins=0;
-
-        // Create multiple coins
-        coinsNeeded=3;
-        createCoin(-11, 0.1, 8, scene, coins);
-        createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
-        createCoin(8.309663681895037 , -0.1712324325972956 ,-2.9527764209625995, scene, coins);
-
-        //Create multiple boosts
-        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
-        //createBoost(-3,0,0,scene,boosts);
-        //createBoost(-4,0,-1,scene,boosts);
-
-        //Create multiple hearts
-        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
-        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
-        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }else if (level == 2){
-        //Start of game parameters
-        invunerable=0;
-        boostFactor=1;
-        soldierHealth=2;
-        numCoins=0;
-
-        // Create multiple coins
-        //createCoin(-11, 0.1, 8, scene, coins);
-        coinsNeeded= 5;
-
-        // Create multiple coins
-        createCoin(-4.668858254609299, 0.19268887765808546, -3.666108506629987, scene, coins);
-        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
-        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
-        createCoin(15.313297791701023, -0.1057143266885793 ,21.623686900287876, scene, coins);
-        createCoin(2.4870020913648316 , -0.10571453306073826,  19.26306456486548, scene, coins);
-
-        //Create multiple boosts
-        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
-        //createBoost(-3,0,0,scene,boosts);
-        //createBoost(-4,0,-1,scene,boosts);
-
-        //Create multiple hearts
-        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
-        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
-        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }else if (level == 3){
-        //Start of game parameters
-        invunerable=0;
-        boostFactor=1;
-        soldierHealth=1;
-        numCoins=0;
-        // Create multiple coins
-        coinsNeeded=3;
-        createCoin(-11, 0.1, 8, scene, coins);
-        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
-        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
-
-        //Create multiple boosts
-        createBoost(-4.527128711251262, 1.46, -3.1303095350034713,scene,boosts);
-        //createBoost(-3,0,0,scene,boosts);
-        //createBoost(-4,0,-1,scene,boosts);
-
-        //Create multiple hearts
-        createHealth(3.3371503914805296, 0.08, -5.156236357144887,scene,healths);
-        createHealth(9.123201360574695, 0.08, 0.41047471505580513,scene,healths);
-        createHealth(14.03279715663051, 0.08, 8.672422194858061,scene,healths);
-    }
-
-
-}
-
 
 
 let portalMixer;
 let portalDummyMesh;
-
+let portal;
 function loadPortal() {
+    return new Promise((resolve, reject) => { // Wrap your loader in a promise
     const portalLoader = new GLTFLoader();
     if (!portal) { // check if portal hasn't been loaded
         portalLoader.load('models/portal.glb', function (gltf) {
             portal = gltf.scene;
-            gltf.scene.position.set(-7,-0.3,8);
             gltf.scene.scale.set(0.3, 0.3, 0.3);
             scene.add(gltf.scene);
 
             // After adding the portal to the scene:
             portalDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 0.1));  // Adjust the size as necessary
-            portalDummyMesh.position.copy(portal.position);
-            portalDummyMesh.position.z -= 1.3;
             //scene.add(portalDummyMesh);
-
-            const portalBoxHelper = new THREE.BoxHelper(portalDummyMesh, 0xff0000);  // Making it red for visibility
-            //scene.add(portalBoxHelper);
-
 
             if (gltf.animations && gltf.animations.length) {
                 portalMixer = new THREE.AnimationMixer(portal);
                 const action = portalMixer.clipAction(gltf.animations[0]);
                 action.play();
             }
+
+            portal.visible = false;
+            resolve(portal); // resolve the promise with the loaded portal
         }, undefined, function (error) {
             console.error(error);
+            reject(error); // reject the promise if there's an error
         });
+    } else {
+        resolve(portal); // if portal is already loaded, resolve immediately
     }
+    });
 }
+
+let coinsNeeded;
+let coins = []; // Array to store multiple coins
+let boosts = [];
+let healths = [];
+
+async function initLevel(level) {
+    console.log("initlevel initiated");
+    if(!soldier) {
+        try {
+            await loadSoldier(); // Wait for the soldier to be loaded.
+        } catch (error) {
+            console.error('An error occurred while loading the soldier:', error);
+            return; // Exit if the soldier couldn't be loaded.
+        }
+    }
+    if(!monster) {
+        try {
+            await loadMonster();
+            // Monster loaded successfully
+            // Proceed with the rest of your setup or game loop
+        } catch (error) {
+            // Handle error during monster loading
+            console.error('An error occurred while loading the monster:', error);
+        }
+    }
+    if(!portal) {
+        try {
+            await loadPortal(); // Wait for the portal to be loaded.
+        } catch (error) {
+            console.error('An error occurred while loading the portal:', error);
+            return; // Exit if the portal couldn't be loaded.
+        }
+    }
+    //soldier.position.set(0,0,8);
+
+    if (level == 1) {
+        //Start of game parameters
+        invunerable = 0;
+        boostFactor = 1;
+        soldierHealth = 2;
+        numCoins = 0;
+
+        // Create multiple coins
+        coinsNeeded = 1;
+        //createCoin(-11, 0.1, 8, scene, coins);
+        //createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
+        createCoin(8.309663681895037, -0.1712324325972956, -2.9527764209625995, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513, scene, healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061, scene, healths);
+
+        //Set character position
+        soldier.rotation.y = Math.PI;
+        soldier.position.set(5.42934919320037, -0.19268887765808546, -7.5301149896237245);
+
+        //Set monster position
+        monster.position.set(12.344735516930285, 0.0, 23.321273620601847);
+
+        //Set portal position
+        portal.position.set(2.508606756460684, -0.3057145773003322, 19.9);
+        portalDummyMesh.position.copy(portal.position);
+        portalDummyMesh.position.z -= 1.3;
+
+    } else if (level == 2) {
+        //Start of game parameters
+        invunerable = 0;
+        boostFactor = 1;
+        soldierHealth = 1;
+        numCoins = 0;
+
+        coinsNeeded = 5;
+
+        // Create multiple coins
+        createCoin(-4.668858254609299, 0.19268887765808546, -3.666108506629987, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+        createCoin(15.313297791701023, -0.1057143266885793, 21.623686900287876, scene, coins);
+        createCoin(2.4870020913648316, -0.10571453306073826, 19.26306456486548, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513, scene, healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061, scene, healths);
+
+        //Set character position
+        soldier.position.set(12.344735516930285, 0.0, 23.321273620601847);
+
+        //Set Monster position
+        monster.position.set(-10.953637295548958, -0.16373699632400585, 8.058759585396883);
+
+        //Set Portal Position
+        portal.position.set(14.710548068720117, -0.3, 7.8);
+        portalDummyMesh.position.copy(portal.position);
+        portalDummyMesh.position.z -= 1.3;
+
+    } else if (level == 3) {
+        //Start of game parameters
+        invunerable = 0;
+        boostFactor = 1;
+        soldierHealth = 1;
+        numCoins = 0;
+        // Create multiple coins
+        coinsNeeded = 3;
+        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
+        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+
+        //Create multiple boosts
+        createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
+
+        //Create multiple hearts
+        createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
+        createHealth(9.123201360574695, 0.08, 0.41047471505580513, scene, healths);
+        createHealth(14.03279715663051, 0.08, 8.672422194858061, scene, healths);
+
+
+    }
+
+    createHUD(camera,numCoins,boostFactor,soldierHealth);
+
+    blindnessOverlay.style.display = 'flex';
+    blindnessOverlay.style.opacity = -0.0889 * (soldierHealth) + 0.8889;
+
+    isGamePaused = false;
+    animate();
+
+    // Once everything is loaded, hide the loading screen
+    document.getElementById('loading-screen').style.display = 'none';
+
+    return Promise.resolve();
+}
+
+
 
 // Animation function
 var cameraPosition;
@@ -454,14 +606,11 @@ let boostFactor;
 let soldierHealth;
 let numCoins;
 let verticalVelocity = 0;
-let collectedAllCoinsMessage = false;
-let portal;
 let coinCounter = 0;
 let jumpStartY = null;  // This will keep track of the Y position when the jump starts
 
 initLevel(window.selectedLevel);
 
-createHUD(camera,numCoins,boostFactor,soldierHealth);
 
 let isRunning = false;
 
@@ -500,50 +649,10 @@ function checkStairs(character, sceneObject) {
     if (intersects.length > 0) {
         const distanceToGround = intersects[0].distance;
         if (distanceToGround < maxStepHeight) {
-            // Position the sphere at the collision point and make it visible
-            //collisionPoint.position.copy(intersects[0].point);
-            //collisionPoint.visible = true;
-
             // Adjust the character's Y position to the collision point.
             character.position.y = intersects[0].point.y + 0.07;
         }
     }
-
-    /*
-     // Create a red line material
-const lineMaterial = new THREE.LineBasicMaterial({
-    color: 0xff0000
-});
-
-     // Create a geometry that will be used for the line
-  const lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, -maxStepHeight, 0)]);
-
-// Create the line using the geometry and material
-  const rayLine = new THREE.Line(lineGeometry, lineMaterial);
-
-// Add the line to the scene
-  scene.add(rayLine);
-
-// Create a small sphere geometry to represent the collision point
-  const collisionGeometry = new THREE.SphereGeometry(0.05); // The radius of the sphere is 0.05 units
-  const collisionMaterial = new THREE.MeshBasicMaterial({color: 0xff0000}); // Red color for high visibility
-  const collisionPoint = new THREE.Mesh(collisionGeometry, collisionMaterial);
-
-// Initially, we don't want this sphere to be visible
-  collisionPoint.visible = false;
-
-// Add the sphere to the scene
-  scene.add(collisionPoint);
-
-  // Update the ray line's position to match the character's foot position plus the forward offset
-    rayLine.position.copy(footPosition);
-
-    // The line's end point is based on the upward direction
-    const endPoint = new THREE.Vector3(0, upwardRayLength, 0);  // end point straight up
-    lineGeometry.setFromPoints([new THREE.Vector3(), endPoint]);
-    lineGeometry.attributes.position.needsUpdate = true; // Required when updating line geometry after creation
-
-  for Stairs collision debugging purposes*/
 }
 
 function getDistance(x,y){
@@ -582,7 +691,7 @@ function updateMovement() {
             pursuing = true;
             playAnimation('Running');
             timerStarted = false;  // Reset the flag after the timer completes
-        }, 500000);  // Set the timer for 5 seconds (5000 milliseconds)
+        }, 5000);  // Set the timer for 5 seconds (5000 milliseconds)
 
         isSlowedDown = false;
     }
@@ -694,7 +803,7 @@ function updateMovement() {
     MondummyMesh.position.copy(monster.position);
     MondummyMesh.position.y += 0.3;
     MondummyMesh2.position.copy(monster2.position);
-    // MondummyMesh2.position.y += 0.1;
+    MondummyMesh2.position.y += 0.1;
 
 
 // At the end of your movement updates, add:
@@ -713,35 +822,35 @@ function updateMovement() {
 
     checkCollisionsWithCollectibles();
 
-    let allCoinsCollected = coins.every(coin => coin.collected);
-
-    if (allCoinsCollected && !collectedAllCoinsMessage) {
-        console.log("You have collected all the coins");
-        collectedAllCoinsMessage = true;  // This ensures the message is only printed once.
-    }
-
 // At the end of your movement updates:
     if (dummyMesh && portalDummyMesh) {
         let soldierBox = new THREE.Box3().setFromObject(dummyMesh);
         let portalBox = new THREE.Box3().setFromObject(portalDummyMesh);
-        if (soldierBox.intersectsBox(portalBox)) {
+        if (soldierBox.intersectsBox(portalBox) && portal.visible) {
             console.log("Soldier collided with portal!");
             gamewon();
         }
     }
-    // console.log(soldier.position.x, soldier.position.y, soldier.position.z);
-    // // console.log("flydummyMesh pos", flydummyMesh.position);
+
 //Check if monster is close to soldier, and damage if yes
-    if(getDistance(soldier,monster)<0.1){
+    if(getDistance(soldier,monster)<0.45){
 
         if(invunerable>100){
             console.log("Player damaged");
             invunerable=0;
             soldierHealth--;
+
+            blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889;
+
             if(soldierHealth==0){
+                blindnessOverlay.style.display = 'none';
+                blindnessOverlay.style.opacity=0;
                 console.log("Player should be dead");
                 gamelost();
             }
+
+            console.log(blindnessOverlay);
+
             updateHUDHP(soldierHealth);
             animate();
         }else{
@@ -763,10 +872,6 @@ function maintainDistanceFromSoldier(soldier, camera, distance) {
 
     camera.position.lerp(camera.position, 0.05);
 }
-
-
-
-
 
 let monster;
 let monsterMixer;
@@ -834,38 +939,58 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
 
 let MondummyMesh;
 let MonBoxHelper;
+async function loadMonster() {
+    // Define a promise to handle the asynchronous loading
+    return new Promise((resolve, reject) => {
+        monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
+        monster = gltf.scene;
+        monster.position.set(0.9, 0, 8); // Set initial position here
+        monster.scale.set(0.35, 0.35, 0.35);
 
-monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
-    monster = gltf.scene;
-    monster.position.set(0.9, 0, 8); // Set initial position here
-    monster.scale.set(0.35, 0.35, 0.35);
+        monsterMixer = new THREE.AnimationMixer(monster);
+        scene.add(monster);
 
-    monsterMixer = new THREE.AnimationMixer(monster);
-    scene.add(monster);
+        // 1. Create a dummy mesh with a BoxGeometry of your desired size.
+        let MonboxSize = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box (width, height, depth)
+        MondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize.x, MonboxSize.y, MonboxSize.z));
 
-    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
-    let MonboxSize = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box (width, height, depth)
-    MondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize.x, MonboxSize.y, MonboxSize.z));
-
-// 2. Position this mesh at the position of the soldier.
-    MondummyMesh.position.copy(new Vector3(monster.position.x, monster.position.y, monster.position.z));
-    yOffset = 0.1;  // or any value you deem appropriate
-    MondummyMesh.position.y += yOffset;
-
-// 3. Create a BoxHelper using this dummy mesh.
-    MonBoxHelper = new THREE.BoxHelper(MondummyMesh, 0x00ff00);
-
-// 4. Add the BoxHelper to the scene.
-//     scene.add(MonBoxHelper);
+        // 2. Position this mesh at the position of the soldier.
+        MondummyMesh.position.copy(new Vector3(monster.position.x, monster.position.y, monster.position.z));
+        yOffset = 0.1;  // or any value you deem appropriate
+        MondummyMesh.position.y += yOffset;
 
 
-    monsterAnimations.Idle = gltf.animations[0];
-    playAnimation('Idle');
+        // 3. Create a BoxHelper using this dummy mesh.
+        MonBoxHelper = new THREE.BoxHelper(MondummyMesh, 0x00ff00);
 
-    // Adjust the monster's y position based on bounding box here
-    const box = new THREE.Box3().setFromObject(monster);
-    monster.position.y = -0.4 - box.min.y;
-});
+        // 4. Add the BoxHelper to the scene.
+        //     scene.add(MonBoxHelper);
+
+
+        monsterAnimations.Idle = gltf.animations[0];
+        playAnimation('Idle');
+        monster.add(monsterSound);
+        // Set the reference distance (the distance at which the sound is at full volume)
+        monsterSound.setRefDistance(1);  // Smaller value means sound will diminish at a shorter distance.
+
+        // Set the rolloff factor (how quickly the sound diminishes past the reference distance)
+        monsterSound.setRolloffFactor(3);  // Higher value means sound diminishes more rapidly.
+
+        // Optionally, set the maximum distance at which the sound can be heard at all.
+        monsterSound.setMaxDistance(10);  // The sound will not be heard beyond this distance.
+
+
+
+        // Adjust the monster's y position based on bounding box here
+        const box = new THREE.Box3().setFromObject(monster);
+        monster.position.y = -0.4 - box.min.y;
+        resolve(monster); // Resolve the promise with the loaded monster
+        }, undefined, (error) => {
+                console.error(error);
+                reject(error); // Reject the promise on error
+            });
+    });
+}
 
 monsterloader.load('monster models/Monster warrior/MW Running gltf/MW Running.gltf', (gltf) => {
     // Store the running animation
@@ -1062,7 +1187,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() < 0.75) {
+                if (distance.lengthSq() < 0.6) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
@@ -1102,7 +1227,6 @@ function findPath() {
 
     }
 }
-
 
 let skyDummyBox = new THREE.Box3();
 let skyMonBox = new THREE.Box3();
@@ -1191,60 +1315,102 @@ function flyfindPath() {
 
 
 
+const particleSystem = createSparkEffect();
+particleSystem.position.y += 0.4;
+
+
+let healthModelMesh;
+let healthParticleSystem;
+loader.load('models/miniHealth.glb', (gltf) => {
+    gltf.scene.traverse((child) => {
+        if (child.isMesh && child.name === "miniHealth") {
+            healthModelMesh = child;
+            const scaleFactor = 0.0001; // Adjust this value as needed
+            healthModelMesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+        }
+    });
+
+    if (healthModelMesh) {
+        healthParticleSystem = createHealthEffect(healthModelMesh);
+        healthParticleSystem.position.y += 0.6;
+        console.log("Health particles created");
+    } else {
+        console.error("miniHealth mesh not found in the GLTF model!");
+    }
+});
+
+
+
+
+// Define a variable to keep track of the active boost timeout
+let boostTimeout = null;
+let healthTimeout = null;
 
 function checkCollisionsWithCollectibles() {
-    const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
 
-    // Check collision with coins
-    coins.forEach(coin => {
-        const coinBoundingBox = new THREE.Box3().setFromObject(coin.dummyMesh);
-        if (soldierBoundingBox.intersectsBox(coinBoundingBox) && !coin.collected) {
-            console.log("Collision between character and coin");
-            numCoins+=1;
-            coin.mesh.visible = false;
-            coin.collected = true;
-            updateHUDCoin(numCoins);
-            animate();
+    let result;
 
-            // Remove the coin from the scene
-            scene.remove(coin.mesh);
+    result = checkCollisionsWithCoins(scene, dummyMesh, coins, numCoins, coinsNeeded);
+    coins = result.coins;
+    numCoins = result.numCoins;
 
-            // Load the portal if all level coins have been collected
-            if (numCoins === coinsNeeded) {
-                coinsCollected();
-                loadPortal();
-            }
+    if (result.allCoinsCollected){
+        coinsCollected();
+        portal.visible = true;
+    }
+
+    result = checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor);
+    boosts = result.boosts;
+    boostFactor = result.boostFactor;
+
+    if (result.initiateBoost) {
+        if (boostTimeout) {
+            clearTimeout(boostTimeout);
+            soldier.remove(particleSystem);
+            boostTimeout = null;
         }
-    });
 
-    // Check collision with boosts
-    boosts.forEach(b => {
-        const boostBoundingBox = new THREE.Box3().setFromObject(b.dummyMesh);
-        if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !b.collected) {
-            console.log("Collision between character and boost");
-            boostFactor += 1;  // or any other effect you want to give
-            b.mesh.visible = false;
-            b.collected = true;
+        // Add the particle system when the boost is initiated
+        soldier.add(particleSystem);
+        // Adjust boost effect as needed
+        boostFactor += 1;
+        updateHUDSpeed(boostFactor);
+
+        // Set a timeout to revert the boostFactor
+        boostTimeout = setTimeout(() => {
+            boostFactor -= 1; // adjust as necessary
             updateHUDSpeed(boostFactor);
-            animate();
+            soldier.remove(particleSystem);
+        }, 12000); // duration of the boost effect
+    }
+
+    //if (boostFactor > 1){
+    //    createSparks(dummyMesh.position);
+    //}
+
+    result = checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth, blindnessOverlay);
+    healths = result.healths;
+    soldierHealth = result.soldierHealth;
+
+    if (result.isHealthCollected) {  // Assuming there's a flag like this when health is increased
+        if (healthTimeout) {  // Similar to the boostTimeout for consistency
+            clearTimeout(healthTimeout);
+            soldier.remove(healthParticleSystem);
+            healthTimeout = null;
         }
-    });
 
-    // Check collision with healths
-    healths.forEach(h => {
-        const healthBoundingBox = new THREE.Box3().setFromObject(h.dummyMesh);
-        if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !h.collected) {
-            console.log("Collision between character and health");
-            soldierHealth += 1;
-            h.mesh.visible = false;
-            h.collected = true;
-            updateHUDHP(soldierHealth);
-            animate();
-        }
-    });
+        // Add the health particle system when health is increased
+        soldier.add(healthParticleSystem);
 
-
+        // Set a timeout to remove the particle system after some time
+        healthTimeout = setTimeout(() => {
+            soldier.remove(healthParticleSystem);
+        }, 8000); // adjust the duration as needed
+    }
 }
+
+
+
 
 //play different animations
  document.addEventListener('keydown', (event) => {
@@ -1276,48 +1442,28 @@ function checkCollisionsWithCollectibles() {
      }
  });
 
-//monster pursuit code:
-
-     const clock = new THREE.Clock();
+const clock = new THREE.Clock();
  function animate() {
      if (isGamePaused) {
-         // If the game is paused, simply return without doing anything
+         // If the game is paused, return without doing anything
          return;
      }
 
      requestAnimationFrame(animate);
 
      //Add to the invunerable counter for player damage
-     invunerable++;
+     if(invunerable<101)invunerable++;
 
      if (mixer) mixer.update(0.016);
      if (monsterMixer) monsterMixer.update(0.015);
      if (portalMixer) portalMixer.update(0.016);
      if (flymonsterMixer) flymonsterMixer.update(0.035);
 
-     // Update mixers for all coins
-     for (const coin of coins) {
-         if (coin.mixer) {
-             coin.mixer.update(0.016);
-         }
-     }
-
-     // Update mixers for all boost
-     for (const boost of boosts) {
-         if (boost.mixer) {
-             boost.mixer.update(0.016);
-         }
-     }
-
-     // Update mixers for all boost
-     for (const health of healths) {
-         if (health.mixer) {
-             health.mixer.update(0.016);
-         }
-     }
+     animateCollectibles(coins, boosts, healths, 0.016);
 
      updateMovement();
 
+     listener.position.copy(camera.position);
 
      if (firstPersonView) {
          firstPersonControls.update(clock.getDelta());
@@ -1345,6 +1491,10 @@ function checkCollisionsWithCollectibles() {
      } else {
          orbitControls.update();
      }
+
+     // Update the particle system:
+     updateParticleSystem(particleSystem);
+     updateHealthEffect(healthParticleSystem);
 
      renderer.render(scene, camera);
 
