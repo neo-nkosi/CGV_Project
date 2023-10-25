@@ -99,7 +99,11 @@ button {
     margin-top: 10px;
 }
 #intermediate-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
     display: none;
+    z-index: 1000;
 }
 #pause-screen {
     display: none;
@@ -156,6 +160,14 @@ button {
     font-size: 2em;
     align-items: center;
     justify-content: center;
+}
+#win-screen > p {
+    margin-bottom: 20px;
+}
+
+#win-screen div {
+    text-align: center;
+    margin-bottom: 10px;
 }
 #lose-screen {
     display: none;
