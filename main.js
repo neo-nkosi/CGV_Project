@@ -677,12 +677,12 @@ function updateMovement() {
     // Update the bounding boxes
     dummyBox.setFromObject(dummyMesh);
     MonBox.setFromObject(MondummyMesh);
+    const moveSpeed = 0.015
 
-    var moveDistance = 0.015 * boostFactor;
+    var moveDistance = moveSpeed * boostFactor;
 
     if (isSlowedDown) {
-        moveDistance= 0.005;  // slow the original speed
-
+        moveDistance= moveSpeed * 0.3 * boostFactor;  // slow the original speed
     }
 
     if (!dummyBox.intersectsBox(MonBox) && !timerStarted) {
@@ -803,7 +803,7 @@ function updateMovement() {
     MondummyMesh.position.copy(monster.position);
     MondummyMesh.position.y += 0.3;
     MondummyMesh2.position.copy(monster2.position);
-    MondummyMesh2.position.y += 0.1;
+    MondummyMesh2.position.y += 0.3;
 
 
 // At the end of your movement updates, add:
@@ -1015,6 +1015,7 @@ const monsterAnimations2= {};
 let MondummyMesh2;
 let MonBoxHelper2;
 let yOffset3;
+
 monsterloader2.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
     monster2 = gltf.scene;
     monster2.position.set(12.3, 0, 23.3); // Set initial position here
@@ -1030,7 +1031,7 @@ monsterloader2.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf
 
 // 2. Position this mesh at the position of the soldier.
     MondummyMesh2.position.copy(new Vector3(monster2.position.x, monster2.position.y, monster2.position.z));
-    yOffset3 = 0.1;  // or any value you deem appropriate
+    yOffset3 = 0.3;  // or any value you deem appropriate
     MondummyMesh2.position.y += yOffset3;
 
 // 3. Create a BoxHelper using this dummy mesh.
@@ -1041,7 +1042,7 @@ monsterloader2.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf
 
     // Adjust the monster's y position based on bounding box here
     const box2 = new THREE.Box3().setFromObject(monster2);
-    monster2.position.y = -0.45 - box2.min.y;
+    monster2.position.y = box2.min.y;
 });
 
 
@@ -1051,8 +1052,6 @@ let flymonster;
 let flymonsterMixer;
 const flymonsterAnimations = {};
 const flymonsterloader = new GLTFLoader();
-
-
 
 
 flymonsterloader.load('flying monster/flying monster.glb', (gltf) => {
@@ -1482,7 +1481,6 @@ const clock = new THREE.Clock();
      if (pursuing) {
          findPath();
          flyfindPath();
-
      }
 
 
