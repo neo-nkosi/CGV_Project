@@ -823,7 +823,7 @@ function updateMovement() {
             invunerable=0;
             soldierHealth--;
 
-            blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889;
+            blindnessOverlay.style.opacity=-0.067*(soldierHealth)+0.667;
 
             if(soldierHealth==0){
                 blindnessOverlay.style.display = 'none';
