@@ -56,17 +56,28 @@ export function createSparkEffect() {
     return new THREE.Points(particles, particleMaterial);
 }
 
-export function updateParticleSystem(particleSystem) {
-    //particleSystem.position.y+=0.01;
+let rotationSpeed = 0.02;
 
+export function updateParticleSystem(particleSystem) {
     const positions = particleSystem.geometry.attributes.position.array;
 
     for (let i = 0; i < initialParticlePositions.length; i++) {
-        // Instead of immediately changing the y position, we interpolate towards the target position
+        let x = positions[i * 3];
+        let y = positions[i * 3 + 1];
+        let z = positions[i * 3 + 2];
+
+        // Rotate the particle in the xy-plane
+        let newX = x * Math.cos(rotationSpeed) - z * Math.sin(rotationSpeed);
+        let newZ = x * Math.sin(rotationSpeed) + z * Math.cos(rotationSpeed);
+
+        positions[i * 3] = newX;
+        positions[i * 3 + 2] = newZ;
+
+        // Adjust the y position by interpolating towards the target position
         positions[i * 3 + 1] += (targetParticlePositions[i].y - positions[i * 3 + 1]) * 0.05;
 
         // Randomly choose a new target position
-        if (Math.random() < 0.02) { // 2% chance to pick a new target position
+        if (Math.random() < 0.02) {
             let yOffset = (Math.random() - 0.5) * 0.3; // Random value between -0.1 and 0.1
             targetParticlePositions[i].y = initialParticlePositions[i].y + yOffset;
         }
