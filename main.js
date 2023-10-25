@@ -1071,27 +1071,32 @@ function findPath() {
 
     }
 }
-
+let initialParticlePositions = [];
+let targetParticlePositions = [];
 function createSparkEffect() {
     const particleCount = 50;
     const particles = new THREE.BufferGeometry();
     const particlePositions = [];
     const particleMaterial = new THREE.PointsMaterial({
-        color: 0xffff00,
-        size: 0.01,
+        color: 0xffff40,
+        size: 0.03,
         transparent: true,
         blending: THREE.AdditiveBlending
     });
 
     // Adjust these values to keep particles closer to the center
-    const maxDistanceFromCenter = 0.7;
+    const maxDistanceFromCenter = 1.5;
 
     for (let i = 0; i < particleCount; i++) {
-        particlePositions.push(
-            (Math.random() - 0.5) * maxDistanceFromCenter,
-            (Math.random() - 0.5) * maxDistanceFromCenter,
-            (Math.random() - 0.5) * maxDistanceFromCenter
-        );
+        let x = (Math.random() - 0.5) * maxDistanceFromCenter;
+        let y = (Math.random() - 0.5) * maxDistanceFromCenter;
+        let z = (Math.random() - 0.5) * maxDistanceFromCenter;
+
+        particlePositions.push(x, y, z);
+
+        // Store the initial positions for later
+        initialParticlePositions.push({ x, y, z });
+        targetParticlePositions.push({ x, y, z });
     }
 
     particles.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
@@ -1100,12 +1105,26 @@ function createSparkEffect() {
 }
 
 const particleSystem = createSparkEffect();
+particleSystem.position.y += 0.4; // Adjust as necessary
+
 
 function updateParticleSystem() {
-    particleSystem.position.copy(dummyMesh.position);
+    //particleSystem.position.y+=0.01;
 
-    // Here, you can add logic to update other particle properties for a more dynamic effect.
-    // For example, you can change particle size, opacity, or move individual particles around.
+    const positions = particleSystem.geometry.attributes.position.array;
+
+    for (let i = 0; i < initialParticlePositions.length; i++) {
+        // Instead of immediately changing the y position, we interpolate towards the target position
+        positions[i * 3 + 1] += (targetParticlePositions[i].y - positions[i * 3 + 1]) * 0.05;
+
+        // Every now and then, choose a new target position
+        if (Math.random() < 0.02) { // 2% chance to pick a new target position
+            let yOffset = (Math.random() - 0.5) * 0.3; // Random value between -0.1 and 0.1
+            targetParticlePositions[i].y = initialParticlePositions[i].y + yOffset;
+        }
+    }
+
+    particleSystem.geometry.attributes.position.needsUpdate = true;
 }
 
 // Define a variable to keep track of the active boost timeout
@@ -1132,13 +1151,12 @@ function checkCollisionsWithCollectibles() {
     if (result.initiateBoost) {
         if (boostTimeout) {
             clearTimeout(boostTimeout);
-            scene.remove(particleSystem);
+            soldier.remove(particleSystem);
             boostTimeout = null;
         }
 
         // Add the particle system when the boost is initiated
-        scene.add(particleSystem);
-
+        soldier.add(particleSystem);
         // Adjust boost effect as needed
         boostFactor += 1;
         updateHUDSpeed(boostFactor);
@@ -1147,7 +1165,7 @@ function checkCollisionsWithCollectibles() {
         boostTimeout = setTimeout(() => {
             boostFactor -= 1; // adjust as necessary
             updateHUDSpeed(boostFactor);
-            scene.remove(particleSystem);
+            soldier.remove(particleSystem);
         }, 3000); // duration of the boost effect
     }
 
