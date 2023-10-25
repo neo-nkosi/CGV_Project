@@ -14,7 +14,7 @@ import {
 } from './collectables.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
-import {createHealthEffect, createSparkEffect, updateParticleSystem} from "./particles";
+import {createHealthEffect, createSparkEffect, updateHealthEffect, updateParticleSystem} from "./particles";
 
 import { createLights } from './lights.js';
 
@@ -1076,6 +1076,7 @@ function findPath() {
 
 const particleSystem = createSparkEffect();
 particleSystem.position.y += 0.4;
+
 let healthModelMesh;
 let healthParticleSystem;
 loader.load('models/miniHealth.glb', (gltf) => {
@@ -1089,12 +1090,13 @@ loader.load('models/miniHealth.glb', (gltf) => {
 
     if (healthModelMesh) {
         healthParticleSystem = createHealthEffect(healthModelMesh);
+        healthParticleSystem.position.y += 0.6;
         console.log("Health particles created");
     } else {
         console.error("miniHealth mesh not found in the GLTF model!");
     }
 });
-particleSystem.position.y += 0.4;
+
 
 
 
@@ -1247,7 +1249,7 @@ const clock = new THREE.Clock();
 
      // Update the particle system:
      updateParticleSystem(particleSystem);
-     //updateParticleSystem(healthParticleSystem);
+     updateHealthEffect(healthParticleSystem);
 
      renderer.render(scene, camera);
 

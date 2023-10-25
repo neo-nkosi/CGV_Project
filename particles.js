@@ -92,7 +92,7 @@ export function createHealthEffect(modelMesh) {
         return null; // Ensure the model is loaded
     }
 
-    const particleCount = 20;
+    const particleCount = 30;
     const dummyObject = new THREE.Object3D(); // To apply transformations for each instance
 
     const instancedMesh = new THREE.InstancedMesh(
@@ -121,5 +121,40 @@ export function createHealthEffect(modelMesh) {
 
     return instancedMesh;
 }
+
+export function updateHealthEffect(instancedMesh) {
+    const dummyObject = new THREE.Object3D();
+    const scaleFactor = 0.05;
+    dummyObject.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+    const maxDistanceFromCenter = 1.5;
+
+    for (let i = 0; i < instancedMesh.count; i++) {
+        instancedMesh.getMatrixAt(i, dummyObject.matrix);
+        dummyObject.position.setFromMatrixPosition(dummyObject.matrix);
+
+        // Rotate the particle in the xy-plane
+        let newX = dummyObject.position.x * Math.cos(rotationSpeed) - dummyObject.position.z * Math.sin(rotationSpeed);
+        let newZ = dummyObject.position.x * Math.sin(rotationSpeed) + dummyObject.position.z * Math.cos(rotationSpeed);
+
+        dummyObject.position.x = newX;
+        dummyObject.position.z = newZ;
+
+        // Adjust the y position by interpolating towards the target position
+        dummyObject.position.y += (targetParticlePositions[i].y - dummyObject.position.y) * 0.05;
+
+        // Randomly choose a new target position
+        if (Math.random() < 0.02) {
+            let yOffset = (Math.random() - 0.5) * 0.3; // Random value between -0.1 and 0.1
+            targetParticlePositions[i].y = initialParticlePositions[i].y + yOffset;
+        }
+
+        dummyObject.updateMatrix();
+        instancedMesh.setMatrixAt(i, dummyObject.matrix);
+    }
+
+    instancedMesh.instanceMatrix.needsUpdate = true;
+}
+
 
 
