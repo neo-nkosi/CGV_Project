@@ -1072,10 +1072,42 @@ function findPath() {
     }
 }
 
+// Helper function to create the sparks
+function createSparks(position) {
+    const particles = 100;
+    const geometry = new THREE.BufferGeometry();
+    const vertices = [];
+
+    for (let i = 0; i < particles; i++) {
+        const x = position.x + (Math.random() - 0.5) * 2;
+        const y = position.y + (Math.random() - 0.5) * 2;
+        const z = position.z + (Math.random() - 0.5) * 2;
+
+        vertices.push(x, y, z);
+    }
+
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+    const material = new THREE.PointsMaterial({ color: 0xFFFF00, size: 0.1 });  // Yellow color
+
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
+
+    // Assuming you have a global clock or some animation loop
+    // Animate and remove after some time
+    setTimeout(() => {
+        scene.remove(points);
+        geometry.dispose();
+        material.dispose();
+    }, 2000); // remove after 2 seconds or adjust as needed
+
+    return points;
+}
+// Define a variable to keep track of the active boost timeout
+let boostTimeout = null;
 
 function checkCollisionsWithCollectibles() {
-    // Define a variable to keep track of the active boost timeout
-    let boostTimeout = null;
+
 
     let result;
 
@@ -1088,14 +1120,37 @@ function checkCollisionsWithCollectibles() {
         portal.visible = true;
     }
 
-    result = checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor, boostTimeout);
+    result = checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor);
     boosts = result.boosts;
     boostFactor = result.boostFactor;
+
+    if (result.initiateBoost) {
+        if (boostTimeout) {
+            clearTimeout(boostTimeout);
+            boostTimeout = null;
+        }
+
+        // Adjust boost effect as needed
+        boostFactor += 1;
+        updateHUDSpeed(boostFactor);
+
+        // Set a timeout to revert the boostFactor
+        boostTimeout = setTimeout(() => {
+            boostFactor -= 1; // adjust as necessary
+            updateHUDSpeed(boostFactor);
+        }, 3000); // duration of the boost effect
+    }
+
+    //if (boostFactor > 1){
+    //    createSparks(dummyMesh.position);
+    //}
 
     result = checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth, blindnessOverlay);
     healths = result.healths;
     soldierHealth = result.soldierHealth;
 }
+
+
 
 
 //play different animations
