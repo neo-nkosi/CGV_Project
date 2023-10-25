@@ -1,58 +1,129 @@
-<h2>Credits</h2>
-<h3>Group name</h3>
-<p>Singularity Spud</p>
-<h3>Developed by</h3>
-<div class="developer-row">
-    <div class="developer-left">
-        <p>Joshua<br>Moorhead</p>
-    </div>
-    <div class="developer-right">
-        <p>Neo<br>Nkosi</p>
-    </div>
-</div>
-<div class="developer-row">
-    <div class="developer-left">
-        <p>Oratile<br>Meletse</p>
-    </div>
-    <div class="developer-right">
-        <p>Oriinga<br>Maudu</p>
-    </div>
-</div>
-<div class="developer-row">
-    <div class="developer-left">
-        <p>PraiseGod<br>Emenike</p>
-    </div>
-    <div class="developer-right">
-        <p>Raees<br>Moosa</p>
-    </div>
-</div>
-<h3>Assets from:</h3>
-<h4>3D Models</h4>
-<p>Villa House</p>
-<p><a href="https://sketchfab.com/3d-models/arcventure-online-villa-house-9d52c0116fe740edbea98bb544ef9755">Sketchfab - Villa House</a></p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credits</title>
+    <style>
+        /* General page styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
 
-<p>Soldier</p>
-<p>Temp link space</p>
+        /* Credits section styles */
+        .credits {
+            text-align: center;
+            margin: 0 auto;
+            max-width: 800px;
+            padding: 20px;
+        }
 
-<p>Monster 1</p>
-<p>Temp link space</p>
+        .title {
+            margin-bottom: 20px;
+            color: #333;
+        }
 
-<p>Monster 2</p>
-<p>Temp link space</p>
+        .group-name {
+            margin: 10px 0;
+            color: #666;
+        }
 
-<p>Collectables</p>
-<p><a href="https://sketchfab.com/3d-models/collectable-lowpoly-animated-items-for-games-b7e7211db9264b46b63b03f274ee0f51">Sketchfab - Collectables</a></p>
+        /* Development team styles */
+        .development-team h2 {
+            color: #444;
+            margin-bottom: 20px;
+        }
 
-<h4>2D graphics</h4>
-<p>HUD graphics</p>
-<p>Blindness Overlay</p>
-<p><a href="https://toppng.com/show_download/185649/vignette-effect-png-vignette">TopPNG - Blindness Overlay</a></p>
+        .developer-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
 
-<p>Speed Icon</p>
-<p><a href="https://frosty-rabbid.itch.io/rpg-ability-icons?download">Frosty Rabbid - Speed Icon</a></p>
+        .developer {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
 
-<p>Coin Icon</p>
-<p><a href="https://greatdocbrown.itch.io/coins-gems-etc">GreatDocBrown - Coin Icon</a></p>
+        /* Assets section styles */
+        .assets h2 {
+            color: #444;
+        }
 
-<p>Health Bar</p>
-<p><a href="https://ceroexe.itch.io/life-bar-pack">CeroExe - Health Bar</a></p>
+        .asset-category h3 {
+            text-align: left;
+            color: #333;
+        }
+
+        .asset-category ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        .asset-category ul li {
+            margin-bottom: 10px;
+        }
+
+        .asset-category ul li a {
+            color: #3498db;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<section class="credits">
+    <h1 class="title">Credits</h1>
+    <h2 class="group-name">Singularity Spud</h2>
+
+    <section class="development-team">
+        <h2>Developed By</h2>
+        <!-- Developer Information -->
+        <div class="developer-grid">
+            <div class="developer">Joshua<br>Moorhead</div>
+            <div class="developer">Neo<br>Nkosi</div>
+            <div class="developer">Oratile<br>Meletse</div>
+            <div class="developer">Oriinga<br>Maudu</div>
+            <div class="developer">PraiseGod<br>Emenike</div>
+            <div class="developer">Raees<br>Moosa</div>
+        </div>
+    </section>
+
+    <section class="assets">
+        <h2>Assets From:</h2>
+        <!-- 3D Models -->
+        <div class="asset-category">
+            <h3>3D Models</h3>
+            <ul>
+                <!-- Add your list items with appropriate links -->
+                <li>Villa House - <a href="...">View on Sketchfab</a></li>
+                <li>Soldier (1)<a href="https://threejs.org/examples/#webgl_animation_skinning_blending">View on ThreeJs.org</a>
+                    (2)<a href="https://github.com/mrdoob/three.js/blob/master/examples/models/gltf/Soldier.glb">View on GitHub</a></li>
+                <li></li>
+
+                <!-- Other items -->
+            </ul>
+        </div>
+
+        <!-- 2D Graphics -->
+        <div class="asset-category">
+            <h3>2D Graphics</h3>
+            <ul>
+                <!-- Add your list items -->
+                <li>HUD Graphics</li>
+                <!-- Other items -->
+            </ul>
+        </div>
+    </section>
+</section>
+
+</body>
+</html>
