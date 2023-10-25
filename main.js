@@ -212,12 +212,21 @@ let currentAnimationAction;
 
 let soldierLoader = new GLTFLoader();
 let soldierBoxHelper;
+let flysoldierBoxHelper;
 let dummyMesh;
+let flydummyMesh;
 let yOffset;
+let y2Offset;
 await soldierLoader.load('models/Soldier.glb', function (gltf) {
     soldier = gltf.scene;
     soldier.position.set(0,0,8);
     soldier.scale.set(0.25, 0.25, 0.25);
+
+    //-10.4
+    //
+    // y: 0.42
+    //
+    // z: 26.11
 
     scene.add(soldier);
 
@@ -229,7 +238,6 @@ await soldierLoader.load('models/Soldier.glb', function (gltf) {
     dummyMesh.position.copy(new Vector3(soldier.position.x, soldier.position.y, soldier.position.z));
     yOffset = 0.2;  // or any value you deem appropriate
     dummyMesh.position.y += yOffset;
-
 
 // 3. Create a BoxHelper using this dummy mesh.
     soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
@@ -266,6 +274,7 @@ scene.add(light);
 
 let villaHouse;
 let meshfloor;
+let skymeshfloor;
 
 // Load the maze model
 const loader = new GLTFLoader();
@@ -291,6 +300,7 @@ loader.load('models/villaHouse.glb', function (gltf) {
     //
 
     console.log(soldier.position);
+
 
     // Find the child named "floor" and set its material to use the floorTexture
     const floor = villaHouse.getObjectByName("floor");
@@ -683,6 +693,10 @@ function updateMovement() {
     dummyMesh.position.y += yOffset;  // make sure to add yOffset again
     MondummyMesh.position.copy(monster.position);
     MondummyMesh.position.y += 0.3;
+    MondummyMesh2.position.copy(monster2.position);
+    // MondummyMesh2.position.y += 0.1;
+
+
 // At the end of your movement updates, add:
     if (soldierBoxHelper) {
         soldierBoxHelper.update();
@@ -690,6 +704,12 @@ function updateMovement() {
     if (MonBoxHelper) {
         MonBoxHelper.update();
     }
+
+    if(MonBoxHelper2) {
+        MonBoxHelper2.update();
+    }
+
+
 
     checkCollisionsWithCollectibles();
 
@@ -709,7 +729,8 @@ function updateMovement() {
             gamewon();
         }
     }
-    console.log(soldier.position.x, soldier.position.y, soldier.position.z);
+    // console.log(soldier.position.x, soldier.position.y, soldier.position.z);
+    // // console.log("flydummyMesh pos", flydummyMesh.position);
 //Check if monster is close to soldier, and damage if yes
     if(getDistance(soldier,monster)<0.1){
 
@@ -752,6 +773,7 @@ let monsterMixer;
 const monsterAnimations = {};
 const monsterloader = new GLTFLoader();
 let animationState = 'Idle'; // default animation
+let flyanimationState = 'flying'; // default animation
 
 //function to play animation
 function playAnimation(name) {
@@ -771,6 +793,24 @@ function playAnimation(name) {
 
     // Update animation state
     animationState = name;
+}
+
+function flyplayAnimation(name) {
+    for (let actionName in flymonsterAnimations) {
+        if (flymonsterMixer) {
+            flymonsterMixer.stopAllAction();
+        }
+        flymonsterMixer.clipAction(flymonsterAnimations[actionName]).stop();
+
+    }
+
+    // Play the desired action
+    if (flymonsterAnimations[name]) {
+        monsterMixer.clipAction(flymonsterAnimations[name]).play();
+    }
+
+
+    flyanimationState = name;
 }
 
 // Load and store animations by their names
@@ -812,7 +852,6 @@ monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf)
     yOffset = 0.1;  // or any value you deem appropriate
     MondummyMesh.position.y += yOffset;
 
-
 // 3. Create a BoxHelper using this dummy mesh.
     MonBoxHelper = new THREE.BoxHelper(MondummyMesh, 0x00ff00);
 
@@ -843,7 +882,99 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
     monsterAnimations.Smashing = gltf.animations[2];
 });
 
- const pathfinding = new Pathfinding();
+//second monster for sky monster logic:
+const monsterloader2 = new GLTFLoader();
+let monster2;
+let monsterMixer2;
+const monsterAnimations2= {};
+let MondummyMesh2;
+let MonBoxHelper2;
+let yOffset3;
+monsterloader2.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
+    monster2 = gltf.scene;
+    monster2.position.set(12.3, 0, 23.3); // Set initial position here
+    monster2.scale.set(0.35, 0.35, 0.35);
+
+    monsterMixer2 = new THREE.AnimationMixer(monster);
+    scene.add(monster2);
+    monster2.visible = false;
+
+    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
+    let MonboxSize2 = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box (width, height, depth)
+    MondummyMesh2 = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize2.x, MonboxSize2.y, MonboxSize2.z));
+
+// 2. Position this mesh at the position of the soldier.
+    MondummyMesh2.position.copy(new Vector3(monster2.position.x, monster2.position.y, monster2.position.z));
+    yOffset3 = 0.1;  // or any value you deem appropriate
+    MondummyMesh2.position.y += yOffset3;
+
+// 3. Create a BoxHelper using this dummy mesh.
+    MonBoxHelper2 = new THREE.BoxHelper(MondummyMesh2, 0x00ff00);
+
+// 4. Add the BoxHelper to the scene.
+    scene.add(MonBoxHelper2);
+
+    // Adjust the monster's y position based on bounding box here
+    const box2 = new THREE.Box3().setFromObject(monster2);
+    monster2.position.y = -0.45 - box2.min.y;
+});
+
+
+let flyMondummyMesh;
+let flyMonBoxHelper;
+let flymonster;
+let flymonsterMixer;
+const flymonsterAnimations = {};
+const flymonsterloader = new GLTFLoader();
+
+
+
+
+flymonsterloader.load('flying monster/flying monster.glb', (gltf) => {
+    flymonster = gltf.scene;
+    flymonster.position.set(12.3, 0.75, 23.3 ); // Set initial position here
+    flymonster.scale.set(0.12, 0.3, 0.12);
+    console.log("flymonster pos:", flymonster.position);
+
+    flymonsterMixer = new THREE.AnimationMixer(flymonster);
+    scene.add(flymonster);
+
+    gltf.animations.forEach((clip) => {
+        flymonsterAnimations[clip.name] = clip;
+    });
+
+    gltf.animations.forEach((clip) => {
+        console.log("animation name:", clip.name);
+    });
+
+    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
+    let flyMonboxSize = new THREE.Vector3(1,1, 0.9); // Size of the box (width, height, depth)
+    flyMondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(flyMonboxSize.x, flyMonboxSize.y, flyMonboxSize.z));
+
+// 2. Position this mesh at the position of the soldier.
+    flyMondummyMesh.position.copy(new Vector3(flymonster.position.x, flymonster.position.y, flymonster.position.z));
+    yOffset = 1;  // or any value you deem appropriate
+    flyMondummyMesh.position.y += yOffset;
+    // console.log("flying monster dummy mesh pos:", flyMondummyMesh.position);
+
+    // Assuming you've loaded your animations into flymonsterAnimations object
+    let action = flymonsterMixer.clipAction(flymonsterAnimations["GLTF_created_0Action"]);
+    action.loop = THREE.LoopRepeat; // Ensure it loops
+
+    action.play();
+    action.setInterpolation(THREE.InterpolateSmooth);
+    action.clampWhenFinished = true;
+
+
+
+
+    // Adjust the monster's y position based on bounding box here
+    const box = new THREE.Box3().setFromObject(flymonster);
+    flymonster.position.y = -0.4 - box.min.y;
+});
+
+
+const pathfinding = new Pathfinding();
 const pathfindinghelper = new PathfindingHelper();
  scene.add(pathfindinghelper);
 const ZONE = "villaHouse";
@@ -855,20 +986,48 @@ loader.load("navmesh/blendernavmesh4.glb", function(gltf){
 meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
 meshfloor.scale.set(1, 1, 1);
- // scene.add(meshfloor);
+// scene.add(meshfloor);
 gltf.scene.traverse(node =>{
          if(!navmesh && node.isObject3D && node.children && node.children.length > 0){
              navmesh = node.children[0];
              console.log("navmesh object:", navmesh);
              pathfinding.setZoneData(ZONE, Pathfinding.createZone(navmesh.geometry));
              console.log("pathfinding zones", pathfinding.zones);
+             console.log("navmesh position:", navmesh.position);
          }
      })
  })
+const skymeshLoader = new GLTFLoader();
+const skypathfinding = new Pathfinding();
+const skypathfindinghelper = new PathfindingHelper();
+
+
+
+const SKYZONE = 'skyZone';
+let skymesh;
+let skygroupId;
+let skynavpath;
+scene.add(skypathfindinghelper);
+
+skymeshLoader.load("flying monster/flym navmesh 7.glb", function(gltf){
+skymeshfloor = gltf.scene;
+skymeshfloor.position.set(0, 0, 0);
+skymeshfloor.scale.set(1, 1, 1);
+// scene.add(skymeshfloor);
+gltf.scene.traverse(node =>{
+    if(!skymesh && node.isObject3D && node.children && node.children.length > 0){
+        skymesh = node.children[0];
+        console.log("skymesh object:", skymesh);
+        skypathfinding.setZoneData(SKYZONE, Pathfinding.createZone(skymesh.geometry));
+        console.log("skypathfinding zones", skypathfinding.zones);
+        // console.log("skypathmesh position:", skymesh.position);
+        // console.log("skymeshfloor:", skymeshfloor.position);
+    }
+})
+})
 
 let dummyBox = new THREE.Box3();
 let MonBox = new THREE.Box3();
-
 function findPath() {
 
     if (pursuing) {
@@ -940,6 +1099,92 @@ function findPath() {
 
             }
         }
+
+    }
+}
+
+
+let skyDummyBox = new THREE.Box3();
+let skyMonBox = new THREE.Box3();
+function flyfindPath() {
+
+    if (pursuing) {
+
+        // playAnimation('Running');
+
+        let target = soldier.position.clone();
+        console.log("soldier pos:", target);
+
+        let monsterPos = monster2.position.clone();
+        console.log("Mon2 position:", monsterPos);
+
+        // for (let i = 0; i < pathfinding.zones["skyzone"].groups.length; i++) {
+        skygroupId = skypathfinding.getGroup('skyZone', monsterPos);
+        console.log("Group Id:", skygroupId);
+        const closest = skypathfinding.getClosestNode(monsterPos, 'skyZone', skygroupId);
+        console.log("closest node:", closest);
+
+        const closest2 = skypathfinding.getClosestNode(target, 'skyZone', skygroupId);
+        //console.log("closest node 2:", closest2);
+        if (closest) {
+            skynavpath = skypathfinding.findPath(closest.centroid, target, 'skyZone', skygroupId);
+            //console.log("nav path :", navpath);
+            if (skynavpath && skynavpath.length > 0) {
+                skypathfindinghelper.reset();
+                // skypathfindinghelper.setPlayerPosition(monster2.position);
+                // skypathfindinghelper.setTargetPosition(target);
+                // skypathfindinghelper.setPath(skynavpath);
+
+                // Target position
+                let targetPos = skynavpath[0];
+
+                // Compute distance to target
+                const distance = targetPos.clone().sub(monster2.position);
+
+                // If the monster is close enough to the target position
+                if (distance.lengthSq() < 0.75) {
+
+                    skynavpath.shift(); // Go to the next waypoint
+                    if (skynavpath.length === 0) {
+                        skynavpath = skypathfinding.findPath(closest.centroid, target, "skyZone", skygroupId);
+
+                    } // If there's no more waypoints, just return
+                    targetPos = skynavpath[0]; // New target position
+                    distance.copy(targetPos.clone().sub(monster2.position)); // Update distance
+                }
+
+                // Normalize distance to get direction
+                const direction = distance.normalize();
+
+                // Set monster speed (adjust the 0.05 value to your preference)
+                const speed = 0.021;
+
+                // Update the monster's position
+                monster2.position.add(direction.multiplyScalar(speed));
+
+                // Make the monster face the direction it's heading
+                monster2.lookAt(monster2.position.clone().add(direction));
+
+                flymonster.position.x = monster2.position.x;
+                flymonster.position.z = monster2.position.z;
+                flymonster.lookAt(flymonster.position.clone().add(direction));
+
+
+                // Update the bounding boxes
+                skyDummyBox.setFromObject(dummyMesh);
+                skyMonBox.setFromObject(MondummyMesh2);
+
+                // Then, check for intersections.
+                if (skyDummyBox.intersectsBox(skyMonBox)) {
+                    pursuing = false;
+                    isSlowedDown = true;
+                    // playAnimation("Idle");
+                    // playAnimation('Smashing');
+                }
+
+            }
+        }
+        // }
 
     }
 }
@@ -1024,6 +1269,10 @@ function checkCollisionsWithCollectibles() {
          case 'KeyG':
              playAnimation('Smashing');
              break;
+         case 'KeyF':
+             flyplayAnimation('flying');
+             break;
+         //
      }
  });
 
@@ -1044,6 +1293,7 @@ function checkCollisionsWithCollectibles() {
      if (mixer) mixer.update(0.016);
      if (monsterMixer) monsterMixer.update(0.015);
      if (portalMixer) portalMixer.update(0.016);
+     if (flymonsterMixer) flymonsterMixer.update(0.035);
 
      // Update mixers for all coins
      for (const coin of coins) {
@@ -1067,8 +1317,7 @@ function checkCollisionsWithCollectibles() {
      }
 
      updateMovement();
-     // Call the function after the exploration is done
-     // visualizeGrid(grid);
+
 
      if (firstPersonView) {
          firstPersonControls.update(clock.getDelta());
@@ -1085,8 +1334,9 @@ function checkCollisionsWithCollectibles() {
 
      // In your animate function
      if (pursuing) {
-         // findSoldier(clock.getDelta()); // start fin
          findPath();
+         flyfindPath();
+
      }
 
 
