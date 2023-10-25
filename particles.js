@@ -133,7 +133,10 @@ export function updateHealthEffect(instancedMesh) {
         instancedMesh.getMatrixAt(i, dummyObject.matrix);
         dummyObject.position.setFromMatrixPosition(dummyObject.matrix);
 
-        // Rotate the particle in the xy-plane
+        // Rotate each particle around its own Y-axis
+        dummyObject.rotateY(rotationSpeed);
+
+        // Rotate the particle in the xy-plane around the center
         let newX = dummyObject.position.x * Math.cos(rotationSpeed) - dummyObject.position.z * Math.sin(rotationSpeed);
         let newZ = dummyObject.position.x * Math.sin(rotationSpeed) + dummyObject.position.z * Math.cos(rotationSpeed);
 
