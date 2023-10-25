@@ -1251,8 +1251,8 @@ const clock = new THREE.Clock();
      }
 
      redDot.position.set(soldier.position.x,8,soldier.position.z);
-     minimapCamera.position.set(soldier.position.x,15,soldier.position.z)
-   minimapCamera.lookAt(soldier.position.x,soldier.position.y+5,soldier.position.z)
+     minimapCamera.position.set(soldier.position.x,soldier.position.y+15,soldier.position.z)
+   minimapCamera.lookAt(soldier.position.x,soldier.position.y,soldier.position.z)
     renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
     renderer.render(scene, camera);
     renderer.clearDepth();
