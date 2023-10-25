@@ -932,8 +932,8 @@ const flymonsterloader = new GLTFLoader();
 
 flymonsterloader.load('flying monster/flying monster.glb', (gltf) => {
     flymonster = gltf.scene;
-    flymonster.position.set(12.3, 0.75, 23.3 ); // Set initial position here
-    flymonster.scale.set(0.12, 0.3, 0.12);
+    flymonster.position.set(12.3, 0.55, 23.3 ); // Set initial position here
+    flymonster.scale.set(0.2, 0.2, 0.2);
     console.log("flymonster pos:", flymonster.position);
 
     flymonsterMixer = new THREE.AnimationMixer(flymonster);
