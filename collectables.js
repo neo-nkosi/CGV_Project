@@ -185,7 +185,7 @@ export function checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor)
     };
 }
 
-export function checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth, blindnessOverlay) {
+export function checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth) {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
     let isHealthCollected = false;
     // Check collision with healths
@@ -197,7 +197,7 @@ export function checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHea
             soldierHealth += 1; // Adjust effect as needed
             health.mesh.visible = false;
             health.collected = true;
-            blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889; // Update blindness overlay
+            //blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889; // Update blindness overlay
             updateHUDHP(soldierHealth);
 
             // Clean up and memory management

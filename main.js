@@ -101,7 +101,7 @@ function clearPreviousLevel() {
 const retryButton = document.getElementById("retry-button");
 const menuButton = document.getElementById("menu-button");
 const continueButton = document.getElementById("continue-button");
-const blindnessOverlay = document.getElementById("blindness-overlay");
+//const blindnessOverlay = document.getElementById("blindness-overlay");
 
 retryButton.addEventListener('click', async () => {
     // Handle retry button click
@@ -614,8 +614,8 @@ async function initLevel(level) {
 
     createHUD(camera,numCoins,boostFactor,soldierHealth);
 
-    blindnessOverlay.style.display = 'flex';
-    blindnessOverlay.style.opacity = -0.0889 * (soldierHealth) + 0.8889;
+    //blindnessOverlay.style.display = 'flex';
+    //blindnessOverlay.style.opacity = -0.0889 * (soldierHealth) + 0.8889;
 
     isGamePaused = false;
     animate();
@@ -906,16 +906,16 @@ function updateMovement() {
             invunerable=0;
             soldierHealth--;
 
-            blindnessOverlay.style.opacity=-0.067*(soldierHealth)+0.667;
+            //blindnessOverlay.style.opacity=-0.067*(soldierHealth)+0.667;
 
             if(soldierHealth==0){
-                blindnessOverlay.style.display = 'none';
-                blindnessOverlay.style.opacity=0;
+                //blindnessOverlay.style.display = 'none';
+                //blindnessOverlay.style.opacity=0;
                 console.log("Player should be dead");
                 gamelost();
             }
 
-            console.log(blindnessOverlay);
+            //console.log(blindnessOverlay);
 
             updateHUDHP(soldierHealth);
             animate();
@@ -1470,7 +1470,7 @@ function checkCollisionsWithCollectibles() {
     //    createSparks(dummyMesh.position);
     //}
 
-    result = checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth, blindnessOverlay);
+    result = checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth);
     healths = result.healths;
     soldierHealth = result.soldierHealth;
 
