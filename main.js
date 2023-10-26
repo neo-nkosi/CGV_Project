@@ -49,10 +49,18 @@ function gamelost(){
 }
 
 function gamewon(){
-    if(window.selectedLevel != 3) {
-        updateWinScreenWithNextLevel(window.selectedLevel);
+    console.log("Game won for level:", currentLevel);
+    if(currentLevel != 3) {
+        updateWinScreenWithNextLevel(currentLevel);
     }else{
         // If it's level 3, change the win message and hide the next level button, and show credits button
+        // Check if the objective and modifiers elements already exist
+        const existingObjectiveElement = document.querySelector('#win-screen .next-level-objective');
+        const existingModifiersElement = document.querySelector('#win-screen .next-level-modifiers');
+
+        // If they exist, remove them
+        if(existingObjectiveElement) existingObjectiveElement.remove();
+        if(existingModifiersElement) existingModifiersElement.remove();
         document.getElementById('win-message').textContent = "Congratulations! You have beat the game!";
         document.getElementById('next-level-button').style.display = 'none';
         document.getElementById('credits-end-button').style.display = 'block';
@@ -524,7 +532,7 @@ async function initLevel(level) {
         soldierHealth = 3;
         numCoins = 0;
 
-        coinsNeeded = 5;
+        coinsNeeded = 1;
 
         // Create multiple coins
         createCoin(-4.668858254609299, 0.19268887765808546, -3.666108506629987, scene, coins);

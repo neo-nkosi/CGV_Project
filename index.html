@@ -133,6 +133,7 @@
 
     window.updateWinScreenWithNextLevel = function(currentLevel) {
         const nextLevel = (parseInt(currentLevel, 10) + 1).toString();
+        console.log("The next level is ",nextLevel);
         const details = levelDetails[nextLevel];
 
         // Check if the objective and modifiers elements already exist
