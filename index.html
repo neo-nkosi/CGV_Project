@@ -133,17 +133,28 @@
         const nextLevel = (parseInt(currentLevel, 10) + 1).toString();
         const details = levelDetails[nextLevel];
 
+        // Check if the objective and modifiers elements already exist
+        const existingObjectiveElement = document.querySelector('#win-screen .next-level-objective');
+        const existingModifiersElement = document.querySelector('#win-screen .next-level-modifiers');
+
+        // If they exist, remove them
+        if(existingObjectiveElement) existingObjectiveElement.remove();
+        if(existingModifiersElement) existingModifiersElement.remove();
+
         // Add Objective and Modifiers of the next level to the win screen
         const objectiveElement = document.createElement('div');
+        objectiveElement.classList.add('next-level-objective');
         objectiveElement.innerHTML = `<h3>Next Level Objective:</h3><p>${details.objective}</p>`;
 
         const modifiersElement = document.createElement('div');
+        modifiersElement.classList.add('next-level-modifiers');
         modifiersElement.innerHTML = `<h3>Modifiers:</h3><p>${details.modifiers}</p>`;
 
         const winScreen = document.getElementById('win-screen');
         winScreen.insertBefore(objectiveElement, winScreen.querySelector('#next-level-button'));
         winScreen.insertBefore(modifiersElement, winScreen.querySelector('#next-level-button'));
     }
+
 
     function showIntermediateScreen(level) {
         // Set a global variable with the selected level
