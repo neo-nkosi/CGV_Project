@@ -939,6 +939,8 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
     });
 });
 
+//working
+
 let MondummyMesh;
 let MonBoxHelper;
 async function loadMonster() {
