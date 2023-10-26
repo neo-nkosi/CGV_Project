@@ -49,10 +49,18 @@ function gamelost(){
 }
 
 function gamewon(){
-    if(window.selectedLevel != 3) {
-        updateWinScreenWithNextLevel(window.selectedLevel);
+    console.log("Game won for level:", currentLevel);
+    if(currentLevel != 3) {
+        updateWinScreenWithNextLevel(currentLevel);
     }else{
         // If it's level 3, change the win message and hide the next level button, and show credits button
+        // Check if the objective and modifiers elements already exist
+        const existingObjectiveElement = document.querySelector('#win-screen .next-level-objective');
+        const existingModifiersElement = document.querySelector('#win-screen .next-level-modifiers');
+
+        // If they exist, remove them
+        if(existingObjectiveElement) existingObjectiveElement.remove();
+        if(existingModifiersElement) existingModifiersElement.remove();
         document.getElementById('win-message').textContent = "Congratulations! You have beat the game!";
         document.getElementById('next-level-button').style.display = 'none';
         document.getElementById('credits-end-button').style.display = 'block';
@@ -492,10 +500,10 @@ async function initLevel(level) {
         numCoins = 0;
 
         // Create multiple coins
-        coinsNeeded = 1;
-        //createCoin(-11, 0.1, 8, scene, coins);
-        //createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
-        createCoin(8.309663681895037, -0.1712324325972956, -2.9527764209625995, scene, coins);
+        coinsNeeded = 3;
+        createCoin(-11, 0.1, 8, scene, coins);
+        createCoin(-0.16933011722566568, 1.5428444454159687, -3.5196514665312306, scene, coins);
+        createCoin(8.309663681895037, 0.08, -2.9527764209625995, scene, coins);
 
         //Create multiple boosts
         createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
@@ -531,11 +539,11 @@ async function initLevel(level) {
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
         createCoin(15.313297791701023, -0.1057143266885793, 21.623686900287876, scene, coins);
-        createCoin(2.4870020913648316, -0.10571453306073826, 19.26306456486548, scene, coins);
+        createCoin(-6.478627718796445,0.0257167563954529,-6.168920117051623, scene, coins);
 
         //Create multiple boosts
         createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
-
+        createBoost(-7.166800572786356,0.13303180199350304, -2.969070444496146, scene, boosts);
         //Create multiple hearts
         createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
         createHealth(9.123201360574695, 0.08, 0.41047471505580513, scene, healths);
@@ -556,6 +564,9 @@ async function initLevel(level) {
         if(!flymonster) {
             try {
                 await loadFlyingMonster();
+                //Set Flying Monster
+                flymonster.position.set(11.602514540807476,-0.5, 7.350874621916164);
+                monster2.position.set(11.602514540807476, 0, 7.350874621916164);
                 // Monster loaded successfully
                 // Proceed with the rest of your setup or game loop
             } catch (error) {
@@ -569,17 +580,17 @@ async function initLevel(level) {
         soldierHealth = 4;
         numCoins = 0;
         // Create multiple coins
-        coinsNeeded = 1;
-        createCoin(-11, 0.1, 8, scene, coins);
-        createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
-        createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
+        coinsNeeded =4;
+        createCoin(14.536421965589483,0.03057155538155174,7.58699090130494, scene, coins);
+        createCoin(2.7320551078342272, 0.03057145082506017, 19.546859446851897, scene, coins);
+        createCoin(11.11768482268818, 0.03187933911074385, 3.0645921687486406, scene, coins);
+        createCoin(-2.4891079135108454,0.03,-5.813755465209445, scene, coins);
 
         //Create multiple boosts
-        createBoost(-4.527128711251262, 1.46, -3.1303095350034713, scene, boosts);
-
+        createBoost( -7.316586596047871, 1.5447727849730473, -0.35417485409345584, scene, boosts);
+        createBoost( 2.851041869511314,0.10571556000491645,7.516192429267554, scene, boosts);
         //Create multiple hearts
-        createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
-        createHealth(9.123201360574695, 0.08, 0.41047471505580513, scene, healths);
+        createHealth(12.2, 0.08, 24.1, scene, healths);
         createHealth(14.03279715663051, 0.08, 8.672422194858061, scene, healths);
 
         //Set character position
@@ -588,14 +599,15 @@ async function initLevel(level) {
         //Set Monster position
         monster.position.set(9.180331758242579,-0.12111884839921798,-0.19535202985285158);
 
-        //Set Flying Monster
-        flymonster.position.set(11.602514540807476,-0.5, 7.350874621916164);
-        monster2.position.set(11.602514540807476, 0, 7.350874621916164);
+
 
         //Set Portal Position
-        portal.position.set(14.710548068720117, -0.3, 7.8);
+        portal.position.set(-10.547375410445332,-0.16373699632400585, 8.20728346728963);
         portalDummyMesh.position.copy(portal.position);
-        portalDummyMesh.position.z -= 1.3;
+        portalDummyMesh.position.z += 1.3;
+        portal.rotation.y = Math.PI;
+
+
 
 
     }

@@ -91,7 +91,7 @@
 
 <!-- Controls screen content -->
 <div id="controls-screen" style="display: none;">
-    <img src="icons/gameControls.png" alt="Controls" /> <!-- Replace with your image path -->
+    <img src="icons/gameControls.png" alt="Controls" />
     <button id="controls-back-button">Back</button>
 </div>
 
@@ -116,15 +116,15 @@
     const levelDetails = {
         '1': {
             objective: 'Collect 3 coins. When all coins are collected, run to the portal to escape.',
-            modifiers: 'You begin with 20 health. There is 1 monster.',
+            modifiers: 'You begin with 50 health. There is 1 monster.',
         },
         '2': {
             objective: 'Collect 5 coins. When all coins are collected, run to the portal to escape.',
-            modifiers: 'You begin with 10 health. There is 1 monster.',
+            modifiers: 'You begin with 30 health. There is 1 monster.',
 
         },
         '3': {
-            objective: 'Collect 3 coins. When all coins are collected, run to the portal to escape.',
+            objective: 'Collect 4 coins. When all coins are collected, run to the portal to escape.',
             modifiers: 'You begin with 40 health. There are 2 monsters.',
         },
         // ... more levels
@@ -132,6 +132,7 @@
 
     window.updateWinScreenWithNextLevel = function(currentLevel) {
         const nextLevel = (parseInt(currentLevel, 10) + 1).toString();
+        console.log("The next level is ",nextLevel);
         const details = levelDetails[nextLevel];
 
         // Check if the objective and modifiers elements already exist

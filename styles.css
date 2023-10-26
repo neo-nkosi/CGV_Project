@@ -200,6 +200,11 @@ button {
 #controls-screen img {
     filter: invert(100%);
 }
+#controls-back-button {
+    margin-top: -80px;
+    z-index: 1001;
+}
+
 
 
 
