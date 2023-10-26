@@ -3,7 +3,7 @@ import * as THREE from 'three';
 // Define and configure the lights
 const createLights = (scene) => {
   // Ambient light
-  const light = new THREE.AmbientLight(0xffffff, 0.3);
+  const light = new THREE.AmbientLight(0xffffff, 0.1);
   light.translateY(10);
   scene.add(light);
 
