@@ -180,7 +180,20 @@ scene.background = skyBoxTexture;
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.y = 0.6; // adjust as necessary
 camera.position.z = 1;
+let minimapWidth = window.innerHeight/4
+let minimapHeight = window.innerHeight/4
+const minimapCamera = new THREE.PerspectiveCamera(300, 1, 0.1, 1000);
+let redDot;
+scene.add(minimapCamera);
 scene.add(camera);
+//creating a redDot to track palyer position
+const material = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
+const radius = 0.3; // Adjust the size as needed
+const segments = 32; // The number of segments in the sphere
+const rings = 32; // The number of ringsin the sphere
+const geometry = new THREE.SphereGeometry(radius, segments, rings);
+redDot = new THREE.Mesh(geometry, material);
+scene.add(redDot);
 let firstPersonView = false;
 
 const spotlight = new THREE.SpotLight(0xFFFFFF, 6, 1.5, Math.PI / 7);
@@ -191,7 +204,7 @@ function toggleFirstPersonView() {
     firstPersonControls.enabled = firstPersonView;
 
     if (firstPersonView) {
-        // Adjust camera's position if needed (e.g., to set it at the soldier's eye level)
+        // Adjust camera's 
         camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
         // Turn on the light
         spotlight.intensity = 6;
@@ -216,7 +229,7 @@ function toggleFirstPersonView() {
     } else {
         // Turn off the light
         spotlight.intensity = 0;
-        // If not in first-person view, you might want to set the light back to its initial position
+        // If not in first-person view,
         spotlight.position.set(0, 0, 0);
         spotlight.target.position.set(0, 0, -1);
     }
@@ -264,6 +277,10 @@ window.addEventListener('resize', () => {
     camera.aspect = newWidth / newHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(newWidth, newHeight);
+    minimapWidth = newHeight / 4; // Use newHeight to maintain a square aspect ratio
+    minimapHeight = newHeight / 4;
+    minimapCamera.aspect = 1; // Set a fixed aspect ratio of 1 for the minimap camera
+    minimapCamera.updateProjectionMatrix();
 });
 
 //CONTROLS
@@ -901,7 +918,7 @@ function updateMovement() {
     }
 
 //Check if monster is close to soldier, and damage if yes
-    if(getDistance(soldier,monster)<0.45 || (monster2 && getDistance(soldier,monster2) < 0.45)){
+    if(getDistance(soldier,monster)<0.45 || (monster2 && getDistance(soldier,monster2) < 0.60)){
 
         if(invunerable>100){
             console.log("Player damaged");
@@ -1128,10 +1145,10 @@ async function loadFlyingMonster() {
         }),
 
         new Promise((resolve, reject) => {
-            flymonsterloader.load('flying monster/fire breather 2.glb', (gltf) => {
+            flymonsterloader.load('flying monster/fire breather 3.glb', (gltf) => {
                 flymonster = gltf.scene;
-                flymonster.position.set(12.3, -0.5, 23.3);
-                flymonster.scale.set(0.2, 0.2, 0.2);
+                flymonster.position.set(12.3, -0.3, 23.3);
+                flymonster.scale.set(0.18, 0.18, 0.18);
 
                 flymonsterMixer = new THREE.AnimationMixer(flymonster);
                 scene.add(flymonster);
@@ -1140,15 +1157,21 @@ async function loadFlyingMonster() {
                     flymonsterAnimations[clip.name] = clip;
                 });
 
+                gltf.animations.forEach((clip) => {
+                    console.log("all animation names:", clip.name)
+                });
+
                 let flyMonboxSize = new THREE.Vector3(1,1, 0.9);
                 flyMondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(flyMonboxSize.x, flyMonboxSize.y, flyMonboxSize.z));
                 flyMondummyMesh.position.copy(new THREE.Vector3(flymonster.position.x, flymonster.position.y, flymonster.position.z));
                 yOffset4 = 1;
                 flyMondummyMesh.position.y += yOffset4;
 
-                let action1 = flymonsterMixer.clipAction(flymonsterAnimations["GLTF_created_0Action"]);
+                let action1 = flymonsterMixer.clipAction(flymonsterAnimations["Take 001"]);
                 action1.loop = THREE.LoopRepeat;
-                let action2 = flymonsterMixer.clipAction(flymonsterAnimations["Sketchfab_model.001Action"]);
+
+
+                let action2 = flymonsterMixer.clipAction(flymonsterAnimations["Sketchfab_modelAction.002"]);
                 action2.loop = THREE.LoopRepeat;
                 let action3 = flymonsterMixer.clipAction(flymonsterAnimations["Default Take"]);
                 action3.loop = THREE.LoopRepeat;
@@ -1364,7 +1387,7 @@ function flyfindPath() {
                 const direction = distance.normalize();
 
                 // Set monster speed (adjust the 0.05 value to your preference)
-                const speed = 0.031;
+                const speed = 0.026;
 
                 // Update the monster's position
                 monster2.position.add(direction.multiplyScalar(speed));
@@ -1543,7 +1566,7 @@ const clock = new THREE.Clock();
      if (mixer) mixer.update(0.016);
      if (monsterMixer) monsterMixer.update(0.015);
      if (portalMixer) portalMixer.update(0.016);
-     if (flymonsterMixer) flymonsterMixer.update(0.035);
+     if (flymonsterMixer) flymonsterMixer.update(0.19);
 
      animateCollectibles(coins, boosts, healths, 0.016);
 
@@ -1624,7 +1647,16 @@ const clock = new THREE.Clock();
      updateParticleSystem(particleSystem);
      updateHealthEffect(healthParticleSystem);
 
-     renderer.render(scene, camera);
+     redDot.position.set(soldier.position.x+1.6, 3.5, soldier.position.z+0.9);
+     minimapCamera.position.set(soldier.position.x+15, 30, soldier.position.z+12); // Adjust the height as needed
+     minimapCamera.lookAt(soldier.position.x+15, 1, soldier.position.z+12);
+    renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
+    renderer.render(scene, camera);
+    renderer.clearDepth();
+    renderer.setScissorTest(true);
+    renderer.setScissor(window.innerWidth - minimapWidth, 0, minimapWidth, minimapHeight);
+    renderer.render(scene,minimapCamera);
+    renderer.setScissorTest(false);
 
  }
 // Start animation

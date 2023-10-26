@@ -194,7 +194,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     window.addEventListener('resize', updateHPScreenPosition);
 
     //=======================================================================================================================================
-    createMinimap(camera, HUD);
+    //createMinimap(camera, HUD);
     camera.add(HUD);
 }
 
