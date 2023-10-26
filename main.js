@@ -835,7 +835,7 @@ function updateMovement() {
     }
 
 //Check if monster is close to soldier, and damage if yes
-    if(getDistance(soldier,monster)<0.45){
+    if(getDistance(soldier,monster)<0.45 || getDistance(soldier,monster2) < 0.45){
 
         if(invunerable>100){
             console.log("Player damaged");
@@ -861,6 +861,8 @@ function updateMovement() {
 
     }
 }
+
+
 
 const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
 
@@ -1046,7 +1048,7 @@ monsterloader2.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf
     MonBoxHelper2 = new THREE.BoxHelper(MondummyMesh2, 0x00ff00);
 
 // 4. Add the BoxHelper to the scene.
-    scene.add(MonBoxHelper2);
+//     scene.add(MonBoxHelper2);
 
     // Adjust the monster's y position based on bounding box here
     const box2 = new THREE.Box3().setFromObject(monster2);
@@ -1065,9 +1067,9 @@ const flymonsterloader = new GLTFLoader();
 let yOffset4;
 
 
-flymonsterloader.load('flying monster/flying monster.glb', (gltf) => {
+flymonsterloader.load('flying monster/fire breather 2.glb', (gltf) => {
     flymonster = gltf.scene;
-    flymonster.position.set(12.3, 0.55, 23.3 ); // Set initial position here
+    flymonster.position.set(12.3, -0.5, 23.3 ); // Set initial position here
     flymonster.scale.set(0.2, 0.2, 0.2);
     console.log("flymonster pos:", flymonster.position);
 
@@ -1093,20 +1095,31 @@ flymonsterloader.load('flying monster/flying monster.glb', (gltf) => {
     // console.log("flying monster dummy mesh pos:", flyMondummyMesh.position);
 
     // Assuming you've loaded your animations into flymonsterAnimations object
-    let action = flymonsterMixer.clipAction(flymonsterAnimations["GLTF_created_0Action"]);
-    action.loop = THREE.LoopRepeat; // Ensure it loops
+    let action1 = flymonsterMixer.clipAction(flymonsterAnimations["GLTF_created_0Action"]);
+    action1.loop = THREE.LoopRepeat; // Ensure it loops
+    let action2 = flymonsterMixer.clipAction(flymonsterAnimations["Sketchfab_model.001Action"]);
+    action2.loop = THREE.LoopRepeat; // Ensure it loops
+    let action3 = flymonsterMixer.clipAction(flymonsterAnimations["Default Take"]);
+    action3.loop = THREE.LoopRepeat; // Ensure it loops
 
-    action.play();
-    action.setInterpolation(THREE.InterpolateSmooth);
-    action.clampWhenFinished = true;
+    // [Log] animation name: – "Sketchfab_model.001Action" (main.js, line 1084)
+    // [Log] animation name: – "Default Take" (main.js, line 1084)
 
+    action1.play();
+    action2.play();
+    action3.play();
 
+    // action1.setInterpolation(THREE.InterpolateSmooth);
 
 
     // Adjust the monster's y position based on bounding box here
     const box = new THREE.Box3().setFromObject(flymonster);
     flymonster.position.y = -0.4 - box.min.y;
 });
+
+
+
+
 
 //level 3 monster code ends
 
@@ -1297,7 +1310,7 @@ function flyfindPath() {
                 const direction = distance.normalize();
 
                 // Set monster speed (adjust the 0.05 value to your preference)
-                const speed = 0.021;
+                const speed = 0.031;
 
                 // Update the monster's position
                 monster2.position.add(direction.multiplyScalar(speed));
@@ -1318,9 +1331,9 @@ function flyfindPath() {
                 if (skyDummyBox.intersectsBox(skyMonBox)) {
                     pursuing = false;
                     isSlowedDown = true;
-                    // playAnimation("Idle");
-                    // playAnimation('Smashing');
+
                 }
+
 
             }
         }
@@ -1500,6 +1513,23 @@ const clock = new THREE.Clock();
          findPath();
          flyfindPath();
      }
+
+
+    // if(getDistance(soldier, monster2) < 0.45){
+    //     action2 = flymonsterMixer.clipAction(flymonsterAnimations["Sketchfab_model.001Action"]);
+    //     action3 = flymonsterMixer.clipAction(flymonsterAnimations["Default Take"]);
+    //
+    //     action2.loop = THREE.LoopRepeat;
+    //     action3.loop = THREE.LoopRepeat;
+    //
+    //     action2.clampWhenFinished = true;
+    //     action3.clampWhenFinished = true;
+    //
+    //     action2.play();
+    //     action3.play();
+    // }
+
+
 
 
      if (firstPersonView) {
