@@ -42,9 +42,9 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
 
         blindScreen.position.x = 0;
         blindScreen.position.y = 0;
-        blindScreen.position.z = -2;
+        blindScreen.position.z = -1;
 
-        blindScreen.scale.set(width,height*1.5,1);
+        blindScreen.scale.set(width*0.5,height*0.8,1);
     }
 
     window.addEventListener('resize', updateBlindScreenPosition);
@@ -71,7 +71,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     coinScreen.renderOrder = 999;
     coinScreen.material.depthTest = false;
     coinScreen.material.depthWrite = false;
-    coinScreen.scale.set(0.07,0.07,1);
+    coinScreen.scale.set(0.14,0.14,1);
     coinScreen.geometry.computeBoundingBox();
 
     updateCoinScreenPosition();
@@ -89,9 +89,9 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
 
         //Set the position of the video screen to the bottom left corner
 
-        coinScreen.position.x = (-width / 2)+0.2;
-        coinScreen.position.y = (height/ 2)-0.1;
-        coinScreen.position.z = -1;
+        coinScreen.position.x = (-width / 2)-1;
+        coinScreen.position.y = (height/ 2)+0.5;
+        coinScreen.position.z = -2;
     }
 
     window.addEventListener('resize', updateCoinScreenPosition);
@@ -117,7 +117,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     speedScreen.renderOrder = 999;
     speedScreen.material.depthTest = false;
     speedScreen.material.depthWrite = false;
-    speedScreen.scale.set(0.07,0.06,1);
+    speedScreen.scale.set(0.14,0.12,1);
     speedScreen.geometry.computeBoundingBox();
 
     updateSpeedScreenPosition();
@@ -135,9 +135,9 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
 
         //Set the position of the video screen to the bottom left corner
 
-        speedScreen.position.x = (width / 2)-0.2;
-        speedScreen.position.y = (height/ 2)-0.1;
-        speedScreen.position.z = -1;
+        speedScreen.position.x = (width / 2)+1;
+        speedScreen.position.y = (height/ 2)+0.5;
+        speedScreen.position.z = -2;
     }
 
     window.addEventListener('resize', updateSpeedScreenPosition);
@@ -167,7 +167,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     hpScreen.renderOrder = 999;
     hpScreen.material.depthTest = false;
     hpScreen.material.depthWrite = false;
-    hpScreen.scale.set(0.35,0.18,1);
+    hpScreen.scale.set(0.7,0.36,1);
     hpScreen.geometry.computeBoundingBox();
 
     updateHPScreenPosition();
@@ -185,9 +185,9 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
 
         //Set the position of the video screen to the bottom left corner
 
-        hpScreen.position.x = (-width / 2)+0.42;
-        hpScreen.position.y = (-height/ 2)+0.18;
-        hpScreen.position.z = -1;
+        hpScreen.position.x = (-width / 2)-0.5;
+        hpScreen.position.y = (-height/ 2)-0.3;
+        hpScreen.position.z = -2;
     }
 
     //Listen for window resize events and update the video screen position
@@ -264,7 +264,7 @@ export function createMinimap(camera, scene) {
     minimapScreen.renderOrder = 899;
     minimapScreen.material.depthTest = false;
     minimapScreen.material.depthWrite = false;
-    minimapScreen.scale.set(0.25, 0.18, 1);
+    minimapScreen.scale.set(0.5, 0.36, 1);
     scene.add(minimapScreen);
     minimapScreen.geometry.computeBoundingBox();
 
@@ -281,9 +281,9 @@ export function createMinimap(camera, scene) {
             const height = 2 * Math.tan(vFOV / 2);
             const width = height * camera.aspect;
 
-            minimapScreen.position.x = (width / 2) - 0.42;
-            minimapScreen.position.y = (-height / 2) + 0.18;
-            minimapScreen.position.z = -1;
+            minimapScreen.position.x = (width / 2) +0.7;
+            minimapScreen.position.y = (-height / 2)-0.3;
+            minimapScreen.position.z = -2;
         }
     }
 

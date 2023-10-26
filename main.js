@@ -17,6 +17,7 @@ import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 import {createHealthEffect, createSparkEffect, updateHealthEffect, updateParticleSystem} from "./particles";
 
 import { createLights } from './lights.js';
+import { createPainting } from './branden';
 
 
 let currentLevel =1;
@@ -613,6 +614,7 @@ async function initLevel(level) {
     }
 
     createHUD(camera,numCoins,boostFactor,soldierHealth);
+    createPainting(scene);
 
     //blindnessOverlay.style.display = 'flex';
     //blindnessOverlay.style.opacity = -0.0889 * (soldierHealth) + 0.8889;
