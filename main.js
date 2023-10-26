@@ -49,7 +49,14 @@ function gamelost(){
 }
 
 function gamewon(){
-    updateWinScreenWithNextLevel(window.selectedLevel);
+    if(window.selectedLevel != 3) {
+        updateWinScreenWithNextLevel(window.selectedLevel);
+    }else{
+        // If it's level 3, change the win message and hide the next level button, and show credits button
+        document.getElementById('win-message').textContent = "Congratulations! You have beat the game!";
+        document.getElementById('next-level-button').style.display = 'none';
+        document.getElementById('credits-end-button').style.display = 'block';
+    }
     const overlay = document.getElementById('win-screen');
     overlay.style.display = 'flex';
     isGamePaused = true;
@@ -562,7 +569,7 @@ async function initLevel(level) {
         soldierHealth = 4;
         numCoins = 0;
         // Create multiple coins
-        coinsNeeded = 3;
+        coinsNeeded = 1;
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);

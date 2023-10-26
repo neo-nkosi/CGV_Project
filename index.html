@@ -54,9 +54,11 @@
 </div>
 
 <div id="win-screen">
-    <p>You survive to see another day</p>
+    <p id="win-message">You survive to see another day</p>
     <button id="next-level-button">Next Level</button>
+    <button id="credits-end-button" style="display: none;">Credits</button>
 </div>
+
 
 <div id="lose-screen">
     <p>You Died</p>
@@ -299,12 +301,37 @@
         });
 
         document.getElementById('credits-back-button').addEventListener('click', function() {
-            // Hide the intermediate screen
-            document.getElementById('credits-screen').style.display = 'none';
-
-            // Show the level select screen
-            document.getElementById('level-select').style.display = 'flex';
+            location.reload();
         });
+
+        document.getElementById('credits-end-button').addEventListener('click', async function() {
+            // Load credits content
+            const creditsContent = document.querySelector('.credits-content');
+            try {
+                const response = await fetch('credits.html');
+                if (response.ok) {
+                    const content = await response.text();
+                    creditsContent.innerHTML = content;
+                } else {
+                    console.error("Failed to load credits content. HTTP Status:", response.status);
+                }
+            } catch (error) {
+                console.error("Error fetching credits content:", error);
+            }
+
+            // Hide the win screen
+            document.getElementById('win-screen').style.display = 'none';
+
+            // Show the credits screen
+            document.getElementById('credits-screen').style.display = 'flex';
+
+            // Reset credits animation for a fresh start
+            creditsContent.style.animation = 'none';
+            setTimeout(() => {
+                creditsContent.style.animation = '';
+            }, 10); // Small delay to ensure the animation resets
+        });
+
 
 
     });
