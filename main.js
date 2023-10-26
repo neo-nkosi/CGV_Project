@@ -729,6 +729,23 @@ function updateBobbing(deltaTime) {
 }
 let isMoving;
 
+let fireModel; // to store the fire model
+let fireMixer;
+const fireLoader = new GLTFLoader();
+fireLoader.load('models/fire.glb', (gltf) => {
+    fireModel = gltf.scene;
+    fireModel.scale.set(0.3,0.22,0.15);
+    fireModel.visible = false; // initially, set it to invisible
+
+    fireMixer = new THREE.AnimationMixer(fireModel);
+    gltf.animations.forEach((clip) => {
+        fireMixer.clipAction(clip).play();
+    });
+
+    scene.add(fireModel);
+});
+
+
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
     const cameraDirection = new THREE.Vector3();
@@ -925,6 +942,16 @@ function updateMovement() {
 
             blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889;
 
+            if (fireModel) {
+                fireModel.position.copy(soldier.position); // position the fire at the player's position
+                fireModel.visible = true;
+                console.log(fireModel.position);
+                // Hide the fire after 3 seconds (or adjust the time as needed)
+                setTimeout(() => {
+                    fireModel.visible = false;
+                }, 8000);
+            }
+
             if(soldierHealth==0){
                 blindnessOverlay.style.display = 'none';
                 blindnessOverlay.style.opacity=0;
@@ -941,7 +968,7 @@ function updateMovement() {
         }
 
     }
-    console.log(soldier.position);
+    //console.log(soldier.position);
 }
 
 
@@ -1560,6 +1587,8 @@ const clock = new THREE.Clock();
      if (portalMixer) portalMixer.update(0.016);
      if (flymonsterMixer) flymonsterMixer.update(0.035);
 
+
+
      animateCollectibles(coins, boosts, healths, 0.016);
 
      updateMovement();
@@ -1625,7 +1654,25 @@ const clock = new THREE.Clock();
     //     action2.play();
     //     action3.play();
     // }
+     if (fireModel && !firstPersonView) {
+         if (fireMixer) fireMixer.update(0.01);
+         fireModel.position.copy(soldier.position);
 
+         // Rotate around y-axis
+         fireModel.rotation.y += 0.01;
+
+         // Gradual growing and shrinking
+         const scaleFactor = 0.02;
+         const scaleVariation = Math.sin(clock.getElapsedTime()) * scaleFactor;
+         fireModel.scale.set(0.3 + scaleVariation, 0.22+ scaleVariation, 0.15 + scaleVariation);
+     } else if (fireModel){
+         fireModel.position.copy(soldier.position);
+         fireModel.scale.set(0.15,0.15,0.15);
+         fireModel.position.y=-0.07;
+
+         // Rotate around y-axis
+         fireModel.rotation.y += 0.01;
+     }
 
 
 
@@ -1638,17 +1685,16 @@ const clock = new THREE.Clock();
      // Update the particle system:
      updateParticleSystem(particleSystem);
      updateHealthEffect(healthParticleSystem);
-
      redDot.position.set(soldier.position.x+1.6, 3.5, soldier.position.z+0.9);
      minimapCamera.position.set(soldier.position.x+15, 30, soldier.position.z+12); // Adjust the height as needed
      minimapCamera.lookAt(soldier.position.x+15, 1, soldier.position.z+12);
-    renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
-    renderer.render(scene, camera);
-    renderer.clearDepth();
-    renderer.setScissorTest(true);
-    renderer.setScissor(window.innerWidth - minimapWidth, 0, minimapWidth, minimapHeight);
-    renderer.render(scene,minimapCamera);
-    renderer.setScissorTest(false);
+     renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
+     renderer.render(scene, camera);
+     renderer.clearDepth();
+     renderer.setScissorTest(true);
+     renderer.setScissor(window.innerWidth - minimapWidth, 0, minimapWidth, minimapHeight);
+     renderer.render(scene,minimapCamera);
+     renderer.setScissorTest(false);
 
  }
 // Start animation
