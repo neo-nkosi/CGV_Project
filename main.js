@@ -544,6 +544,16 @@ async function initLevel(level) {
         portalDummyMesh.position.z -= 1.3;
 
     } else if (level == 3) {
+        if(!flymonster) {
+            try {
+                await loadFlyingMonster();
+                // Monster loaded successfully
+                // Proceed with the rest of your setup or game loop
+            } catch (error) {
+                // Handle error during monster loading
+                console.error('An error occurred while loading the flyingmonster:', error);
+            }
+        }
         //Start of game parameters
         invunerable = 0;
         boostFactor = 1;
