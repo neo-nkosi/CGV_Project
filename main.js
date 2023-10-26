@@ -203,7 +203,7 @@ function toggleFirstPersonView() {
     firstPersonControls.enabled = firstPersonView;
 
     if (firstPersonView) {
-        // Adjust camera's position if needed (e.g., to set it at the soldier's eye level)
+        // Adjust camera's 
         camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
         // Turn on the light
         spotlight.intensity = 6;
@@ -228,7 +228,7 @@ function toggleFirstPersonView() {
     } else {
         // Turn off the light
         spotlight.intensity = 0;
-        // If not in first-person view, you might want to set the light back to its initial position
+        // If not in first-person view,
         spotlight.position.set(0, 0, 0);
         spotlight.target.position.set(0, 0, -1);
     }
