@@ -801,8 +801,10 @@ function updateMovement() {
     MondummyMesh.position.y += 0.3;
 
     //level 3 code:
-    MondummyMesh2.position.copy(monster2.position);
-    MondummyMesh2.position.y += 0.3;
+    if (flymonster) {
+        MondummyMesh2.position.copy(monster2.position);
+        MondummyMesh2.position.y += 0.3;
+    }
     //level 3 code ends
 
 
@@ -835,7 +837,7 @@ function updateMovement() {
     }
 
 //Check if monster is close to soldier, and damage if yes
-    if(getDistance(soldier,monster)<0.45 || getDistance(soldier,monster2) < 0.45){
+    if(getDistance(soldier,monster)<0.45 || (monster2 && getDistance(soldier,monster2) < 0.45)){
 
         if(invunerable>100){
             console.log("Player damaged");
@@ -1021,101 +1023,88 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
 const monsterloader2 = new GLTFLoader();
 let monster2;
 let monsterMixer2;
-const monsterAnimations2= {};
-let MondummyMesh2;
-let MonBoxHelper2;
-let yOffset3;
-
-monsterloader2.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
-    monster2 = gltf.scene;
-    monster2.position.set(12.3, 0, 23.3); // Set initial position here
-    monster2.scale.set(0.35, 0.35, 0.35);
-
-    monsterMixer2 = new THREE.AnimationMixer(monster);
-    scene.add(monster2);
-    monster2.visible = false;
-
-    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
-    let MonboxSize2 = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box (width, height, depth)
-    MondummyMesh2 = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize2.x, MonboxSize2.y, MonboxSize2.z));
-
-// 2. Position this mesh at the position of the soldier.
-    MondummyMesh2.position.copy(new Vector3(monster2.position.x, monster2.position.y, monster2.position.z));
-    yOffset3 = 0.3;  // or any value you deem appropriate
-    MondummyMesh2.position.y += yOffset3;
-
-// 3. Create a BoxHelper using this dummy mesh.
-    MonBoxHelper2 = new THREE.BoxHelper(MondummyMesh2, 0x00ff00);
-
-// 4. Add the BoxHelper to the scene.
-//     scene.add(MonBoxHelper2);
-
-    // Adjust the monster's y position based on bounding box here
-    const box2 = new THREE.Box3().setFromObject(monster2);
-    monster2.position.y = box2.min.y;
-});
-
 
 //flying monster
 
-let flyMondummyMesh;
-let flyMonBoxHelper;
 let flymonster;
 let flymonsterMixer;
 const flymonsterAnimations = {};
 const flymonsterloader = new GLTFLoader();
-let yOffset4;
 
+let MondummyMesh2, MonBoxHelper2, yOffset3, flyMondummyMesh, yOffset4;
 
-flymonsterloader.load('flying monster/fire breather 2.glb', (gltf) => {
-    flymonster = gltf.scene;
-    flymonster.position.set(12.3, -0.5, 23.3 ); // Set initial position here
-    flymonster.scale.set(0.2, 0.2, 0.2);
-    console.log("flymonster pos:", flymonster.position);
+async function loadFlyingMonster() {
+    return Promise.all([ // This Promise.all will allow both loaders to run in parallel.
+        new Promise((resolve, reject) => {
+            monsterloader2.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
+                monster2 = gltf.scene;
+                monster2.position.set(12.3, 0, 23.3);
+                monster2.scale.set(0.35, 0.35, 0.35);
+                monsterMixer2 = new THREE.AnimationMixer(monster);
+                scene.add(monster2);
+                monster2.visible = false;
 
-    flymonsterMixer = new THREE.AnimationMixer(flymonster);
-    scene.add(flymonster);
+                let MonboxSize2 = new THREE.Vector3(0.6,0.7, 0.4);
+                MondummyMesh2 = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize2.x, MonboxSize2.y, MonboxSize2.z));
+                MondummyMesh2.position.copy(new THREE.Vector3(monster2.position.x, monster2.position.y, monster2.position.z));
+                yOffset3 = 0.3;
+                MondummyMesh2.position.y += yOffset3;
+                MonBoxHelper2 = new THREE.BoxHelper(MondummyMesh2, 0x00ff00);
 
-    gltf.animations.forEach((clip) => {
-        flymonsterAnimations[clip.name] = clip;
-    });
+                // Adjust the monster's y position based on bounding box
+                const box2 = new THREE.Box3().setFromObject(monster2);
+                monster2.position.y = box2.min.y;
 
-    gltf.animations.forEach((clip) => {
-        console.log("animation name:", clip.name);
-    });
+                resolve(); // Resolve this promise after loading is complete.
+            }, undefined, (error) => {
+                console.error(error);
+                reject(error);
+            });
+        }),
 
-    // 1. Create a dummy mesh with a BoxGeometry of your desired size.
-    let flyMonboxSize = new THREE.Vector3(1,1, 0.9); // Size of the box (width, height, depth)
-    flyMondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(flyMonboxSize.x, flyMonboxSize.y, flyMonboxSize.z));
+        new Promise((resolve, reject) => {
+            flymonsterloader.load('flying monster/fire breather 2.glb', (gltf) => {
+                flymonster = gltf.scene;
+                flymonster.position.set(12.3, -0.5, 23.3);
+                flymonster.scale.set(0.2, 0.2, 0.2);
 
-// 2. Position this mesh at the position of the soldier.
-    flyMondummyMesh.position.copy(new Vector3(flymonster.position.x, flymonster.position.y, flymonster.position.z));
-    yOffset4 = 1;  // or any value you deem appropriate
-    flyMondummyMesh.position.y += yOffset4;
-    // console.log("flying monster dummy mesh pos:", flyMondummyMesh.position);
+                flymonsterMixer = new THREE.AnimationMixer(flymonster);
+                scene.add(flymonster);
 
-    // Assuming you've loaded your animations into flymonsterAnimations object
-    let action1 = flymonsterMixer.clipAction(flymonsterAnimations["GLTF_created_0Action"]);
-    action1.loop = THREE.LoopRepeat; // Ensure it loops
-    let action2 = flymonsterMixer.clipAction(flymonsterAnimations["Sketchfab_model.001Action"]);
-    action2.loop = THREE.LoopRepeat; // Ensure it loops
-    let action3 = flymonsterMixer.clipAction(flymonsterAnimations["Default Take"]);
-    action3.loop = THREE.LoopRepeat; // Ensure it loops
+                gltf.animations.forEach((clip) => {
+                    flymonsterAnimations[clip.name] = clip;
+                });
 
-    // [Log] animation name: – "Sketchfab_model.001Action" (main.js, line 1084)
-    // [Log] animation name: – "Default Take" (main.js, line 1084)
+                let flyMonboxSize = new THREE.Vector3(1,1, 0.9);
+                flyMondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(flyMonboxSize.x, flyMonboxSize.y, flyMonboxSize.z));
+                flyMondummyMesh.position.copy(new THREE.Vector3(flymonster.position.x, flymonster.position.y, flymonster.position.z));
+                yOffset4 = 1;
+                flyMondummyMesh.position.y += yOffset4;
 
-    action1.play();
-    action2.play();
-    action3.play();
+                let action1 = flymonsterMixer.clipAction(flymonsterAnimations["GLTF_created_0Action"]);
+                action1.loop = THREE.LoopRepeat;
+                let action2 = flymonsterMixer.clipAction(flymonsterAnimations["Sketchfab_model.001Action"]);
+                action2.loop = THREE.LoopRepeat;
+                let action3 = flymonsterMixer.clipAction(flymonsterAnimations["Default Take"]);
+                action3.loop = THREE.LoopRepeat;
 
-    // action1.setInterpolation(THREE.InterpolateSmooth);
+                action1.play();
+                action2.play();
+                action3.play();
 
+                // Adjust the monster's y position based on bounding box
+                const box = new THREE.Box3().setFromObject(flymonster);
+                flymonster.position.y = -0.4 - box.min.y;
 
-    // Adjust the monster's y position based on bounding box here
-    const box = new THREE.Box3().setFromObject(flymonster);
-    flymonster.position.y = -0.4 - box.min.y;
-});
+                resolve(); // Resolve this promise after loading is complete.
+            }, undefined, (error) => {
+                console.error(error);
+                reject(error);
+            });
+        })
+    ]);
+}
+
 
 
 
@@ -1466,7 +1455,9 @@ function checkCollisionsWithCollectibles() {
              playAnimation('Smashing');
              break;
          case 'KeyF':
-             flyplayAnimation('flying');
+             if(flymonster) {
+                 flyplayAnimation('flying');
+             }
              break;
          //
      }
@@ -1511,7 +1502,9 @@ const clock = new THREE.Clock();
      // In your animate function
      if (pursuing) {
          findPath();
-         flyfindPath();
+         if (flymonster) {
+             flyfindPath();
+         }
      }
 
 
