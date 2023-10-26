@@ -435,9 +435,18 @@ loader.load('models/villaHouse.glb', function (gltf) {
     } else {
         console.warn('Floor not found in the villaHouse model.');
     }
+
+    // Iterate through the villa walls and set them to cast shadows
+    villaHouse.traverse((child) => {
+        if (child.isMesh && child !== floor) {
+            child.castShadow = true;
+            child.receiveShadow = true; // Make sure they can receive shadows
+        }
+    });
 }, undefined, function (error) {
     console.error(error);
 });
+
 
 
 
