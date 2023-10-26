@@ -92,7 +92,8 @@ retryButton.addEventListener('click', async () => {
     const overlay = document.getElementById('lose-screen');
     overlay.style.display = 'none';
     isGamePaused = true;  // Pause the game while setting up the level
-
+    // Once everything is loaded, hide the loading screen
+    document.getElementById('loading-screen').style.display = 'flex';
     try {
         await clearPreviousLevel();  // Await any necessary cleanup
         await initLevel(currentLevel);  // Await level initialization
@@ -479,7 +480,7 @@ async function initLevel(level) {
         //Start of game parameters
         invunerable = 0;
         boostFactor = 1;
-        soldierHealth = 2;
+        soldierHealth = 5;
         numCoins = 0;
 
         // Create multiple coins
@@ -512,7 +513,7 @@ async function initLevel(level) {
         //Start of game parameters
         invunerable = 0;
         boostFactor = 1;
-        soldierHealth = 1;
+        soldierHealth = 3;
         numCoins = 0;
 
         coinsNeeded = 5;
@@ -557,7 +558,7 @@ async function initLevel(level) {
         //Start of game parameters
         invunerable = 0;
         boostFactor = 1;
-        soldierHealth = 1;
+        soldierHealth = 4;
         numCoins = 0;
         // Create multiple coins
         coinsNeeded = 3;
@@ -572,6 +573,21 @@ async function initLevel(level) {
         createHealth(3.3371503914805296, 0.08, -5.156236357144887, scene, healths);
         createHealth(9.123201360574695, 0.08, 0.41047471505580513, scene, healths);
         createHealth(14.03279715663051, 0.08, 8.672422194858061, scene, healths);
+
+        //Set character position
+        soldier.position.set(-6.907895289153094, 0.13303180199350304, -2.9565324021461117);
+
+        //Set Monster position
+        monster.position.set(9.180331758242579,-0.12111884839921798,-0.19535202985285158);
+
+        //Set Flying Monster
+        flymonster.position.set(11.602514540807476,-0.5, 7.350874621916164);
+        monster2.position.set(11.602514540807476, 0, 7.350874621916164);
+
+        //Set Portal Position
+        portal.position.set(14.710548068720117, -0.3, 7.8);
+        portalDummyMesh.position.copy(portal.position);
+        portalDummyMesh.position.z -= 1.3;
 
 
     }
@@ -872,6 +888,7 @@ function updateMovement() {
         }
 
     }
+    console.log(soldier.position);
 }
 
 
@@ -1139,10 +1156,10 @@ meshfloor.scale.set(1, 1, 1);
 gltf.scene.traverse(node =>{
          if(!navmesh && node.isObject3D && node.children && node.children.length > 0){
              navmesh = node.children[0];
-             console.log("navmesh object:", navmesh);
+             //console.log("navmesh object:", navmesh);
              pathfinding.setZoneData(ZONE, Pathfinding.createZone(navmesh.geometry));
-             console.log("pathfinding zones", pathfinding.zones);
-             console.log("navmesh position:", navmesh.position);
+             //console.log("pathfinding zones", pathfinding.zones);
+             //console.log("navmesh position:", navmesh.position);
          }
      })
  })
@@ -1247,9 +1264,9 @@ skymeshfloor.scale.set(1, 1, 1);
 gltf.scene.traverse(node =>{
     if(!skymesh && node.isObject3D && node.children && node.children.length > 0){
         skymesh = node.children[0];
-        console.log("skymesh object:", skymesh);
+        //console.log("skymesh object:", skymesh);
         skypathfinding.setZoneData(SKYZONE, Pathfinding.createZone(skymesh.geometry));
-        console.log("skypathfinding zones", skypathfinding.zones);
+        //console.log("skypathfinding zones", skypathfinding.zones);
         // console.log("skypathmesh position:", skymesh.position);
         // console.log("skymeshfloor:", skymeshfloor.position);
     }
@@ -1265,16 +1282,16 @@ function flyfindPath() {
         // playAnimation('Running');
 
         let target = soldier.position.clone();
-        console.log("soldier pos:", target);
+        //console.log("soldier pos:", target);
 
         let monsterPos = monster2.position.clone();
-        console.log("Mon2 position:", monsterPos);
+        //console.log("Mon2 position:", monsterPos);
 
         // for (let i = 0; i < pathfinding.zones["skyzone"].groups.length; i++) {
         skygroupId = skypathfinding.getGroup('skyZone', monsterPos);
-        console.log("Group Id:", skygroupId);
+        //console.log("Group Id:", skygroupId);
         const closest = skypathfinding.getClosestNode(monsterPos, 'skyZone', skygroupId);
-        console.log("closest node:", closest);
+        //console.log("closest node:", closest);
 
         const closest2 = skypathfinding.getClosestNode(target, 'skyZone', skygroupId);
         //console.log("closest node 2:", closest2);
