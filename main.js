@@ -916,7 +916,7 @@ function updateMovement() {
     }
 
 //Check if monster is close to soldier, and damage if yes
-    if(getDistance(soldier,monster)<0.45 || (monster2 && getDistance(soldier,monster2) < 0.45)){
+    if(getDistance(soldier,monster)<0.45 || (monster2 && getDistance(soldier,monster2) < 0.60)){
 
         if(invunerable>100){
             console.log("Player damaged");
@@ -1143,10 +1143,10 @@ async function loadFlyingMonster() {
         }),
 
         new Promise((resolve, reject) => {
-            flymonsterloader.load('flying monster/fire breather 2.glb', (gltf) => {
+            flymonsterloader.load('flying monster/fire breather 3.glb', (gltf) => {
                 flymonster = gltf.scene;
-                flymonster.position.set(12.3, -0.5, 23.3);
-                flymonster.scale.set(0.2, 0.2, 0.2);
+                flymonster.position.set(12.3, -0.3, 23.3);
+                flymonster.scale.set(0.18, 0.18, 0.18);
 
                 flymonsterMixer = new THREE.AnimationMixer(flymonster);
                 scene.add(flymonster);
@@ -1155,15 +1155,21 @@ async function loadFlyingMonster() {
                     flymonsterAnimations[clip.name] = clip;
                 });
 
+                gltf.animations.forEach((clip) => {
+                    console.log("all animation names:", clip.name)
+                });
+
                 let flyMonboxSize = new THREE.Vector3(1,1, 0.9);
                 flyMondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(flyMonboxSize.x, flyMonboxSize.y, flyMonboxSize.z));
                 flyMondummyMesh.position.copy(new THREE.Vector3(flymonster.position.x, flymonster.position.y, flymonster.position.z));
                 yOffset4 = 1;
                 flyMondummyMesh.position.y += yOffset4;
 
-                let action1 = flymonsterMixer.clipAction(flymonsterAnimations["GLTF_created_0Action"]);
+                let action1 = flymonsterMixer.clipAction(flymonsterAnimations["Take 001"]);
                 action1.loop = THREE.LoopRepeat;
-                let action2 = flymonsterMixer.clipAction(flymonsterAnimations["Sketchfab_model.001Action"]);
+
+
+                let action2 = flymonsterMixer.clipAction(flymonsterAnimations["Sketchfab_modelAction.002"]);
                 action2.loop = THREE.LoopRepeat;
                 let action3 = flymonsterMixer.clipAction(flymonsterAnimations["Default Take"]);
                 action3.loop = THREE.LoopRepeat;
@@ -1379,7 +1385,7 @@ function flyfindPath() {
                 const direction = distance.normalize();
 
                 // Set monster speed (adjust the 0.05 value to your preference)
-                const speed = 0.031;
+                const speed = 0.026;
 
                 // Update the monster's position
                 monster2.position.add(direction.multiplyScalar(speed));
@@ -1558,7 +1564,7 @@ const clock = new THREE.Clock();
      if (mixer) mixer.update(0.016);
      if (monsterMixer) monsterMixer.update(0.015);
      if (portalMixer) portalMixer.update(0.016);
-     if (flymonsterMixer) flymonsterMixer.update(0.035);
+     if (flymonsterMixer) flymonsterMixer.update(0.19);
 
      animateCollectibles(coins, boosts, healths, 0.016);
 
