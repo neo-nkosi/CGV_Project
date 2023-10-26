@@ -154,9 +154,10 @@ export function checkCollisionsWithCoins(scene, dummyMesh, coins, numCoins, coin
     };
 }
 
-export function checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor, boostTimeout) {
+export function checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor) {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
     let newBoostFactor = boostFactor;
+    let initiateBoost = false;
 
     // Check collision with boosts
     for (let i = boosts.length - 1; i >= 0; i--) {
@@ -164,42 +165,29 @@ export function checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor,
         const boostBoundingBox = new THREE.Box3().setFromObject(boost.dummyMesh);
         if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !boost.collected) {
             console.log("Collision between character and boost");
+            initiateBoost = true;
 
-            // Clear the existing timeout if it's still active
-            if (boostTimeout) {
-                clearTimeout(boostTimeout);
-            }
-
-            newBoostFactor += 1;  // Adjust effect as needed
             boost.mesh.visible = false;
             boost.collected = true;
-            updateHUDSpeed(newBoostFactor);
 
             // Clean up and memory management
             disposeCollectible(boost, scene);
 
             // Remove the boost from the array
             boosts.splice(i, 1);
-
-            // Set a timeout to revert the boostFactor
-            boostTimeout = setTimeout(() => {
-                boostFactor -= 1; // adjust as necessary
-                updateHUDSpeed(boostFactor);
-                boostTimeout = null;
-            }, 8000); // duration of the boost effect
         }
     }
 
     return {
         boosts,
         boostFactor: newBoostFactor,
-        boostTimeout
+        initiateBoost
     };
 }
 
 export function checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth, blindnessOverlay) {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
-
+    let isHealthCollected = false;
     // Check collision with healths
     for (let i = healths.length - 1; i >= 0; i--) {
         let health = healths[i];
@@ -217,12 +205,14 @@ export function checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHea
 
             // Remove the health from the array
             healths.splice(i, 1);
+            isHealthCollected = true;
         }
     }
 
     return {
         healths,
-        soldierHealth
+        soldierHealth,
+        isHealthCollected
     };
 }
 

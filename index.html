@@ -53,15 +53,22 @@
 </div>
 
 <div id="win-screen">
-    <p>You survive to see another day</p>
+    <p id="win-message">You survive to see another day</p>
     <button id="next-level-button">Next Level</button>
+    <button id="credits-end-button" style="display: none;">Credits</button>
 </div>
+
 
 <div id="lose-screen">
     <p>You Died</p>
     <button id="retry-button">Retry</button>
     <button id="menu-button">Main Menu</button>
 </div>
+
+<div id="loading-screen" style="display:none;">
+    <img src="videos/Loading.gif" alt="Loading..." class="loader-gif">
+</div>
+
 
 <!-- Intermediate screen content -->
 <div id="intermediate-screen">
@@ -114,9 +121,42 @@
         '2': {
             objective: 'Collect 5 coins. When all coins are collected, run to the portal to escape.',
             modifiers: 'You begin with 10 health. There is 1 monster.',
+
+        },
+        '3': {
+            objective: 'Collect 3 coins. When all coins are collected, run to the portal to escape.',
+            modifiers: 'You begin with 40 health. There are 2 monsters.',
         },
         // ... more levels
     };
+
+    window.updateWinScreenWithNextLevel = function(currentLevel) {
+        const nextLevel = (parseInt(currentLevel, 10) + 1).toString();
+        const details = levelDetails[nextLevel];
+
+        // Check if the objective and modifiers elements already exist
+        const existingObjectiveElement = document.querySelector('#win-screen .next-level-objective');
+        const existingModifiersElement = document.querySelector('#win-screen .next-level-modifiers');
+
+        // If they exist, remove them
+        if(existingObjectiveElement) existingObjectiveElement.remove();
+        if(existingModifiersElement) existingModifiersElement.remove();
+
+        // Add Objective and Modifiers of the next level to the win screen
+        const objectiveElement = document.createElement('div');
+        objectiveElement.classList.add('next-level-objective');
+        objectiveElement.innerHTML = `<h3>Next Level Objective:</h3><p>${details.objective}</p>`;
+
+        const modifiersElement = document.createElement('div');
+        modifiersElement.classList.add('next-level-modifiers');
+        modifiersElement.innerHTML = `<h3>Modifiers:</h3><p>${details.modifiers}</p>`;
+
+        const winScreen = document.getElementById('win-screen');
+        winScreen.insertBefore(objectiveElement, winScreen.querySelector('#next-level-button'));
+        winScreen.insertBefore(modifiersElement, winScreen.querySelector('#next-level-button'));
+    }
+
+
     function showIntermediateScreen(level) {
         // Set a global variable with the selected level
         window.selectedLevel = level;
@@ -171,6 +211,8 @@
     document.getElementById('intermediate-continue-button').addEventListener('click', function() {
         // Hide the intermediate screen
         document.getElementById('intermediate-screen').style.display = 'none';
+        // Show the loading screen
+        document.getElementById('loading-screen').style.display = 'block';
 
         // Load the main script
         loadMainScript();
@@ -258,12 +300,37 @@
         });
 
         document.getElementById('credits-back-button').addEventListener('click', function() {
-            // Hide the intermediate screen
-            document.getElementById('credits-screen').style.display = 'none';
-
-            // Show the level select screen
-            document.getElementById('level-select').style.display = 'flex';
+            location.reload();
         });
+
+        document.getElementById('credits-end-button').addEventListener('click', async function() {
+            // Load credits content
+            const creditsContent = document.querySelector('.credits-content');
+            try {
+                const response = await fetch('credits.html');
+                if (response.ok) {
+                    const content = await response.text();
+                    creditsContent.innerHTML = content;
+                } else {
+                    console.error("Failed to load credits content. HTTP Status:", response.status);
+                }
+            } catch (error) {
+                console.error("Error fetching credits content:", error);
+            }
+
+            // Hide the win screen
+            document.getElementById('win-screen').style.display = 'none';
+
+            // Show the credits screen
+            document.getElementById('credits-screen').style.display = 'flex';
+
+            // Reset credits animation for a fresh start
+            creditsContent.style.animation = 'none';
+            setTimeout(() => {
+                creditsContent.style.animation = '';
+            }, 10); // Small delay to ensure the animation resets
+        });
+
 
 
     });

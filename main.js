@@ -14,6 +14,10 @@ import {
 } from './collectables.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
+import {createHealthEffect, createSparkEffect, updateHealthEffect, updateParticleSystem} from "./particles";
+
+import { createLights } from './lights.js';
+
 
 let currentLevel =1;
 if (window.selectedLevel) {
@@ -45,6 +49,14 @@ function gamelost(){
 }
 
 function gamewon(){
+    if(window.selectedLevel != 3) {
+        updateWinScreenWithNextLevel(window.selectedLevel);
+    }else{
+        // If it's level 3, change the win message and hide the next level button, and show credits button
+        document.getElementById('win-message').textContent = "Congratulations! You have beat the game!";
+        document.getElementById('next-level-button').style.display = 'none';
+        document.getElementById('credits-end-button').style.display = 'block';
+    }
     const overlay = document.getElementById('win-screen');
     overlay.style.display = 'flex';
     isGamePaused = true;
@@ -88,7 +100,8 @@ retryButton.addEventListener('click', async () => {
     const overlay = document.getElementById('lose-screen');
     overlay.style.display = 'none';
     isGamePaused = true;  // Pause the game while setting up the level
-
+    // Once everything is loaded, hide the loading screen
+    document.getElementById('loading-screen').style.display = 'flex';
     try {
         await clearPreviousLevel();  // Await any necessary cleanup
         await initLevel(currentLevel);  // Await level initialization
@@ -161,6 +174,8 @@ camera.position.z = 1;
 scene.add(camera);
 let firstPersonView = false;
 
+const spotlight = new THREE.SpotLight(0xFFFFFF, 6, 1.5, Math.PI / 7);
+
 function toggleFirstPersonView() {
     firstPersonView = !firstPersonView;
     orbitControls.enabled = !firstPersonView;
@@ -169,8 +184,35 @@ function toggleFirstPersonView() {
     if (firstPersonView) {
         // Adjust camera's position if needed (e.g., to set it at the soldier's eye level)
         camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
+        // Turn on the light
+        spotlight.intensity = 6;
+
+        // Set the spotlight's position to the camera's position
+        spotlight.position.set(0,0.6,0);
+
+        // Calculate the direction the camera is facing
+        const cameraDirection = new THREE.Vector3();
+        camera.getWorldDirection(cameraDirection);
+
+        // Calculate the target position by adding the camera's position to the camera's direction vector
+        const targetPosition = new THREE.Vector3();
+        targetPosition.copy(camera.position).add(cameraDirection);
+
+        // Set the spotlight's target position
+        spotlight.target.position.set(0,0,-1);
+
+        // Add the light to the camera so it moves with the camera
+        camera.add(spotlight);
+        camera.add(spotlight.target)
+    } else {
+        // Turn off the light
+        spotlight.intensity = 0;
+        // If not in first-person view, you might want to set the light back to its initial position
+        spotlight.position.set(0, 0, 0);
+        spotlight.target.position.set(0, 0, -1);
     }
 }
+
 
 // SOUND
 
@@ -260,6 +302,7 @@ let soldierLoader = new GLTFLoader();
 let soldierBoxHelper;
 let dummyMesh;
 let yOffset;
+
 async function loadSoldier() {
     return new Promise((resolve, reject) => {
     soldierLoader.load('models/Soldier.glb', function (gltf) {
@@ -267,6 +310,7 @@ async function loadSoldier() {
 
 
         soldier.scale.set(0.25, 0.25, 0.25);
+
 
         scene.add(soldier);
 
@@ -308,44 +352,8 @@ async function loadSoldier() {
         });
     });
 }
-
-// Light
-const light = new THREE.AmbientLight(0xffffff, 0.3);
-light.translateY(10);
-scene.add(light);
-// Directional Lights for skybox
-// purple light
-const directionalLight1 = new THREE.DirectionalLight("purple",0.2); // Adjust light color and intensity as needed
-directionalLight1.position.set(100, 15, 40);
-// directionalLight.position.copy(soldier.position);
-directionalLight1.castShadow = true;
-directionalLight1.shadow.bias = -0.005; // Adjust shadow bias
-directionalLight1.shadow.radius = 1;
-directionalLight1.shadow.mapSize.width = 1024; // Shadow map size
-directionalLight1.shadow.mapSize.height = 1024;
-directionalLight1.shadow.camera.near = 0.00001; // Near and far planes for the shadow camera
-directionalLight1.shadow.camera.far = 100;
-directionalLight1.position.normalize();
-scene.add(directionalLight1);
-// blue light
-// purple light
-const directionalLight2 = new THREE.DirectionalLight("blue",0.2); // Adjust light color and intensity as needed
-directionalLight2.position.set(-100, 10, 40);
-// directionalLight.position.copy(soldier.position);
-directionalLight2.castShadow = true;
-directionalLight2.shadow.bias = -0.005; // Adjust shadow bias
-directionalLight2.shadow.radius = 1;
-directionalLight2.shadow.mapSize.width = 1024; // Shadow map size
-directionalLight2.shadow.mapSize.height = 1024;
-directionalLight2.shadow.camera.near = 0.00001; // Near and far planes for the shadow camera
-directionalLight2.shadow.camera.far = 100;
-directionalLight2.position.normalize();
-scene.add(directionalLight2);
-// light on staircase
-const pointLightstairs = new THREE.PointLight("red", 1); // Adjust light color and intensity as needed
-pointLightstairs.position.set(0.1, 2.2, 0.06); // Position as per the original directional light
-scene.add(pointLightstairs);
-
+// add lights to scene
+createLights(scene);
 
 let villaHouse;
 let meshfloor;
@@ -382,6 +390,7 @@ loader.load('models/villaHouse.glb', function (gltf) {
     //
 
     console.log(soldier.position);
+
 
     // Find the child named "floor" and set its material to use the floorTexture
     const floor = villaHouse.getObjectByName("floor");
@@ -446,6 +455,7 @@ let boosts = [];
 let healths = [];
 
 async function initLevel(level) {
+    console.log("initlevel initiated");
     if(!soldier) {
         try {
             await loadSoldier(); // Wait for the soldier to be loaded.
@@ -478,7 +488,7 @@ async function initLevel(level) {
         //Start of game parameters
         invunerable = 0;
         boostFactor = 1;
-        soldierHealth = 2;
+        soldierHealth = 5;
         numCoins = 0;
 
         // Create multiple coins
@@ -511,7 +521,7 @@ async function initLevel(level) {
         //Start of game parameters
         invunerable = 0;
         boostFactor = 1;
-        soldierHealth = 1;
+        soldierHealth = 3;
         numCoins = 0;
 
         coinsNeeded = 5;
@@ -543,13 +553,23 @@ async function initLevel(level) {
         portalDummyMesh.position.z -= 1.3;
 
     } else if (level == 3) {
+        if(!flymonster) {
+            try {
+                await loadFlyingMonster();
+                // Monster loaded successfully
+                // Proceed with the rest of your setup or game loop
+            } catch (error) {
+                // Handle error during monster loading
+                console.error('An error occurred while loading the flyingmonster:', error);
+            }
+        }
         //Start of game parameters
         invunerable = 0;
         boostFactor = 1;
-        soldierHealth = 1;
+        soldierHealth = 4;
         numCoins = 0;
         // Create multiple coins
-        coinsNeeded = 3;
+        coinsNeeded = 1;
         createCoin(-11, 0.1, 8, scene, coins);
         createCoin(5.498843474553945, 0.08, -7.5, scene, coins);
         createCoin(-7.524356448677272, 1.53, -0.23800024980310194, scene, coins);
@@ -562,6 +582,21 @@ async function initLevel(level) {
         createHealth(9.123201360574695, 0.08, 0.41047471505580513, scene, healths);
         createHealth(14.03279715663051, 0.08, 8.672422194858061, scene, healths);
 
+        //Set character position
+        soldier.position.set(-6.907895289153094, 0.13303180199350304, -2.9565324021461117);
+
+        //Set Monster position
+        monster.position.set(9.180331758242579,-0.12111884839921798,-0.19535202985285158);
+
+        //Set Flying Monster
+        flymonster.position.set(11.602514540807476,-0.5, 7.350874621916164);
+        monster2.position.set(11.602514540807476, 0, 7.350874621916164);
+
+        //Set Portal Position
+        portal.position.set(14.710548068720117, -0.3, 7.8);
+        portalDummyMesh.position.copy(portal.position);
+        portalDummyMesh.position.z -= 1.3;
+
 
     }
 
@@ -572,6 +607,9 @@ async function initLevel(level) {
 
     isGamePaused = false;
     animate();
+
+    // Once everything is loaded, hide the loading screen
+    document.getElementById('loading-screen').style.display = 'none';
 
     return Promise.resolve();
 }
@@ -607,15 +645,7 @@ initLevel(window.selectedLevel);
 
 let isRunning = false;
 
-function checkSoldierStatus() {
-    // Check your soldier's status here (whether walking or running)
-    // and adjust playback rate accordingly. For example:
-    if (isRunning) {
-        source.playbackRate.value = 1.5; // Increase tempo for running. You can calibrate this value as needed.
-    } else if (!isRunning) {
-        source.playbackRate.value = 1.0; // Normal tempo for walking
-    }
-}
+
 
 let isSlowedDown = false;  // to check if the soldier is currently slowed down
 let timerStarted = false;
@@ -653,6 +683,23 @@ function getDistance(x,y){
 }
 
 
+let lastTime = 0; // Tracks the time since the last update (for deltaTime calculation)
+const bobbingSpeed = 6; // Controls how fast the bobbing effect is
+const bobbingIntensity = 0.1; // Controls how much the camera bobs up and down
+let bobbingTime = 0; // Accumulates time for consistent bobbing, considering the speed
+var bobAmount=0;
+
+function updateBobbing(deltaTime) {
+    bobbingTime += deltaTime; // Accumulate time for the sine wave function
+    const bobAmount = Math.abs(Math.sin(bobbingTime * bobbingSpeed) * bobbingIntensity); // Calculate bob offset
+
+    console.log(bobAmount)
+    // Now, apply this bobAmount to the camera's position
+    // This assumes your camera's default (neutral) Y position is at 0
+    camera.position.y += bobAmount;
+}
+let isMoving;
+
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
     const cameraDirection = new THREE.Vector3();
@@ -670,12 +717,12 @@ function updateMovement() {
     // Update the bounding boxes
     dummyBox.setFromObject(dummyMesh);
     MonBox.setFromObject(MondummyMesh);
+    const moveSpeed = 0.015
 
-    var moveDistance = 0.015 * boostFactor;
+    var moveDistance = moveSpeed * boostFactor;
 
     if (isSlowedDown) {
-        moveDistance= 0.005;  // slow the original speed
-
+        moveDistance= moveSpeed * 0.3 * boostFactor;  // slow the original speed
     }
 
     if (!dummyBox.intersectsBox(MonBox) && !timerStarted) {
@@ -692,6 +739,10 @@ function updateMovement() {
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
+        isRunning=true;
+    }
+    else{
+        isRunning=false;
     }
 
     let moveX = 0;
@@ -717,6 +768,7 @@ function updateMovement() {
     if (moveX !== 0 || moveZ !== 0) {
         const rotationAngle = Math.PI + Math.atan2(moveX, moveZ);
         soldier.rotation.y = rotationAngle;
+        isMoving=true;
 
         if (keyState[16]) {
             if (currentAnimation !== 'Run') {
@@ -750,6 +802,7 @@ function updateMovement() {
             soldier.position.z = newPositionZ;
         }
     } else {
+        isMoving=false;
         if (currentAnimation !== 'Idle') {
             currentAnimationAction.fadeOut(0.6);
             currentAnimation = 'Idle';
@@ -788,6 +841,7 @@ function updateMovement() {
     soldier.position.y += verticalVelocity; // Update the character's vertical position
 
 
+
     orbitControls.target.copy(soldier.position);
 
 // Update dummyMesh's position
@@ -795,6 +849,15 @@ function updateMovement() {
     dummyMesh.position.y += yOffset;  // make sure to add yOffset again
     MondummyMesh.position.copy(monster.position);
     MondummyMesh.position.y += 0.3;
+
+    //level 3 code:
+    if (flymonster) {
+        MondummyMesh2.position.copy(monster2.position);
+        MondummyMesh2.position.y += 0.3;
+    }
+    //level 3 code ends
+
+
 // At the end of your movement updates, add:
     if (soldierBoxHelper) {
         soldierBoxHelper.update();
@@ -802,6 +865,14 @@ function updateMovement() {
     if (MonBoxHelper) {
         MonBoxHelper.update();
     }
+
+    //level 3:
+    if (MonBoxHelper2) {
+        MonBoxHelper2.update();
+    }
+    //level 3 ends
+
+
 
     checkCollisionsWithCollectibles();
 
@@ -814,9 +885,9 @@ function updateMovement() {
             gamewon();
         }
     }
-    //console.log(soldier.position.x, soldier.position.y, soldier.position.z);
+
 //Check if monster is close to soldier, and damage if yes
-    if(getDistance(soldier,monster)<0.45){
+    if(getDistance(soldier,monster)<0.45 || (monster2 && getDistance(soldier,monster2) < 0.45)){
 
         if(invunerable>100){
             console.log("Player damaged");
@@ -841,7 +912,10 @@ function updateMovement() {
         }
 
     }
+    console.log(soldier.position);
 }
+
+
 
 const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
 
@@ -861,6 +935,7 @@ let monsterMixer;
 const monsterAnimations = {};
 const monsterloader = new GLTFLoader();
 let animationState = 'Idle'; // default animation
+let flyanimationState = 'flying'; // default animation
 
 //function to play animation
 function playAnimation(name) {
@@ -882,6 +957,24 @@ function playAnimation(name) {
     animationState = name;
 }
 
+function flyplayAnimation(name) {
+    for (let actionName in flymonsterAnimations) {
+        if (flymonsterMixer) {
+            flymonsterMixer.stopAllAction();
+        }
+        flymonsterMixer.clipAction(flymonsterAnimations[actionName]).stop();
+
+    }
+
+    // Play the desired action
+    if (flymonsterAnimations[name]) {
+        monsterMixer.clipAction(flymonsterAnimations[name]).play();
+    }
+
+
+    flyanimationState = name;
+}
+
 // Load and store animations by their names
 monsterloader.load('monster models/Monster warrior/MW Running gltf/MW Running.gltf', (gltf) => {
     gltf.animations.forEach((clip) => {
@@ -901,8 +994,11 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
     });
 });
 
+//working
+
 let MondummyMesh;
 let MonBoxHelper;
+let yOffset2;
 async function loadMonster() {
     // Define a promise to handle the asynchronous loading
     return new Promise((resolve, reject) => {
@@ -920,8 +1016,8 @@ async function loadMonster() {
 
         // 2. Position this mesh at the position of the soldier.
         MondummyMesh.position.copy(new Vector3(monster.position.x, monster.position.y, monster.position.z));
-        yOffset = 0.1;  // or any value you deem appropriate
-        MondummyMesh.position.y += yOffset;
+        yOffset2 = 0.1;  // or any value you deem appropriate
+        MondummyMesh.position.y += yOffset2;
 
 
         // 3. Create a BoxHelper using this dummy mesh.
@@ -971,7 +1067,104 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
     monsterAnimations.Smashing = gltf.animations[2];
 });
 
- const pathfinding = new Pathfinding();
+
+//level 3 monster codes:
+
+//second monster for sky monster logic:
+const monsterloader2 = new GLTFLoader();
+let monster2;
+let monsterMixer2;
+
+//flying monster
+
+let flymonster;
+let flymonsterMixer;
+const flymonsterAnimations = {};
+const flymonsterloader = new GLTFLoader();
+
+let MondummyMesh2, MonBoxHelper2, yOffset3, flyMondummyMesh, yOffset4;
+
+async function loadFlyingMonster() {
+    return Promise.all([ // This Promise.all will allow both loaders to run in parallel.
+        new Promise((resolve, reject) => {
+            monsterloader2.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
+                monster2 = gltf.scene;
+                monster2.position.set(12.3, 0, 23.3);
+                monster2.scale.set(0.35, 0.35, 0.35);
+                monsterMixer2 = new THREE.AnimationMixer(monster);
+                scene.add(monster2);
+                monster2.visible = false;
+
+                let MonboxSize2 = new THREE.Vector3(0.6,0.7, 0.4);
+                MondummyMesh2 = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize2.x, MonboxSize2.y, MonboxSize2.z));
+                MondummyMesh2.position.copy(new THREE.Vector3(monster2.position.x, monster2.position.y, monster2.position.z));
+                yOffset3 = 0.3;
+                MondummyMesh2.position.y += yOffset3;
+                MonBoxHelper2 = new THREE.BoxHelper(MondummyMesh2, 0x00ff00);
+
+                // Adjust the monster's y position based on bounding box
+                const box2 = new THREE.Box3().setFromObject(monster2);
+                monster2.position.y = box2.min.y;
+
+                resolve(); // Resolve this promise after loading is complete.
+            }, undefined, (error) => {
+                console.error(error);
+                reject(error);
+            });
+        }),
+
+        new Promise((resolve, reject) => {
+            flymonsterloader.load('flying monster/fire breather 2.glb', (gltf) => {
+                flymonster = gltf.scene;
+                flymonster.position.set(12.3, -0.5, 23.3);
+                flymonster.scale.set(0.2, 0.2, 0.2);
+
+                flymonsterMixer = new THREE.AnimationMixer(flymonster);
+                scene.add(flymonster);
+
+                gltf.animations.forEach((clip) => {
+                    flymonsterAnimations[clip.name] = clip;
+                });
+
+                let flyMonboxSize = new THREE.Vector3(1,1, 0.9);
+                flyMondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(flyMonboxSize.x, flyMonboxSize.y, flyMonboxSize.z));
+                flyMondummyMesh.position.copy(new THREE.Vector3(flymonster.position.x, flymonster.position.y, flymonster.position.z));
+                yOffset4 = 1;
+                flyMondummyMesh.position.y += yOffset4;
+
+                let action1 = flymonsterMixer.clipAction(flymonsterAnimations["GLTF_created_0Action"]);
+                action1.loop = THREE.LoopRepeat;
+                let action2 = flymonsterMixer.clipAction(flymonsterAnimations["Sketchfab_model.001Action"]);
+                action2.loop = THREE.LoopRepeat;
+                let action3 = flymonsterMixer.clipAction(flymonsterAnimations["Default Take"]);
+                action3.loop = THREE.LoopRepeat;
+
+                action1.play();
+                action2.play();
+                action3.play();
+
+                // Adjust the monster's y position based on bounding box
+                const box = new THREE.Box3().setFromObject(flymonster);
+                flymonster.position.y = -0.4 - box.min.y;
+
+                resolve(); // Resolve this promise after loading is complete.
+            }, undefined, (error) => {
+                console.error(error);
+                reject(error);
+            });
+        })
+    ]);
+}
+
+
+
+
+
+
+//level 3 monster code ends
+
+
+const pathfinding = new Pathfinding();
 const pathfindinghelper = new PathfindingHelper();
  scene.add(pathfindinghelper);
 const ZONE = "villaHouse";
@@ -983,20 +1176,21 @@ loader.load("navmesh/blendernavmesh4.glb", function(gltf){
 meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
 meshfloor.scale.set(1, 1, 1);
- // scene.add(meshfloor);
+// scene.add(meshfloor);
 gltf.scene.traverse(node =>{
          if(!navmesh && node.isObject3D && node.children && node.children.length > 0){
              navmesh = node.children[0];
-             console.log("navmesh object:", navmesh);
+             //console.log("navmesh object:", navmesh);
              pathfinding.setZoneData(ZONE, Pathfinding.createZone(navmesh.geometry));
-             console.log("pathfinding zones", pathfinding.zones);
+             //console.log("pathfinding zones", pathfinding.zones);
+             //console.log("navmesh position:", navmesh.position);
          }
      })
  })
 
+
 let dummyBox = new THREE.Box3();
 let MonBox = new THREE.Box3();
-
 function findPath() {
 
     if (pursuing) {
@@ -1073,9 +1267,156 @@ function findPath() {
 }
 
 
+
+//level 3 monster movement begins here:
+
+const skymeshLoader = new GLTFLoader();
+const skypathfinding = new Pathfinding();
+const skypathfindinghelper = new PathfindingHelper();
+let skymeshfloor;
+const SKYZONE = 'skyZone';
+let skymesh;
+let skygroupId;
+let skynavpath;
+scene.add(skypathfindinghelper);
+
+skymeshLoader.load("flying monster/flym navmesh 7.glb", function(gltf){
+skymeshfloor = gltf.scene;
+skymeshfloor.position.set(0, 0, 0);
+skymeshfloor.scale.set(1, 1, 1);
+// scene.add(skymeshfloor);
+gltf.scene.traverse(node =>{
+    if(!skymesh && node.isObject3D && node.children && node.children.length > 0){
+        skymesh = node.children[0];
+        //console.log("skymesh object:", skymesh);
+        skypathfinding.setZoneData(SKYZONE, Pathfinding.createZone(skymesh.geometry));
+        //console.log("skypathfinding zones", skypathfinding.zones);
+        // console.log("skypathmesh position:", skymesh.position);
+        // console.log("skymeshfloor:", skymeshfloor.position);
+    }
+})
+})
+
+let skyDummyBox = new THREE.Box3();
+let skyMonBox = new THREE.Box3();
+function flyfindPath() {
+
+    if (pursuing) {
+
+        // playAnimation('Running');
+
+        let target = soldier.position.clone();
+        //console.log("soldier pos:", target);
+
+        let monsterPos = monster2.position.clone();
+        //console.log("Mon2 position:", monsterPos);
+
+        // for (let i = 0; i < pathfinding.zones["skyzone"].groups.length; i++) {
+        skygroupId = skypathfinding.getGroup('skyZone', monsterPos);
+        //console.log("Group Id:", skygroupId);
+        const closest = skypathfinding.getClosestNode(monsterPos, 'skyZone', skygroupId);
+        //console.log("closest node:", closest);
+
+        const closest2 = skypathfinding.getClosestNode(target, 'skyZone', skygroupId);
+        //console.log("closest node 2:", closest2);
+        if (closest) {
+            skynavpath = skypathfinding.findPath(closest.centroid, target, 'skyZone', skygroupId);
+            //console.log("nav path :", navpath);
+            if (skynavpath && skynavpath.length > 0) {
+                skypathfindinghelper.reset();
+                // skypathfindinghelper.setPlayerPosition(monster2.position);
+                // skypathfindinghelper.setTargetPosition(target);
+                // skypathfindinghelper.setPath(skynavpath);
+
+                // Target position
+                let targetPos = skynavpath[0];
+
+                // Compute distance to target
+                const distance = targetPos.clone().sub(monster2.position);
+
+                // If the monster is close enough to the target position
+                if (distance.lengthSq() < 0.75) {
+
+                    skynavpath.shift(); // Go to the next waypoint
+                    if (skynavpath.length === 0) {
+                        skynavpath = skypathfinding.findPath(closest.centroid, target, "skyZone", skygroupId);
+
+                    } // If there's no more waypoints, just return
+                    targetPos = skynavpath[0]; // New target position
+                    distance.copy(targetPos.clone().sub(monster2.position)); // Update distance
+                }
+
+                // Normalize distance to get direction
+                const direction = distance.normalize();
+
+                // Set monster speed (adjust the 0.05 value to your preference)
+                const speed = 0.031;
+
+                // Update the monster's position
+                monster2.position.add(direction.multiplyScalar(speed));
+
+                // Make the monster face the direction it's heading
+                monster2.lookAt(monster2.position.clone().add(direction));
+
+                flymonster.position.x = monster2.position.x;
+                flymonster.position.z = monster2.position.z;
+                flymonster.lookAt(flymonster.position.clone().add(direction));
+
+
+                // Update the bounding boxes
+                skyDummyBox.setFromObject(dummyMesh);
+                skyMonBox.setFromObject(MondummyMesh2);
+
+                // Then, check for intersections.
+                if (skyDummyBox.intersectsBox(skyMonBox)) {
+                    pursuing = false;
+                    isSlowedDown = true;
+
+                }
+
+
+            }
+        }
+        // }
+
+    }
+}
+
+//level 3 monster movement code ends here
+
+
+const particleSystem = createSparkEffect();
+particleSystem.position.y += 0.4;
+
+
+let healthModelMesh;
+let healthParticleSystem;
+loader.load('models/miniHealth.glb', (gltf) => {
+    gltf.scene.traverse((child) => {
+        if (child.isMesh && child.name === "miniHealth") {
+            healthModelMesh = child;
+            const scaleFactor = 0.0001; // Adjust this value as needed
+            healthModelMesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+        }
+    });
+
+    if (healthModelMesh) {
+        healthParticleSystem = createHealthEffect(healthModelMesh);
+        healthParticleSystem.position.y += 0.6;
+        console.log("Health particles created");
+    } else {
+        console.error("miniHealth mesh not found in the GLTF model!");
+    }
+});
+
+
+
+
+// Define a variable to keep track of the active boost timeout
+let boostTimeout = null;
+let healthTimeout = null;
+
 function checkCollisionsWithCollectibles() {
-    // Define a variable to keep track of the active boost timeout
-    let boostTimeout = null;
 
     let result;
 
@@ -1088,14 +1429,57 @@ function checkCollisionsWithCollectibles() {
         portal.visible = true;
     }
 
-    result = checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor, boostTimeout);
+    result = checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor);
     boosts = result.boosts;
     boostFactor = result.boostFactor;
+
+    if (result.initiateBoost) {
+        if (boostTimeout) {
+            clearTimeout(boostTimeout);
+            soldier.remove(particleSystem);
+            boostTimeout = null;
+        }
+
+        // Add the particle system when the boost is initiated
+        soldier.add(particleSystem);
+        // Adjust boost effect as needed
+        boostFactor += 1;
+        updateHUDSpeed(boostFactor);
+
+        // Set a timeout to revert the boostFactor
+        boostTimeout = setTimeout(() => {
+            boostFactor -= 1; // adjust as necessary
+            updateHUDSpeed(boostFactor);
+            soldier.remove(particleSystem);
+        }, 12000); // duration of the boost effect
+    }
+
+    //if (boostFactor > 1){
+    //    createSparks(dummyMesh.position);
+    //}
 
     result = checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth, blindnessOverlay);
     healths = result.healths;
     soldierHealth = result.soldierHealth;
+
+    if (result.isHealthCollected) {  // Assuming there's a flag like this when health is increased
+        if (healthTimeout) {  // Similar to the boostTimeout for consistency
+            clearTimeout(healthTimeout);
+            soldier.remove(healthParticleSystem);
+            healthTimeout = null;
+        }
+
+        // Add the health particle system when health is increased
+        soldier.add(healthParticleSystem);
+
+        // Set a timeout to remove the particle system after some time
+        healthTimeout = setTimeout(() => {
+            soldier.remove(healthParticleSystem);
+        }, 8000); // adjust the duration as needed
+    }
 }
+
+
 
 
 //play different animations
@@ -1121,6 +1505,12 @@ function checkCollisionsWithCollectibles() {
          case 'KeyG':
              playAnimation('Smashing');
              break;
+         case 'KeyF':
+             if(flymonster) {
+                 flyplayAnimation('flying');
+             }
+             break;
+         //
      }
  });
 
@@ -1139,20 +1529,42 @@ const clock = new THREE.Clock();
      if (mixer) mixer.update(0.016);
      if (monsterMixer) monsterMixer.update(0.015);
      if (portalMixer) portalMixer.update(0.016);
+     if (flymonsterMixer) flymonsterMixer.update(0.035);
 
      animateCollectibles(coins, boosts, healths, 0.016);
 
      updateMovement();
 
-     listener.position.copy(camera.position);
 
-     // Call the function after the exploration is done
-     // visualizeGrid(grid);
+     listener.position.copy(camera.position);
 
      if (firstPersonView) {
          firstPersonControls.update(clock.getDelta());
+
+         // Calculate current time and deltaTime
+         const currentTime = performance.now();
+         const deltaTime = (currentTime - lastTime) * 0.001; // Converts from milliseconds to seconds
+         lastTime = currentTime;
+
+         if (firstPersonView){
+             if (isMoving){
+                 bobbingTime += deltaTime; // Accumulate time for the sine wave function
+
+                 bobAmount = Math.abs(Math.sin(bobbingTime * bobbingSpeed)) * bobbingIntensity; // Calculate bob offset
+
+                 if (isRunning){
+                     bobAmount /= 1.5;
+                 }
+
+                 console.log(bobAmount)
+             }
+             else{
+                 bobAmount=0;
+             }
+         }
+
          let a = soldier.position.x;
-         let b = soldier.position.y+0.3;
+         let b = soldier.position.y+0.3+ bobAmount;
          let c = soldier.position.z;
 
          camera.position.set(a,b,c);
@@ -1164,9 +1576,28 @@ const clock = new THREE.Clock();
 
      // In your animate function
      if (pursuing) {
-         // findSoldier(clock.getDelta()); // start fin
          findPath();
+         if (flymonster) {
+             flyfindPath();
+         }
      }
+
+
+    // if(getDistance(soldier, monster2) < 0.45){
+    //     action2 = flymonsterMixer.clipAction(flymonsterAnimations["Sketchfab_model.001Action"]);
+    //     action3 = flymonsterMixer.clipAction(flymonsterAnimations["Default Take"]);
+    //
+    //     action2.loop = THREE.LoopRepeat;
+    //     action3.loop = THREE.LoopRepeat;
+    //
+    //     action2.clampWhenFinished = true;
+    //     action3.clampWhenFinished = true;
+    //
+    //     action2.play();
+    //     action3.play();
+    // }
+
+
 
 
      if (firstPersonView) {
@@ -1174,6 +1605,10 @@ const clock = new THREE.Clock();
      } else {
          orbitControls.update();
      }
+
+     // Update the particle system:
+     updateParticleSystem(particleSystem);
+     updateHealthEffect(healthParticleSystem);
 
      renderer.render(scene, camera);
 
