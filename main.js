@@ -943,6 +943,7 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
 
 let MondummyMesh;
 let MonBoxHelper;
+let yOffset2;
 async function loadMonster() {
     // Define a promise to handle the asynchronous loading
     return new Promise((resolve, reject) => {
@@ -960,8 +961,8 @@ async function loadMonster() {
 
         // 2. Position this mesh at the position of the soldier.
         MondummyMesh.position.copy(new Vector3(monster.position.x, monster.position.y, monster.position.z));
-        yOffset = 0.1;  // or any value you deem appropriate
-        MondummyMesh.position.y += yOffset;
+        yOffset2 = 0.1;  // or any value you deem appropriate
+        MondummyMesh.position.y += yOffset2;
 
 
         // 3. Create a BoxHelper using this dummy mesh.
@@ -1061,6 +1062,7 @@ let flymonster;
 let flymonsterMixer;
 const flymonsterAnimations = {};
 const flymonsterloader = new GLTFLoader();
+let yOffset4;
 
 
 flymonsterloader.load('flying monster/flying monster.glb', (gltf) => {
@@ -1086,8 +1088,8 @@ flymonsterloader.load('flying monster/flying monster.glb', (gltf) => {
 
 // 2. Position this mesh at the position of the soldier.
     flyMondummyMesh.position.copy(new Vector3(flymonster.position.x, flymonster.position.y, flymonster.position.z));
-    yOffset = 1;  // or any value you deem appropriate
-    flyMondummyMesh.position.y += yOffset;
+    yOffset4 = 1;  // or any value you deem appropriate
+    flyMondummyMesh.position.y += yOffset4;
     // console.log("flying monster dummy mesh pos:", flyMondummyMesh.position);
 
     // Assuming you've loaded your animations into flymonsterAnimations object
