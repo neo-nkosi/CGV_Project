@@ -17,6 +17,7 @@ import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 import {createHealthEffect, createSparkEffect, updateHealthEffect, updateParticleSystem} from "./particles";
 
 import { createLights } from './lights.js';
+import { createPainting } from './branden';
 
 
 let currentLevel =1;
@@ -101,7 +102,7 @@ function clearPreviousLevel() {
 const retryButton = document.getElementById("retry-button");
 const menuButton = document.getElementById("menu-button");
 const continueButton = document.getElementById("continue-button");
-const blindnessOverlay = document.getElementById("blindness-overlay");
+//const blindnessOverlay = document.getElementById("blindness-overlay");
 
 retryButton.addEventListener('click', async () => {
     // Handle retry button click
@@ -396,6 +397,7 @@ const cellSize = 0.3  // Declare this variable here, at the top level
 const navMeshName = "SampleScene_Exported_NavMesh";  // Replace with your navmesh name
 
 // Land texture
+
 const textureLoader = new THREE.TextureLoader();
 const floorTexture = textureLoader.load('textures/wall.png');
 floorTexture.minFilter = THREE.LinearMipmapLinearFilter;
@@ -403,40 +405,40 @@ floorTexture.wrapS = THREE.RepeatWrapping;
 floorTexture.wrapT = THREE.RepeatWrapping;
 floorTexture.repeat.set(300, 300);
 
+// Load the villaHouse model
 loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse = gltf.scene;
 
     gltf.scene.position.set(0, 0, 0);
     gltf.scene.scale.set(1, 1, 1);
-    // Set the villaHouse to be invisible
-    //villaHouse.visible = false;
-
     scene.add(gltf.scene);
-    //
 
-    console.log(soldier.position);
-
-
-    // Find the child named "floor" and set its material to use the floorTexture
+    // Find the child named "floor"
     const floor = villaHouse.getObjectByName("floor");
-    if (floor) {
-        // // Create a new material with the floorTexture
-         const floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
-         floorMaterial.color = new THREE.Color(0x333333);
-         // Assign the new material to the floor
-         floor.material = floorMaterial;
 
-        // // Ensure that the floor doesn't cast shadows on itself
-        floor.receiveShadow = true; // Enable shadow receiving for the floor
+    if (floor) {
+        // Create a new material with the floorTexture
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            map: floorTexture, // Assign the texture to the material's map property
+            roughness: 0.7, // Adjust the roughness as needed
+            metalness: 0.2, // Adjust the metalness as needed
+        });
+
+        // Assign the new material to the floor
+        floor.material = floorMaterial;
+
+        // Ensure that the floor receives light
+        floor.receiveShadow = true;
+
+        // Disable shadow casting for the floor to avoid self-shadowing
         floor.castShadow = false;
     } else {
         console.warn('Floor not found in the villaHouse model.');
     }
-
-
 }, undefined, function (error) {
     console.error(error);
 });
+
 
 
 
@@ -630,9 +632,10 @@ async function initLevel(level) {
     }
 
     createHUD(camera,numCoins,boostFactor,soldierHealth);
+    createPainting(scene);
 
-    blindnessOverlay.style.display = 'flex';
-    blindnessOverlay.style.opacity = -0.0889 * (soldierHealth) + 0.8889;
+    //blindnessOverlay.style.display = 'flex';
+    //blindnessOverlay.style.opacity = -0.0889 * (soldierHealth) + 0.8889;
 
     isGamePaused = false;
     animate();
@@ -923,16 +926,16 @@ function updateMovement() {
             invunerable=0;
             soldierHealth--;
 
-            blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889;
+            //blindnessOverlay.style.opacity=-0.067*(soldierHealth)+0.667;
 
             if(soldierHealth==0){
-                blindnessOverlay.style.display = 'none';
-                blindnessOverlay.style.opacity=0;
+                //blindnessOverlay.style.display = 'none';
+                //blindnessOverlay.style.opacity=0;
                 console.log("Player should be dead");
                 gamelost();
             }
 
-            console.log(blindnessOverlay);
+            //console.log(blindnessOverlay);
 
             updateHUDHP(soldierHealth);
             animate();
@@ -1493,7 +1496,7 @@ function checkCollisionsWithCollectibles() {
     //    createSparks(dummyMesh.position);
     //}
 
-    result = checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth, blindnessOverlay);
+    result = checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth);
     healths = result.healths;
     soldierHealth = result.soldierHealth;
 
