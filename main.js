@@ -609,15 +609,7 @@ initLevel(window.selectedLevel);
 
 let isRunning = false;
 
-function checkSoldierStatus() {
-    // Check your soldier's status here (whether walking or running)
-    // and adjust playback rate accordingly. For example:
-    if (isRunning) {
-        source.playbackRate.value = 1.5; // Increase tempo for running. You can calibrate this value as needed.
-    } else if (!isRunning) {
-        source.playbackRate.value = 1.0; // Normal tempo for walking
-    }
-}
+
 
 let isSlowedDown = false;  // to check if the soldier is currently slowed down
 let timerStarted = false;
@@ -656,20 +648,21 @@ function getDistance(x,y){
 
 
 let lastTime = 0; // Tracks the time since the last update (for deltaTime calculation)
-const bobbingSpeed = 10; // Controls how fast the bobbing effect is
-const bobbingAmount = 5; // Controls how much the camera bobs up and down
+const bobbingSpeed = 6; // Controls how fast the bobbing effect is
+const bobbingIntensity = 0.1; // Controls how much the camera bobs up and down
 let bobbingTime = 0; // Accumulates time for consistent bobbing, considering the speed
+var bobAmount=0;
 
 function updateBobbing(deltaTime) {
     bobbingTime += deltaTime; // Accumulate time for the sine wave function
-    const bobAmount = Math.sin(bobbingTime * bobbingSpeed) * bobbingAmount; // Calculate bob offset
+    const bobAmount = Math.abs(Math.sin(bobbingTime * bobbingSpeed) * bobbingIntensity); // Calculate bob offset
 
     console.log(bobAmount)
     // Now, apply this bobAmount to the camera's position
     // This assumes your camera's default (neutral) Y position is at 0
     camera.position.y += bobAmount;
 }
-
+let isMoving;
 
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
@@ -710,6 +703,10 @@ function updateMovement() {
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
+        isRunning=true;
+    }
+    else{
+        isRunning=false;
     }
 
     let moveX = 0;
@@ -735,6 +732,7 @@ function updateMovement() {
     if (moveX !== 0 || moveZ !== 0) {
         const rotationAngle = Math.PI + Math.atan2(moveX, moveZ);
         soldier.rotation.y = rotationAngle;
+        isMoving=true;
 
         if (keyState[16]) {
             if (currentAnimation !== 'Run') {
@@ -768,6 +766,7 @@ function updateMovement() {
             soldier.position.z = newPositionZ;
         }
     } else {
+        isMoving=false;
         if (currentAnimation !== 'Idle') {
             currentAnimationAction.fadeOut(0.6);
             currentAnimation = 'Idle';
@@ -1248,14 +1247,21 @@ const clock = new THREE.Clock();
          const currentTime = performance.now();
          const deltaTime = (currentTime - lastTime) * 0.001; // Converts from milliseconds to seconds
          lastTime = currentTime;
-         var bobAmount=0;
-         if (firstPersonView){
-             bobbingTime += deltaTime; // Accumulate time for the sine wave function
-             bobAmount = Math.sin(bobbingTime * bobbingSpeed) * bobbingAmount; // Calculate bob offset
 
-             console.log(bobAmount)
-             // Now, apply this bobAmount to the camera's position
-             // This assumes your camera's default (neutral) Y position is at 0
+         if (firstPersonView){
+             if (isMoving){
+                 bobbingTime += deltaTime; // Accumulate time for the sine wave function
+
+                 bobAmount = Math.abs(Math.sin(bobbingTime * bobbingSpeed)) * bobbingIntensity; // Calculate bob offset
+
+                 if (isRunning){
+                     bobAmount /= 1.5;
+                 }
+                 console.log(bobAmount)
+             }
+             else{
+                 bobAmount=0;
+             }
          }
 
          let a = soldier.position.x;
