@@ -734,7 +734,7 @@ let fireMixer;
 const fireLoader = new GLTFLoader();
 fireLoader.load('models/fire.glb', (gltf) => {
     fireModel = gltf.scene;
-    fireModel.scale.set(0.3,0.22,0.15);
+    fireModel.scale.set(0.1,0.07,0.1);
     fireModel.visible = false; // initially, set it to invisible
 
     fireMixer = new THREE.AnimationMixer(fireModel);
@@ -941,15 +941,18 @@ function updateMovement() {
             soldierHealth--;
 
             blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889;
-
-            if (fireModel) {
-                fireModel.position.copy(soldier.position); // position the fire at the player's position
-                fireModel.visible = true;
-                console.log(fireModel.position);
-                // Hide the fire after 3 seconds (or adjust the time as needed)
-                setTimeout(() => {
-                    fireModel.visible = false;
-                }, 8000);
+            if( (monster2 && getDistance(soldier,monster2) < 0.65)) {
+                if (fireModel) {
+                    fireModel.position.copy(soldier.position); // position the fire at the player's position
+                    fireModel.position.x += 0.2;
+                    fireModel.position.y -= 0.3;
+                    fireModel.visible = true;
+                    console.log(fireModel.position);
+                    // Hide the fire after 3 seconds (or adjust the time as needed)
+                    setTimeout(() => {
+                        fireModel.visible = false;
+                    }, 8000);
+                }
             }
 
             if(soldierHealth==0){
@@ -1412,7 +1415,7 @@ function flyfindPath() {
                 const direction = distance.normalize();
 
                 // Set monster speed (adjust the 0.05 value to your preference)
-                const speed = 0.026;
+                const speed = 0.018;
 
                 // Update the monster's position
                 monster2.position.add(direction.multiplyScalar(speed));
@@ -1663,21 +1666,19 @@ const clock = new THREE.Clock();
      if (fireModel && !firstPersonView) {
          if (fireMixer) fireMixer.update(0.01);
          fireModel.position.copy(soldier.position);
+         fireModel.position.x +=0.2;
+         fireModel.position.y -=0.3;
 
          // Rotate around y-axis
-         fireModel.rotation.y += 0.01;
-
-         // Gradual growing and shrinking
-         const scaleFactor = 0.02;
-         const scaleVariation = Math.sin(clock.getElapsedTime()) * scaleFactor;
-         fireModel.scale.set(0.3 + scaleVariation, 0.22+ scaleVariation, 0.15 + scaleVariation);
-     } else if (fireModel){
+         fireModel.rotation.y = 0.5;
+     } else if(fireModel){
+         if (fireMixer) fireMixer.update(0.01);
          fireModel.position.copy(soldier.position);
-         fireModel.scale.set(0.15,0.15,0.15);
-         fireModel.position.y=-0.07;
-
+         fireModel.position.x +=0.4;
+         fireModel.position.y -=2.5;
+         fireModel.scale.set(0.2,0.3,0.2);
          // Rotate around y-axis
-         fireModel.rotation.y += 0.01;
+         fireModel.rotation.y = 0.5;
      }
 
 
