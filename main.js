@@ -1249,10 +1249,10 @@ const clock = new THREE.Clock();
      } else {
          orbitControls.update();
      }
-
-     redDot.position.set(soldier.position.x,8,soldier.position.z);
-     minimapCamera.position.set(soldier.position.x,soldier.position.y+15,soldier.position.z)
-   minimapCamera.lookAt(soldier.position.x,soldier.position.y,soldier.position.z)
+console.log("The soldier is now at: " + soldier.position.x + " " + soldier.position.z + " camera is at" + minimapCamera.position.x + " " + minimapCamera.position.y + " " + minimapCamera.position.z+" //" );
+     redDot.position.set(soldier.position.x+1.6, 3.5, soldier.position.z+0.9);
+     minimapCamera.position.set(soldier.position.x+14, 30, soldier.position.z+9); // Adjust the height as needed
+     minimapCamera.lookAt(soldier.position.x+14, 1, soldier.position.z+9);
     renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
     renderer.render(scene, camera);
     renderer.clearDepth();
