@@ -1640,8 +1640,8 @@ const clock = new THREE.Clock();
      updateHealthEffect(healthParticleSystem);
 
      redDot.position.set(soldier.position.x+1.6, 3.5, soldier.position.z+0.9);
-     minimapCamera.position.set(soldier.position.x+14, 30, soldier.position.z+12); // Adjust the height as needed
-     minimapCamera.lookAt(soldier.position.x+14, 1, soldier.position.z+12);
+     minimapCamera.position.set(soldier.position.x+15, 30, soldier.position.z+12); // Adjust the height as needed
+     minimapCamera.lookAt(soldier.position.x+15, 1, soldier.position.z+12);
     renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
     renderer.render(scene, camera);
     renderer.clearDepth();
