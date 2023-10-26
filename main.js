@@ -655,6 +655,22 @@ function getDistance(x,y){
 }
 
 
+let lastTime = 0; // Tracks the time since the last update (for deltaTime calculation)
+const bobbingSpeed = 10; // Controls how fast the bobbing effect is
+const bobbingAmount = 5; // Controls how much the camera bobs up and down
+let bobbingTime = 0; // Accumulates time for consistent bobbing, considering the speed
+
+function updateBobbing(deltaTime) {
+    bobbingTime += deltaTime; // Accumulate time for the sine wave function
+    const bobAmount = Math.sin(bobbingTime * bobbingSpeed) * bobbingAmount; // Calculate bob offset
+
+    console.log(bobAmount)
+    // Now, apply this bobAmount to the camera's position
+    // This assumes your camera's default (neutral) Y position is at 0
+    camera.position.y += bobAmount;
+}
+
+
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
     const cameraDirection = new THREE.Vector3();
@@ -790,6 +806,7 @@ function updateMovement() {
     soldier.position.y += verticalVelocity; // Update the character's vertical position
 
 
+
     orbitControls.target.copy(soldier.position);
 
 // Update dummyMesh's position
@@ -843,6 +860,7 @@ function updateMovement() {
         }
 
     }
+
 }
 
 const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
@@ -1217,6 +1235,7 @@ const clock = new THREE.Clock();
 
      updateMovement();
 
+
      listener.position.copy(camera.position);
 
      // Call the function after the exploration is done
@@ -1224,8 +1243,23 @@ const clock = new THREE.Clock();
 
      if (firstPersonView) {
          firstPersonControls.update(clock.getDelta());
+
+         // Calculate current time and deltaTime
+         const currentTime = performance.now();
+         const deltaTime = (currentTime - lastTime) * 0.001; // Converts from milliseconds to seconds
+         lastTime = currentTime;
+         var bobAmount=0;
+         if (firstPersonView){
+             bobbingTime += deltaTime; // Accumulate time for the sine wave function
+             bobAmount = Math.sin(bobbingTime * bobbingSpeed) * bobbingAmount; // Calculate bob offset
+
+             console.log(bobAmount)
+             // Now, apply this bobAmount to the camera's position
+             // This assumes your camera's default (neutral) Y position is at 0
+         }
+
          let a = soldier.position.x;
-         let b = soldier.position.y+0.3;
+         let b = soldier.position.y+0.3+ bobAmount;
          let c = soldier.position.z;
 
          camera.position.set(a,b,c);
