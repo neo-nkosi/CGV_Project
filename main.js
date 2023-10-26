@@ -847,7 +847,7 @@ function updateMovement() {
     }
 
 //Check if monster is close to soldier, and damage if yes
-    if(getDistance(soldier,monster)<0.45 || (monster2 && getDistance(soldier,monster2) < 0.60)){
+    if(getDistance(soldier,monster)<0.45 || (monster2 && getDistance(soldier,monster2) < 0.65)){
 
         if(invunerable>100){
             console.log("Player damaged");
@@ -1075,8 +1075,8 @@ async function loadFlyingMonster() {
         new Promise((resolve, reject) => {
             flymonsterloader.load('flying monster/fire breather 3.glb', (gltf) => {
                 flymonster = gltf.scene;
-                flymonster.position.set(12.3, -0.3, 23.3);
-                flymonster.scale.set(0.18, 0.18, 0.18);
+                flymonster.position.set(12.3, -0.6, 23.3);
+                flymonster.scale.set(0.17, 0.17, 0.17);
 
                 flymonsterMixer = new THREE.AnimationMixer(flymonster);
                 scene.add(flymonster);
@@ -1245,7 +1245,7 @@ let skygroupId;
 let skynavpath;
 scene.add(skypathfindinghelper);
 
-skymeshLoader.load("flying monster/flym navmesh 7.glb", function(gltf){
+skymeshLoader.load("flying monster/flym navmesh 8.glb", function(gltf){
 skymeshfloor = gltf.scene;
 skymeshfloor.position.set(0, 0, 0);
 skymeshfloor.scale.set(1, 1, 1);
