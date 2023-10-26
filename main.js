@@ -180,7 +180,7 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 camera.position.y = 0.6; // adjust as necessary
 camera.position.z = 1;
 let minimapWidth = window.innerHeight/4
-let minimapHeight = window.innerHeight/4    
+let minimapHeight = window.innerHeight/4
 const minimapCamera = new THREE.PerspectiveCamera(300, 1, 0.1, 1000);
 let redDot;
 scene.add(minimapCamera);
@@ -1640,8 +1640,8 @@ const clock = new THREE.Clock();
      updateHealthEffect(healthParticleSystem);
 
      redDot.position.set(soldier.position.x+1.6, 3.5, soldier.position.z+0.9);
-     minimapCamera.position.set(soldier.position.x+14, 30, soldier.position.z+9); // Adjust the height as needed
-     minimapCamera.lookAt(soldier.position.x+14, 1, soldier.position.z+9);
+     minimapCamera.position.set(soldier.position.x+14, 30, soldier.position.z+12); // Adjust the height as needed
+     minimapCamera.lookAt(soldier.position.x+14, 1, soldier.position.z+12);
     renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
     renderer.render(scene, camera);
     renderer.clearDepth();
