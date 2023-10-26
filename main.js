@@ -1257,6 +1257,7 @@ const clock = new THREE.Clock();
                  if (isRunning){
                      bobAmount /= 1.5;
                  }
+
                  console.log(bobAmount)
              }
              else{
