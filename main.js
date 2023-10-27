@@ -869,7 +869,7 @@ let navmesh;
 let groupId;
 let navpath;
 scene.add(pathfindinghelper);
-loader.load("navmesh/blendernavmesh1.glb", function(gltf){
+loader.load("navmesh/blendernavmesh4.glb", function(gltf){
 meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
 meshfloor.scale.set(1, 1, 1);
@@ -887,6 +887,9 @@ gltf.scene.traverse(node =>{
 let dummyBox = new THREE.Box3();
 let MonBox = new THREE.Box3();
 
+
+let initialMonsterPosition = null;
+let timeLastPositionUpdated = Date.now();
 function findPath() {
 
     if (pursuing) {
@@ -922,7 +925,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.length() < 0.35) {
+                if (distance.length() < 0.3) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
@@ -932,6 +935,27 @@ function findPath() {
                     targetPos = navpath[0]; // New target position
                     distance.copy(targetPos.clone().sub(monster.position)); // Update distance
                 }
+
+                // const deltaTime = (Date.now() - timeLastPositionUpdated) / 1000; // Time since last update in seconds
+                // const distanceMoved = Math.sqrt(
+                //     Math.pow(monster.position.x - initialMonsterPosition.x, 2) +
+                //     Math.pow(monster.position.z - initialMonsterPosition.z, 2)
+                // );
+                //
+                // if (monster.position.x - initialMonsterPosition.x < 0.2 && monster.position.z - initialMonsterPosition.z < 0.2) {
+                //     // If the monster has moved enough, update the initial position and reset the timer.
+                //     initialMonsterPosition = monster.position.clone();
+                //     timeLastPositionUpdated = Date.now();
+                // } else if (deltaTime >= 10 && (monster.position.x - initialMonsterPosition.x < 0.05) && (monster.position.z - initialMonsterPosition.z < 0.05)) {
+                //     // If 6 seconds have passed and the monster hasn't moved enough,
+                //     // move the monster 0.5 units in its forward direction
+                //     let forwardDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(monster.quaternion);
+                //     monster.position.add(forwardDirection.multiplyScalar(0.5));
+                //     initialMonsterPosition = monster.position.clone();
+                //     timeLastPositionUpdated = Date.now();
+                // }
+
+
 
                 // Normalize distance to get direction
                 const direction = distance.normalize();
@@ -958,6 +982,7 @@ function findPath() {
                 }
 
             }
+
         }
 
     }
