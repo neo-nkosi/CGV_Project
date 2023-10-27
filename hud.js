@@ -7,7 +7,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     //===========================================Blindness Vingette==========================================================
 
 
-    //Create an var for the coin collected
+    //Create an var for the Blind URL
     blindURL = "textures/blindness-vingnette.png";
 
     //Create a texture from the image
@@ -38,7 +38,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
         const height = 2 * Math.tan(vFOV/2);
         const width = height * camera.aspect;
 
-        //Set the position of the video screen to the bottom left corner
+        //Set the position of the video screen 
 
         blindScreen.position.x = 0;
         blindScreen.position.y = 0;
@@ -87,7 +87,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
         const height = 2 * Math.tan(vFOV/2);
         const width = height * camera.aspect;
 
-        //Set the position of the video screen to the bottom left corner
+        //Set the position of the video screen to the top left corner
 
         coinScreen.position.x = (-width / 2)-1;
         coinScreen.position.y = (height/ 2)+0.5;
@@ -98,7 +98,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
 
     //===========================================Speed Boost====================================================
 
-    //Create an var for the coin collected
+    //Create an var for the speed boost collected
     speedURLs = ["icons/speed_boost/Speed0.png",
                       "icons/speed_boost/Speed1.png",
                       "icons/speed_boost/Speed2.png",
@@ -133,7 +133,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
         const height = 2 * Math.tan(vFOV/2);
         const width = height * camera.aspect;
 
-        //Set the position of the video screen to the bottom left corner
+        //Set the position of the video screen to the top right corner
 
         speedScreen.position.x = (width / 2)+1;
         speedScreen.position.y = (height/ 2)+0.5;
@@ -143,7 +143,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     window.addEventListener('resize', updateSpeedScreenPosition);
 
     //===========================================HP BAR=========================================================
-    //Create an array of image URLs
+    //Create an array of HP image URLs
     hpURLs = ["icons/hp_bar/HP0.png",
                     "icons/hp_bar/HP1.png",
                     "icons/hp_bar/HP2.png",
@@ -209,11 +209,11 @@ export function updateHUDHP(currentHPlevel){
         hpScreen.material.map.dispose();
     }
 
-    const hpTexture = new THREE.TextureLoader().load(hpURLs[currentHPlevel]);
+    const hpTexture = new THREE.TextureLoader().load(hpURLs[currentHPlevel]); 
     hpTexture.encoding = THREE.sRGBEncoding;
 
     hpScreen.material.map = hpTexture;
-    blindScreen.material.opacity = -0.0889*(currentHPlevel)+0.889;
+    blindScreen.material.opacity = -0.0889*(currentHPlevel)+0.889; //Also update the blindness overlay when HP changes
 
     hpScreen.material.needsUpdate = true;
     blindScreen.material.needsUpdate = true;
