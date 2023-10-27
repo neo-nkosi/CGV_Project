@@ -38,7 +38,6 @@ function gamelost(){
 }
 
 function gamewon(){
-    console.log("Game won for level:", currentLevel);
     if(currentLevel != 3) {
         updateWinScreenWithNextLevel(currentLevel);
     }else{
@@ -130,7 +129,6 @@ function coinsCollected(){
 }
 
 function cleanIcons(){
-    console.log(coins);
     for (var i = 0; i < coins.length; i++) {
         var object = coins[i];
         scene.remove(object.mesh);
@@ -482,7 +480,6 @@ let boosts = [];
 let healths = [];
 
 async function initLevel(level) {
-    console.log("initlevel initiated");
     if(!soldier) {
         try {
             await loadSoldier(); // Wait for the soldier to be loaded.
@@ -901,7 +898,6 @@ function updateMovement() {
     if(getDistance(soldier,monster)<0.45 || (monster2 && getDistance(soldier,monster2) < 0.65)){
 
         if(invunerable>100){
-            console.log("Player damaged");
             invunerable=0;
             soldierHealth--;
 
@@ -911,7 +907,6 @@ function updateMovement() {
                     fireModel.position.x += 0.2;
                     fireModel.position.y -= 0.3;
                     fireModel.visible = true;
-                    console.log(fireModel.position);
                     // Hide the fire after 3 seconds
                     setTimeout(() => {
                         fireModel.visible = false;
@@ -919,15 +914,12 @@ function updateMovement() {
                 }
             }
 
-            if(soldierHealth==0){
-                console.log("Player should be dead");
+            if(soldierHealth==0){;
                 gamelost();
             }
 
             updateHUDHP(soldierHealth);
             animate();
-        }else{
-            console.log("Player hit but involnerable");
         }
 
     }
@@ -1122,9 +1114,6 @@ async function loadFlyingMonster() {
                     flymonsterAnimations[clip.name] = clip;
                 });
 
-                gltf.animations.forEach((clip) => {
-                    console.log("all animation names:", clip.name)
-                });
 
                 let flyMonboxSize = new THREE.Vector3(1,1, 0.9);
                 flyMondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(flyMonboxSize.x, flyMonboxSize.y, flyMonboxSize.z));
@@ -1402,7 +1391,6 @@ loader.load('models/miniHealth.glb', (gltf) => {
         healthParticleSystemForCamera.position.y -=1;
         healthParticleSystemForCamera.scale.set(0.8,0.8,0.8);
 
-        console.log("Health particles created");
     } else {
         console.error("miniHealth mesh not found in the GLTF model!");
     }
@@ -1522,9 +1510,6 @@ const clock = new THREE.Clock();
                          bobAmount *=0.3;
                      }
                  }
-
-
-                 console.log(bobAmount)
              }
              else{
                  bobAmount=0;

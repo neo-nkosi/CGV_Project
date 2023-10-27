@@ -88,7 +88,7 @@ export function createHealth(x, y, z, scene, healths) {
     iconLoader.load('models/health.glb', function (gltf) {
         let health = gltf.scene;
         health.position.set(x, y, z);
-        health.scale.set(0.02, 0.02, 0.02);  // Adjust scale if needed
+        health.scale.set(0.02, 0.02, 0.02);
         scene.add(health);
 
         let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2);
