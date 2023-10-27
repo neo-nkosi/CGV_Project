@@ -78,6 +78,16 @@ function clearPreviousLevel() {
     updateHUDCoin(numCoins);
     updateHUDSpeed(boostFactor);
     animate();
+
+    // Clear the timeouts
+    clearTimeout(healthTimeout);
+    clearTimeout(boostTimeout);
+
+    // Remove the particle systems
+    soldier.remove(healthParticleSystemForSoldier);
+    camera.remove(healthParticleSystemForCamera);
+    soldier.remove(boostParticleSystemForSoldier);
+    camera.remove(boostParticleSystemForCamera);
 }
 
 
