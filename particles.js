@@ -2,6 +2,8 @@ import * as THREE from "three";
 
 let initialParticlePositions = [];
 let targetParticlePositions = [];
+
+// Texture for speed boost
 function createCircleTexture(radius, fillColor) {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
@@ -16,27 +18,27 @@ function createCircleTexture(radius, fillColor) {
 
     const texture = new THREE.Texture(canvas);
     texture.needsUpdate = true;
-
     return texture;
 }
 
-export function createSparkEffect() {
+// Creates particles around character when boost is collected
+export function createBoostEffect() {
     const particleCount = 50;
     const particles = new THREE.BufferGeometry();
     const particlePositions = [];
 
-    const circleTexture = createCircleTexture(64, 'white'); // White circle with a radius of 64 pixels
+    const circleTexture = createCircleTexture(64, 'white');
 
     const particleMaterial = new THREE.PointsMaterial({
         color: 0xffff40,
         size: 0.02,
         map: circleTexture,
-        alphaTest: 0.5, // Ensure the transparent parts of the texture are not rendered
+        alphaTest: 0.5,
         transparent: true,
         blending: THREE.AdditiveBlending
     });
 
-    // Adjust these values to keep particles closer to the center
+    // Keeps the particles close to the character
     const maxDistanceFromCenter = 1.5;
 
     for (let i = 0; i < particleCount; i++) {
@@ -46,7 +48,7 @@ export function createSparkEffect() {
 
         particlePositions.push(x, y, z);
 
-        // Store the initial positions for later
+        // These positions are used to help keep the movement of the particles close to their original point
         initialParticlePositions.push({ x, y, z });
         targetParticlePositions.push({ x, y, z });
     }
@@ -58,7 +60,8 @@ export function createSparkEffect() {
 
 let rotationSpeed = 0.02;
 
-export function updateParticleSystem(particleSystem) {
+// Adds the bouncing and rotating movement of the particles
+export function updateBoostSystem(particleSystem) {
     const positions = particleSystem.geometry.attributes.position.array;
 
     for (let i = 0; i < initialParticlePositions.length; i++) {
@@ -66,19 +69,18 @@ export function updateParticleSystem(particleSystem) {
         let y = positions[i * 3 + 1];
         let z = positions[i * 3 + 2];
 
-        // Rotate the particle in the xy-plane
+        // Rotates the particles
         let newX = x * Math.cos(rotationSpeed) - z * Math.sin(rotationSpeed);
         let newZ = x * Math.sin(rotationSpeed) + z * Math.cos(rotationSpeed);
 
         positions[i * 3] = newX;
         positions[i * 3 + 2] = newZ;
 
-        // Adjust the y position by interpolating towards the target position
         positions[i * 3 + 1] += (targetParticlePositions[i].y - positions[i * 3 + 1]) * 0.05;
 
-        // Randomly choose a new target position
+        // Adds slight randomness to the movement of the particles
         if (Math.random() < 0.02) {
-            let yOffset = (Math.random() - 0.5) * 0.3; // Random value between -0.1 and 0.1
+            let yOffset = (Math.random() - 0.5) * 0.3;
             targetParticlePositions[i].y = initialParticlePositions[i].y + yOffset;
         }
     }
@@ -89,11 +91,11 @@ export function updateParticleSystem(particleSystem) {
 export function createHealthEffect(modelMesh) {
     if (!modelMesh){
         console.log("no model loaded");
-        return null; // Ensure the model is loaded
+        return null; // Need to check if the model is loaded first since it is a .glb file
     }
 
     const particleCount = 30;
-    const dummyObject = new THREE.Object3D(); // To apply transformations for each instance
+    const dummyObject = new THREE.Object3D();
 
     const instancedMesh = new THREE.InstancedMesh(
         modelMesh.geometry,
@@ -101,10 +103,9 @@ export function createHealthEffect(modelMesh) {
         particleCount
     );
 
-    // Adjust these values to keep particles closer to the center
     const maxDistanceFromCenter = 1.5;
 
-    const scaleFactor = 0.05; // Adjust this value as needed
+    const scaleFactor = 0.05;
     dummyObject.scale.set(scaleFactor, scaleFactor, scaleFactor);
 
     for (let i = 0; i < particleCount; i++) {
@@ -127,28 +128,25 @@ export function updateHealthEffect(instancedMesh) {
     const scaleFactor = 0.05;
     dummyObject.scale.set(scaleFactor, scaleFactor, scaleFactor);
 
-    const maxDistanceFromCenter = 1.5;
-
     for (let i = 0; i < instancedMesh.count; i++) {
         instancedMesh.getMatrixAt(i, dummyObject.matrix);
         dummyObject.position.setFromMatrixPosition(dummyObject.matrix);
 
-        // Rotate each particle around its own Y-axis
+        // Rotates each particle around its on Y axis
         dummyObject.rotateY(rotationSpeed);
 
-        // Rotate the particle in the xy-plane around the center
+        // Rotates each particle around the character
         let newX = dummyObject.position.x * Math.cos(rotationSpeed) - dummyObject.position.z * Math.sin(rotationSpeed);
         let newZ = dummyObject.position.x * Math.sin(rotationSpeed) + dummyObject.position.z * Math.cos(rotationSpeed);
 
         dummyObject.position.x = newX;
         dummyObject.position.z = newZ;
 
-        // Adjust the y position by interpolating towards the target position
         dummyObject.position.y += (targetParticlePositions[i].y - dummyObject.position.y) * 0.05;
 
-        // Randomly choose a new target position
+        // Adds randomness to the particles movement
         if (Math.random() < 0.02) {
-            let yOffset = (Math.random() - 0.5) * 0.3; // Random value between -0.1 and 0.1
+            let yOffset = (Math.random() - 0.5) * 0.3;
             targetParticlePositions[i].y = initialParticlePositions[i].y + yOffset;
         }
 

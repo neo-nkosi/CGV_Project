@@ -14,7 +14,7 @@ import {
 } from './collectables.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
-import {createHealthEffect, createSparkEffect, updateHealthEffect, updateParticleSystem} from "./particles";
+import {createHealthEffect, createBoostEffect, updateHealthEffect, updateBoostSystem} from "./particles";
 
 import { createLights } from './lights.js';
 import { createPainting } from './branden';
@@ -204,7 +204,7 @@ function toggleFirstPersonView() {
     firstPersonControls.enabled = firstPersonView;
 
     if (firstPersonView) {
-        // Adjust camera's 
+        // Adjust camera's
         camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
         // Turn on the light
         spotlight.intensity = 6;
@@ -1432,7 +1432,7 @@ function flyfindPath() {
 //level 3 monster movement code ends here
 
 
-const particleSystem = createSparkEffect();
+const particleSystem = createBoostEffect();
 particleSystem.position.y += 0.4;
 
 
@@ -1653,8 +1653,8 @@ const clock = new THREE.Clock();
          orbitControls.update();
      }
 
-     // Update the particle system:
-     updateParticleSystem(particleSystem);
+     // Update the particle systems:
+     updateBoostSystem(particleSystem);
      updateHealthEffect(healthParticleSystem);
 
      redDot.position.set(soldier.position.x+1.6, 3.5, soldier.position.z+0.9);
