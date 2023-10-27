@@ -448,9 +448,7 @@ function loadPortal() {
             gltf.scene.scale.set(0.3, 0.3, 0.3);
             scene.add(gltf.scene);
 
-            // After adding the portal to the scene:
             portalDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 0.1));
-            //scene.add(portalDummyMesh);
 
             if (gltf.animations && gltf.animations.length) {
                 portalMixer = new THREE.AnimationMixer(portal);
@@ -459,13 +457,13 @@ function loadPortal() {
             }
 
             portal.visible = false;
-            resolve(portal); // resolve the promise with the loaded portal
+            resolve(portal);
         }, undefined, function (error) {
             console.error(error);
             reject(error);
         });
     } else {
-        resolve(portal); // if portal is already loaded, resolve immediately
+        resolve(portal); // Resolves if portal was loaded before
     }
     });
 }
@@ -488,9 +486,7 @@ async function initLevel(level) {
     if(!monster) {
         try {
             await loadMonster();
-
         } catch (error) {
-            // Handle error during monster loading
             console.error('An error occurred while loading the monster:', error);
         }
     }
@@ -499,7 +495,7 @@ async function initLevel(level) {
             await loadPortal(); // Wait for the portal to be loaded.
         } catch (error) {
             console.error('An error occurred while loading the portal:', error);
-            return; // Exit if the portal couldn't be loaded.
+            return;
         }
     }
 
@@ -628,23 +624,10 @@ async function initLevel(level) {
     return Promise.resolve();
 }
 
-
-
-// Animation function
-var cameraPosition;
-
-let isJumping = false; // This will tell us if the character has initiated a jump
+let isJumping = false; // Tells us if the character has initiated a jump
 //Monster Code
 
-function getCameraPositionBehindSoldier(soldier, distanceBehind) {
-    const forwardDirection = new THREE.Vector3();
-    soldier.getWorldDirection(forwardDirection);
 
-    // The computed offset
-    const offset = forwardDirection.multiplyScalar(-distanceBehind);
-
-    return new THREE.Vector3().addVectors(soldier.position, offset);
-}
 
 let invunerable;
 let boostFactor;
