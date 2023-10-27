@@ -180,6 +180,7 @@ scene.background = skyBoxTexture;
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.y = 0.6; // adjust as necessary
 camera.position.z = 1;
+//MinimapCamemra
 let minimapWidth = window.innerHeight/4
 let minimapHeight = window.innerHeight/4
 const minimapCamera = new THREE.PerspectiveCamera(300, 1, 0.1, 1000);
@@ -188,7 +189,7 @@ scene.add(minimapCamera);
 scene.add(camera);
 //creating a redDot to track palyer position
 const material = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
-const radius = 0.3; // Adjust the size as needed
+const radius = 0.2; // Adjust the size as needed
 const segments = 32; // The number of segments in the sphere
 const rings = 32; // The number of ringsin the sphere
 const geometry = new THREE.SphereGeometry(radius, segments, rings);
@@ -277,9 +278,9 @@ window.addEventListener('resize', () => {
     camera.aspect = newWidth / newHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(newWidth, newHeight);
-    minimapWidth = newHeight / 4; // Use newHeight to maintain a square aspect ratio
+    minimapWidth = newHeight / 4;
     minimapHeight = newHeight / 4;
-    minimapCamera.aspect = 1; // Set a fixed aspect ratio of 1 for the minimap camera
+    minimapCamera.aspect = 1; 
     minimapCamera.updateProjectionMatrix();
 });
 
@@ -1669,7 +1670,7 @@ const clock = new THREE.Clock();
      updateParticleSystem(particleSystem);
      updateHealthEffect(healthParticleSystem);
 
-     redDot.position.set(soldier.position.x+1.6, 3.5, soldier.position.z+0.9);
+     redDot.position.set(soldier.position.x+1.6, 4, soldier.position.z+0.9);
      minimapCamera.position.set(soldier.position.x+15, 30, soldier.position.z+12); // Adjust the height as needed
      minimapCamera.lookAt(soldier.position.x+15, 1, soldier.position.z+12);
     renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
