@@ -25,22 +25,18 @@ if (window.selectedLevel) {
 
     console.log("Selected level is: " + window.selectedLevel);
     currentLevel = window.selectedLevel;
-} else {
-    // Handle case where no level is selected if necessary
-}
+} 
 
 let isGamePaused = false;
 
 window.pauseGame = function() {
-    isGamePaused = true;  // Set the game state to paused
-    // Here, handle anything else you need when the game is paused (e.g., stop sounds, etc.)
+    isGamePaused = true;  // sets the game state to paused
 }
 
 window.resumeGame = function() {
     if (isGamePaused) {
-        isGamePaused = false; // Set the game state to running
-        animate(); // Restart the game loop
-        // Here, handle anything else you need when the game resumes
+        isGamePaused = false; // sets the game state to running
+        animate(); // restart game loop
     }
 }
 function gamelost(){
@@ -54,12 +50,12 @@ function gamewon(){
     if(currentLevel != 3) {
         updateWinScreenWithNextLevel(currentLevel);
     }else{
-        // If it's level 3, change the win message and hide the next level button, and show credits button
-        // Check if the objective and modifiers elements already exist
+        //if it's level 3, change the win message and hide the next level button, and show credits button
+        //check if the objective and modifiers elements already exist
         const existingObjectiveElement = document.querySelector('#win-screen .next-level-objective');
         const existingModifiersElement = document.querySelector('#win-screen .next-level-modifiers');
 
-        // If they exist, remove them
+        //if they exist, remove them
         if(existingObjectiveElement) existingObjectiveElement.remove();
         if(existingModifiersElement) existingModifiersElement.remove();
         document.getElementById('win-message').textContent = "Congratulations! You have beat the game!";
@@ -69,19 +65,19 @@ function gamewon(){
     const overlay = document.getElementById('win-screen');
     overlay.style.display = 'flex';
     isGamePaused = true;
-    // Removed timeout function here. The Next Level button will now handle proceeding to the next level
+    //removed timeout function here. The Next Level button will now handle proceeding to the next level
 }
 
 
 window.goToNextLevel = function(){
-    currentLevel++; // Increment the level
-    if (currentLevel <= 3) { // If there are still levels left
-        // Clean up the previous level's objects like coins, boosts, healths, etc.
+    currentLevel++; //increment the level
+    if (currentLevel <= 3) { //if there are still levels left
+        //clean up the previous level's objects like coins, boosts, healths, etc.
         clearPreviousLevel();
-        // Start the next level
+        //start the next level
         initLevel(currentLevel);
     } else {
-        // If there are no more levels, you might want to display a "Game Completed" screen or loop back to the first level
+        //if there are no more levels, you might want to display a "Game Completed" screen or loop back to the first level
         console.log("Congratulations! You completed all levels!");
         // gameCompleted(); // hypothetical function
     }
@@ -189,7 +185,7 @@ scene.add(minimapCamera);
 scene.add(camera);
 //creating a redDot to track palyer position
 const material = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
-const radius = 0.2; // Adjust the size as needed
+const radius = 0.2;
 const segments = 32; // The number of segments in the sphere
 const rings = 32; // The number of ringsin the sphere
 const geometry = new THREE.SphereGeometry(radius, segments, rings);
@@ -255,7 +251,7 @@ audioLoader.load('/audio/marching.mp3', function(buffer) {
 });
 
 const monsterSound = new THREE.PositionalAudio(listener);
-// Load a sound file (you need to have the horror sound in your game files)
+// Loading sound file
 audioLoader.load('/audio/horrorMusic.mp3', function(buffer) {
     monsterSound.setBuffer(buffer);
     monsterSound.setRefDistance(20); // Set reference distance for volume control
@@ -341,17 +337,14 @@ async function loadSoldier() {
 
         scene.add(soldier);
 
-        // 1. Create a dummy mesh with a BoxGeometry of your desired size.
         let boxSize = new THREE.Vector3(0.2, 0.5, 0.2); // Size of the box (width, height, depth)
         dummyMesh = new THREE.Mesh(new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z));
 
-        // 2. Position this mesh at the position of the soldier.
         dummyMesh.position.copy(new Vector3(soldier.position.x, soldier.position.y, soldier.position.z));
         yOffset = 0.2;  // or any value you deem appropriate
         dummyMesh.position.y += yOffset;
 
 
-        // 3. Create a BoxHelper using this dummy mesh.
         soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
 
         //scene.add(soldierBoxHelper);
@@ -388,14 +381,8 @@ let meshfloor;
 // Load the maze model
 const loader = new GLTFLoader();
 
-let villaBoundingBox;
-let villaSize;
 
 let pursuing = false; // Flag to check if monster is in pursuit mode
-
-let grid; // We've already initialized this in the villa loader
-const cellSize = 0.3  // Declare this variable here, at the top level
-const navMeshName = "SampleScene_Exported_NavMesh";  // Replace with your navmesh name
 
 // Land texture
 
@@ -425,24 +412,23 @@ loader.load('models/villaHouse.glb', function (gltf) {
     if (floor) {
         // Create a new material with the floorTexture
         const floorMaterial = new THREE.MeshStandardMaterial({
-            map: floorTexture, // Assign the texture to the material's map property
-            roughness: 0.7, // Adjust the roughness as needed
-            metalness: 0.2, // Adjust the metalness as needed
+            map: floorTexture,
+            roughness: 0.7,
+            metalness: 0.2,
         });
 
-        // Assign the new material to the floor
+        //assign the new material to the floor
         floor.material = floorMaterial;
 
-        // Ensure that the floor receives light
+        //ensure that the floor receives light
         floor.receiveShadow = true;
 
-        // Disable shadow casting for the floor to avoid self-shadowing
         floor.castShadow = false;
     } else {
         console.warn('Floor not found in the villaHouse model.');
     }
 
-    // Iterate through the villa walls and set them to cast shadows
+    //iterate through the villa walls and set them to cast shadows
     villaHouse.traverse((child) => {
         if (child.isMesh && child.name.startsWith("Cube")) {
             const wallMaterial = new THREE.MeshStandardMaterial({
@@ -490,7 +476,7 @@ function loadPortal() {
             resolve(portal); // resolve the promise with the loaded portal
         }, undefined, function (error) {
             console.error(error);
-            reject(error); // reject the promise if there's an error
+            reject(error);
         });
     } else {
         resolve(portal); // if portal is already loaded, resolve immediately
@@ -499,7 +485,7 @@ function loadPortal() {
 }
 
 let coinsNeeded;
-let coins = []; // Array to store multiple coins
+let coins = [];
 let boosts = [];
 let healths = [];
 
@@ -516,8 +502,7 @@ async function initLevel(level) {
     if(!monster) {
         try {
             await loadMonster();
-            // Monster loaded successfully
-            // Proceed with the rest of your setup or game loop
+
         } catch (error) {
             // Handle error during monster loading
             console.error('An error occurred while loading the monster:', error);
@@ -531,7 +516,6 @@ async function initLevel(level) {
             return; // Exit if the portal couldn't be loaded.
         }
     }
-    //soldier.position.set(0,0,8);
 
     if (level == 1) {
         //Start of game parameters
@@ -609,7 +593,6 @@ async function initLevel(level) {
                 flymonster.position.set(11.602514540807476,-0.5, 7.350874621916164);
                 monster2.position.set(11.602514540807476, 0, 7.350874621916164);
                 // Monster loaded successfully
-                // Proceed with the rest of your setup or game loop
             } catch (error) {
                 // Handle error during monster loading
                 console.error('An error occurred while loading the flyingmonster:', error);
@@ -711,7 +694,6 @@ function checkStairs(character, sceneObject) {
     const rayStartHeight = 0;  // Start at the foot of the character
     const upwardRayLength = 0.3;  // The length of the ray pointing upwards
 
-    // Setup the raycaster
     // Compute the character's forward direction
     const forwardOffset = new THREE.Vector3(0, 0, -0.2).applyQuaternion(character.quaternion);
     const footPosition = character.position.clone().add(forwardOffset).add(new THREE.Vector3(0, rayStartHeight, 0)); // starts at the foot, but forward
@@ -738,7 +720,7 @@ function getDistance(x,y){
 
 
 let lastTime = 0; // Tracks the time since the last update (for deltaTime calculation)
-const bobbingSpeed = 6; // Controls how fast the bobbing effect is
+let bobbingSpeed = 6; // Controls how fast the bobbing effect is
 const bobbingIntensity = 0.1; // Controls how much the camera bobs up and down
 let bobbingTime = 0; // Accumulates time for consistent bobbing, considering the speed
 var bobAmount=0;
@@ -793,10 +775,12 @@ function updateMovement() {
 
     if (keyState[16]) {  // shift key is pressed
         moveDistance *= 2;  // speed is doubled
+        bobbingSpeed =9;
         isRunning=true;
     }
     else{
         isRunning=false;
+        bobbingSpeed =6;
     }
 
     let moveX = 0;
