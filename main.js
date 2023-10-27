@@ -243,7 +243,7 @@ const monsterSound = new THREE.PositionalAudio(listener);
 audioLoader.load('/audio/horrorMusic.mp3', function(buffer) {
     monsterSound.setBuffer(buffer);
     monsterSound.setRefDistance(20); // Set reference distance for volume control
-    monsterSound.setDirectionalCone(180, 230, 0.1); // Optional: Set a directional sound cone (for a more realistic experience)
+    monsterSound.setDirectionalCone(180, 230, 0.1);
     monsterSound.play();
 });
 
@@ -325,22 +325,21 @@ async function loadSoldier() {
 
         scene.add(soldier);
 
-        let boxSize = new THREE.Vector3(0.2, 0.5, 0.2); // Size of the box (width, height, depth)
+        let boxSize = new THREE.Vector3(0.2, 0.5, 0.2);
         dummyMesh = new THREE.Mesh(new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z));
 
         dummyMesh.position.copy(new Vector3(soldier.position.x, soldier.position.y, soldier.position.z));
-        yOffset = 0.2;  // or any value you deem appropriate
+        yOffset = 0.2;
         dummyMesh.position.y += yOffset;
 
 
         soldierBoxHelper = new THREE.BoxHelper(dummyMesh, 0x00ff00);
 
-        //scene.add(soldierBoxHelper);
 
-        // Create a mixer for the soldier
+        // Allows for soldier animation
         mixer = new THREE.AnimationMixer(soldier);
 
-        // Store the animations in the animations object for quick lookup
+        // Store the animations in the animations object
         animations = {}; // Reset the animations object
         gltf.animations.forEach((clip) => {
             animations[clip.name] = mixer.clipAction(clip);
@@ -353,10 +352,10 @@ async function loadSoldier() {
         // Set the target of OrbitControls after the soldier is loaded
         orbitControls.target.copy(soldier.position);
 
-        resolve(soldier); // Resolve the promise with the loaded soldier.
+        resolve(soldier);
         }, undefined, function (error) {
             console.error(error);
-            reject(error); // Reject the promise if there's an error.
+            reject(error);
         });
     });
 }
@@ -368,7 +367,6 @@ let meshfloor;
 
 // Load the maze model
 const loader = new GLTFLoader();
-
 
 let pursuing = false; // Flag to check if monster is in pursuit mode
 
@@ -473,7 +471,7 @@ function loadPortal() {
 }
 
 let coinsNeeded;
-let coins = []; 
+let coins = [];
 let boosts = [];
 let healths = [];
 
@@ -875,7 +873,6 @@ function updateMovement() {
     //level 3 code ends
 
 
-// At the end of your movement updates, add:
     if (soldierBoxHelper) {
         soldierBoxHelper.update();
     }
