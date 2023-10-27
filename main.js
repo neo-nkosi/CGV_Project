@@ -891,9 +891,7 @@ function updateMovement() {
     }
 }
 
-
-
-const ELEVATION_OFFSET = 1;  // Adjust this value based on how much you want to elevate the camera
+const ELEVATION_OFFSET = 1;  // Elevation for camera
 
 function maintainDistanceFromSoldier(soldier, camera, distance) {
     let offset = new THREE.Vector3().subVectors(camera.position, soldier.position);
@@ -924,7 +922,6 @@ function playAnimation(name) {
 
     }
 
-    // Play the desired action
     if (monsterAnimations[name]) {
         monsterMixer.clipAction(monsterAnimations[name]).play();
     }
@@ -970,38 +967,30 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
     });
 });
 
-//working
-
 let MondummyMesh;
 let MonBoxHelper;
 let yOffset2;
 async function loadMonster() {
-    // Define a promise to handle the asynchronous loading
+    // Promise used to handle async loading
     return new Promise((resolve, reject) => {
         monsterloader.load('monster models/Monster warrior/MW Idle/MW Idle.gltf', (gltf) => {
         monster = gltf.scene;
-        monster.position.set(0.9, 0, 8); // Set initial position here
+        monster.position.set(0.9, 0, 8);
         monster.scale.set(0.35, 0.35, 0.35);
 
         monsterMixer = new THREE.AnimationMixer(monster);
         scene.add(monster);
 
-        // 1. Create a dummy mesh with a BoxGeometry of your desired size.
+        // Create a dummy mesh with a BoxGeometry
         let MonboxSize = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box (width, height, depth)
         MondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize.x, MonboxSize.y, MonboxSize.z));
 
-        // 2. Position this mesh at the position of the soldier.
+        //Position this mesh at the position of the monster
         MondummyMesh.position.copy(new Vector3(monster.position.x, monster.position.y, monster.position.z));
         yOffset2 = 0.1;  // or any value you deem appropriate
         MondummyMesh.position.y += yOffset2;
 
-
-        // 3. Create a BoxHelper using this dummy mesh.
         MonBoxHelper = new THREE.BoxHelper(MondummyMesh, 0x00ff00);
-
-        // 4. Add the BoxHelper to the scene.
-        //     scene.add(MonBoxHelper);
-
 
         monsterAnimations.Idle = gltf.animations[0];
         playAnimation('Idle');
