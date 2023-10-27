@@ -722,6 +722,7 @@ function updateMovement() {
 
     if (isSlowedDown) {
         moveDistance= moveSpeed * 0.3 * boostFactor;  // slow the original speed
+        bobbingSpeed= 3;
     }
 
     if (!dummyBox.intersectsBox(MonBox) && !timerStarted) {
@@ -1535,6 +1536,9 @@ const clock = new THREE.Clock();
 
                  if (isRunning){
                      bobAmount /= 1.5;
+                     if (isSlowedDown){
+                         bobAmount *=0.3;
+                     }
                  }
 
 
