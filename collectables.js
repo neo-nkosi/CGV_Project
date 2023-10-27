@@ -41,6 +41,13 @@ export function createCoin(x, y, z, scene, coins) {
                 mixer:mixer,
             });
         }
+        coin.traverse((child) => {
+            if (child.isMesh) {
+                child.material.emissive.set(0xffff00); // Yellow emissive color
+                child.material.emissiveIntensity = 0.3; // Controls the brightness of the coin
+            }
+        });
+
     }, undefined, function (error) {
         console.error(error);
     });
@@ -116,6 +123,14 @@ export function createHealth(x, y, z, scene, healths) {
                 mixer: mixer
             });
         }
+        health.traverse((child) => {
+            if (child.isMesh) {
+                child.material.emissive.set(0xff0000); // Red emissive color
+                child.material.emissiveIntensity = 0.3; // Controls the brightness of the heart
+            }
+        });
+
+
     }, undefined, function (error) {
         console.error(error);
     });
@@ -137,7 +152,6 @@ export function checkCollisionsWithCoins(scene, dummyMesh, coins, numCoins, coin
             updateHUDCoin(numCoins);
 
             disposeCollectible(coin, scene);
-
             // Remove the coin from the array since it's collected
             coins.splice(i, 1); // remove the coin from the array
 
@@ -219,6 +233,7 @@ export function checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHea
 // Helper function to dispose of geometry, material, and remove from scene
 function disposeCollectible(collectible, scene) {
     scene.remove(collectible.mesh);
+
     if (collectible.mixer) {
         collectible.mixer.stopAllAction();
         collectible.mixer.uncacheRoot(collectible.mixer.getRoot());

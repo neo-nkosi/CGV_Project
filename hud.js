@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-let coinScreen, speedScreen, hpScreen, blindScreen, coinURLs, speedURLs, hpURLs, blindURL, minimapScreen,HUD;
+let coinScreen, speedScreen, hpScreen, blindScreen, coinURLs, speedURLs, hpURLs, blindURL,HUD;
 export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     HUD = new THREE.Scene();
 
@@ -194,7 +194,7 @@ export function createHUD(camera,numCoins,numSpeed,currentHPlevel){
     window.addEventListener('resize', updateHPScreenPosition);
 
     //=======================================================================================================================================
-    //createMinimap(camera, HUD);
+
     camera.add(HUD);
 }
 
@@ -246,48 +246,3 @@ export function updateHUDSpeed(numSpeed){
 
     speedScreen.material.needsUpdate = true;
 }
-
-export function createMinimap(camera, scene) {
-    const minimapURL = "icons/minimap/mapv4.png"; // Replace with the actual path to your minimap image
-
-    const minimapTexture = new THREE.TextureLoader().load(minimapURL);
-    minimapTexture.encoding = THREE.sRGBEncoding;
-
-    const minimapPlaneGeometry = new THREE.PlaneGeometry(2, 1.5);
-    const minimapPlaneMaterial = new THREE.MeshBasicMaterial({
-        map: minimapTexture,
-        transparent: true, // Make the material transparent
-        opacity: 0.5 // Adjust the opacity level as needed
-    });
-
-    minimapScreen = new THREE.Mesh(minimapPlaneGeometry, minimapPlaneMaterial);
-    minimapScreen.renderOrder = 899;
-    minimapScreen.material.depthTest = false;
-    minimapScreen.material.depthWrite = false;
-    minimapScreen.scale.set(0.5, 0.36, 1);
-    scene.add(minimapScreen);
-    minimapScreen.geometry.computeBoundingBox();
-
-    updateMinimapPosition();
-
-    function updateMinimapPosition() {
-        if (minimapScreen.geometry) {
-            const box = new THREE.Box3();
-            box.copy(minimapScreen.geometry.boundingBox).applyMatrix4(minimapScreen.matrixWorld);
-            let measure = new THREE.Vector3();
-            box.getSize(measure);
-
-            const vFOV = THREE.MathUtils.degToRad(camera.fov);
-            const height = 2 * Math.tan(vFOV / 2);
-            const width = height * camera.aspect;
-
-            minimapScreen.position.x = (width / 2) +0.7;
-            minimapScreen.position.y = (-height / 2)-0.3;
-            minimapScreen.position.z = -2;
-        }
-    }
-
-    window.addEventListener('resize', updateMinimapPosition);
-
-}
-
