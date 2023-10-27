@@ -1304,7 +1304,7 @@ gltf.scene.traverse(node =>{
 const roamingWaypoints = [
     new THREE.Vector3(12.3, 0, 23.3),
     new THREE.Vector3(12.3, 0, 7.3),
-    new THREE.Vector3(-7.3, 0, 7.3),
+    new THREE.Vector3(-7.3, -0.6, 7.3),
     new THREE.Vector3(-7.3, 0, 23.3)
 ];
 let currentRoamIndex = 0;
