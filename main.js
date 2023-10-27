@@ -79,10 +79,6 @@ function clearPreviousLevel() {
     updateHUDSpeed(boostFactor);
     animate();
 
-    // Clear the timeouts
-    //clearTimeout(healthTimeout);
-    //clearTimeout(boostTimeout);
-
     // Remove the particle systems
     soldier.remove(healthParticleSystemForSoldier);
     camera.remove(healthParticleSystemForCamera);
@@ -95,7 +91,6 @@ function clearPreviousLevel() {
 
 
 const retryButton = document.getElementById("retry-button");
-//const blindnessOverlay = document.getElementById("blindness-overlay");
 
 retryButton.addEventListener('click', async () => {
 
@@ -171,7 +166,7 @@ scene.background = skyBoxTexture;
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.y = 0.6; // adjust as necessary
+camera.position.y = 0.6;
 camera.position.z = 1;
 //MinimapCamemra
 let minimapWidth = window.innerHeight/4
@@ -182,13 +177,13 @@ scene.add(minimapCamera);
 scene.add(camera);
 //creating a redDot to track palyer position
 const material = new THREE.MeshPhongMaterial({
-  color: 0xff0000, // Red color for the top
-  emissive: 0x000000, // Black color for the bottom
-  flatShading: true, // For a more flat appearance
+  color: 0xff0000,
+  emissive: 0x000000,
+  flatShading: true,
 });
 const radius = 0.2;
-const segments = 32; // The number of segments in the sphere
-const rings = 32; // The number of ringsin the sphere
+const segments = 32;
+const rings = 32;
 const geometry = new THREE.SphereGeometry(radius, segments, rings);
 redDot = new THREE.Mesh(geometry, material);
 scene.add(redDot);
@@ -202,7 +197,7 @@ function toggleFirstPersonView() {
     firstPersonControls.enabled = firstPersonView;
 
     if (firstPersonView) {
-        // Adjust camera's
+        // Adjust camera's position
         camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z+0.3);
         soldier.visible = false;
         // Turn on the light
@@ -419,10 +414,8 @@ loader.load('models/villaHouse.glb', function (gltf) {
             metalness: 0.2,
         });
 
-        //assign the new material to the floor
         floor.material = floorMaterial;
 
-        //ensure that the floor receives light
         floor.receiveShadow = true;
 
         floor.castShadow = false;
@@ -430,7 +423,6 @@ loader.load('models/villaHouse.glb', function (gltf) {
         console.warn('Floor not found in the villaHouse model.');
     }
 
-    //iterate through the villa walls and set them to cast shadows
     villaHouse.traverse((child) => {
         if (child.isMesh && child.name.startsWith("Cube")) {
             const wallMaterial = new THREE.MeshStandardMaterial({
@@ -643,21 +635,6 @@ async function initLevel(level) {
 
 let isJumping = false; // Tells us if the character has initiated a jump
 
-// Animation function
-var cameraPosition;
-
-
-function getCameraPositionBehindSoldier(soldier, distanceBehind) {
-    const forwardDirection = new THREE.Vector3();
-    soldier.getWorldDirection(forwardDirection);
-
-    // The computed offset
-    const offset = forwardDirection.multiplyScalar(-distanceBehind);
-
-    return new THREE.Vector3().addVectors(soldier.position, offset);
-}
-
-
 let invunerable;
 let boostFactor;
 let soldierHealth;
@@ -709,15 +686,6 @@ const bobbingIntensity = 0.1; // Controls how much the camera bobs up and down
 let bobbingTime = 0; // Accumulates time for consistent bobbing, considering the speed
 var bobAmount=0;
 
-function updateBobbing(deltaTime) {
-    bobbingTime += deltaTime; // Accumulate time for the sine wave function
-    const bobAmount = Math.abs(Math.sin(bobbingTime * bobbingSpeed) * bobbingIntensity); // Calculate bob offset
-
-    console.log(bobAmount)
-    // Now, apply this bobAmount to the camera's position
-    // This assumes your camera's default (neutral) Y position is at 0
-    camera.position.y += bobAmount;
-}
 let isMoving;
 
 let fireModel; // to store the fire model
@@ -752,7 +720,7 @@ function updateMovement() {
     verticalVelocity = movementChecks.verticalVelocity;
 
 
-    // Update the bounding boxes of the soldier and floor monster. Set a constant movement speed.
+    // Update the bounding boxes of the soldier and floor monster
 
     dummyBox.setFromObject(dummyMesh);
     MonBox.setFromObject(MondummyMesh);
@@ -859,7 +827,7 @@ function updateMovement() {
     }
 
     if (isOnGround){
-        // Call the checkStairs function
+        // Auto walk up stairs
         checkStairs(soldier, villaHouse);
     }
 
@@ -894,7 +862,7 @@ function updateMovement() {
     MondummyMesh.position.y += 0.3;
 
 
-    //Visual aid to help with debugging of models
+
     // Update dragon positions
 
     if (flymonster) {
@@ -902,7 +870,7 @@ function updateMovement() {
         MondummyMesh2.position.y += 0.3;
     }
 
-
+    //Visual aid to help with debugging of models
     if (soldierBoxHelper) {
         soldierBoxHelper.update();
     }
@@ -914,8 +882,6 @@ function updateMovement() {
     if (MonBoxHelper2) {
         MonBoxHelper2.update();
     }
-
-
 
 
     checkCollisionsWithCollectibles();
@@ -946,7 +912,7 @@ function updateMovement() {
                     fireModel.position.y -= 0.3;
                     fireModel.visible = true;
                     console.log(fireModel.position);
-                    // Hide the fire after 3 seconds (or adjust the time as needed)
+                    // Hide the fire after 3 seconds
                     setTimeout(() => {
                         fireModel.visible = false;
                     }, 8000);
@@ -990,7 +956,7 @@ const monsterloader = new GLTFLoader();
 let animationState = 'Idle'; // default animation
 let flyanimationState = 'flying'; // default animation
 
-//function to play monsters animation"
+//function to play monsters animation
 function playAnimation(name) {
     // Stop all other actions
     for (let actionName in monsterAnimations) {
@@ -1007,23 +973,6 @@ function playAnimation(name) {
 
     // Update animation state
     animationState = name;
-}
-
-//function to play dragons animations:
-function flyplayAnimation(name) {
-    for (let actionName in flymonsterAnimations) {
-        if (flymonsterMixer) {
-            flymonsterMixer.stopAllAction();
-        }
-        flymonsterMixer.clipAction(flymonsterAnimations[actionName]).stop();
-
-    }
-
-    if (flymonsterAnimations[name]) {
-        monsterMixer.clipAction(flymonsterAnimations[name]).play();
-    }
-
-    flyanimationState = name;
 }
 
 // Load and store animations by their names
@@ -1062,8 +1011,8 @@ async function loadMonster() {
         scene.add(monster);
 
         //Position this mesh at the position of the monster
-        // Create a dummy mesh with a BoxGeometry of your desired size.
-        let MonboxSize = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box (width, height, depth)
+        // Create a dummy mesh with a BoxGeometry
+        let MonboxSize = new THREE.Vector3(0.6,0.7, 0.4); // Size of the box
         MondummyMesh = new THREE.Mesh(new THREE.BoxGeometry(MonboxSize.x, MonboxSize.y, MonboxSize.z));
 
         // Position this mesh at the position of the soldier.
@@ -1240,7 +1189,7 @@ let MonBox = new THREE.Box3();
 // Variables to hold the last known position and the time it was recorded.
 let lastKnownPosition = null;
 let lastPositionUpdateTimestamp = null;
-const thresholdDistance = 0.3;  // Small threshold to detect effective static bug
+const thresholdDistance = 0.3;  // Small threshold to detect effective static bug (for monster stutter)
 
 
 function findPath() {
@@ -1374,7 +1323,6 @@ function flyfindPath() {
 
         skygroupId = skypathfinding.getGroup('skyZone', monsterPos);
         const closest = skypathfinding.getClosestNode(monsterPos, 'skyZone', skygroupId);
-        const closest2 = skypathfinding.getClosestNode(target, 'skyZone', skygroupId);
 
         if (closest) {
             skynavpath = skypathfinding.findPath(closest.centroid, target, 'skyZone', skygroupId);
@@ -1422,6 +1370,7 @@ function flyfindPath() {
     }
 }
 
+// Creates particle effects for health and boost
 const boostParticleSystemForSoldier = createBoostEffect();
 boostParticleSystemForSoldier.name = 'boostParticleSystemForSoldier';
 boostParticleSystemForSoldier.position.y += 0.4;
@@ -1459,9 +1408,6 @@ loader.load('models/miniHealth.glb', (gltf) => {
     }
 });
 
-
-
-
 // Variable to keep track of the active boost and health (particle) timeout
 
 let boostTimeout = null;
@@ -1495,11 +1441,11 @@ function checkCollisionsWithCollectibles() {
         // Add the particle system when the boost is initiated
         soldier.add(boostParticleSystemForSoldier);
         camera.add(boostParticleSystemForCamera);
-        // Adjust boost effect as needed
+
         boostFactor += 1;
         updateHUDSpeed(boostFactor);
 
-        // Set a timeout to revert the boostFactor
+        // Set a timeout to go back to initial speed
         boostTimeout = setTimeout(() => {
             boostFactor -= 1;
             updateHUDSpeed(boostFactor);
@@ -1531,34 +1477,6 @@ function checkCollisionsWithCollectibles() {
         }, 5000);
     }
 }
-
-
-
-
-//play different animations
- document.addEventListener('keydown', (event) => {
-     switch (event.code) {
-         case 'KeyI':
-             playAnimation('Idle');
-             break;
-         case 'KeyR':
-             if (!pursuing) {
-                 pursuing = true;
-                 playAnimation('Running');
-             } else {
-                 pursuing = false;
-                 // path = [];
-                 playAnimation('Idle');
-             }
-             break;
-         case 'KeyO':
-             playAnimation('Walking');
-             break;
-         case 'KeyG':
-             playAnimation('Smashing');
-             break;
-     }
- });
 
 const clock = new THREE.Clock();
  function animate() {
@@ -1620,11 +1538,10 @@ const clock = new THREE.Clock();
          camera.position.set(a,b,c);
      } else {
          orbitControls.update();
-         maintainDistanceFromSoldier(soldier, camera, 1); // 10 is the desired distance from the soldier
+         maintainDistanceFromSoldier(soldier, camera, 1); // 1 is the desired distance from the soldier
 
      }
 
-     // In your animate function
      if (pursuing) {
          findPath();
          if (flymonster) {
@@ -1632,26 +1549,9 @@ const clock = new THREE.Clock();
          }
      }
 
-
-
      if (firstPersonView) {
          firstPersonControls.update(clock.getDelta());
-     } else {
-         orbitControls.update();
-     }
 
-     if (!firstPersonView){
-         let soldierParticleSystem = soldier.getObjectByName('healthParticleSystemForSoldier');
-         let cameraParticleSystem = camera.getObjectByName('healthParticleSystemForCamera');
-         if (soldierParticleSystem) soldierParticleSystem.visible = true;
-         if (cameraParticleSystem) cameraParticleSystem.visible = false;
-
-         let soldierBoostSystem = soldier.getObjectByName('boostParticleSystemForSoldier');
-         let cameraBoostSystem = camera.getObjectByName('boostParticleSystemForCamera');
-         if (soldierBoostSystem) soldierBoostSystem.visible = true;
-         if (cameraBoostSystem) cameraBoostSystem.visible = false;
-     }
-     else{
          let soldierParticleSystem = soldier.getObjectByName('healthParticleSystemForSoldier');
          let cameraParticleSystem = camera.getObjectByName('healthParticleSystemForCamera');
          if (soldierParticleSystem) soldierParticleSystem.visible = false;
@@ -1661,6 +1561,18 @@ const clock = new THREE.Clock();
          let cameraBoostSystem = camera.getObjectByName('boostParticleSystemForCamera');
          if (soldierBoostSystem) soldierBoostSystem.visible = false;
          if (cameraBoostSystem) cameraBoostSystem.visible = true;
+     } else {
+         orbitControls.update();
+
+         let soldierParticleSystem = soldier.getObjectByName('healthParticleSystemForSoldier');
+         let cameraParticleSystem = camera.getObjectByName('healthParticleSystemForCamera');
+         if (soldierParticleSystem) soldierParticleSystem.visible = true;
+         if (cameraParticleSystem) cameraParticleSystem.visible = false;
+
+         let soldierBoostSystem = soldier.getObjectByName('boostParticleSystemForSoldier');
+         let cameraBoostSystem = camera.getObjectByName('boostParticleSystemForCamera');
+         if (soldierBoostSystem) soldierBoostSystem.visible = true;
+         if (cameraBoostSystem) cameraBoostSystem.visible = false;
      }
 
      if (fireModel && !firstPersonView) {
