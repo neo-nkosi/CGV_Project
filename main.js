@@ -625,25 +625,17 @@ async function initLevel(level) {
 }
 
 let isJumping = false; // Tells us if the character has initiated a jump
-//Monster Code
-
-
 
 let invunerable;
 let boostFactor;
 let soldierHealth;
 let numCoins;
 let verticalVelocity = 0;
-let coinCounter = 0;
 let jumpStartY = null;  // This will keep track of the Y position when the jump starts
 
 initLevel(window.selectedLevel);
 
-
 let isRunning = false;
-
-
-
 let isSlowedDown = false;  // to check if the soldier is currently slowed down
 let timerStarted = false;
 
@@ -705,11 +697,12 @@ function updateMovement() {
     const cameraForward = cameraDirection.clone().normalize();
     const cameraRight = new THREE.Vector3().crossVectors(camera.up, cameraDirection).normalize();
 
-    // Move the collision checks to the checkMovement function
+    // Handles collision
     const movementChecks = checkMovement(soldier, villaHouse, keyState, isJumping, verticalVelocity);
     let canMove = movementChecks.canMove;
     let isOnGround = movementChecks.isOnGround;
     verticalVelocity = movementChecks.verticalVelocity;
+
     // Update the bounding boxes
     dummyBox.setFromObject(dummyMesh);
     MonBox.setFromObject(MondummyMesh);
@@ -727,7 +720,7 @@ function updateMovement() {
             pursuing = true;
             playAnimation('Running');
             timerStarted = false;  // Reset the flag after the timer completes
-        }, 5000);  // Set the timer for 5 seconds (5000 milliseconds)
+        }, 5000);  // Set the timer for 5 seconds
 
         isSlowedDown = false;
     }
@@ -817,8 +810,8 @@ function updateMovement() {
     }
 
 // Jumping logic
-    const jumpSpeed = 0.05; // Adjust the jump speed as needed
-    const gravity = 0.005; // Adjust the gravity as needed
+    const jumpSpeed = 0.05;
+    const gravity = 0.005;
     const collisionThreshold = 0.1;
 
     if (keyState[32] && isOnGround) { // Spacebar is pressed and the character is on the ground
@@ -838,23 +831,19 @@ function updateMovement() {
 
     soldier.position.y += verticalVelocity; // Update the character's vertical position
 
-
-
     orbitControls.target.copy(soldier.position);
 
 // Update dummyMesh's position
     dummyMesh.position.copy(soldier.position);
-    dummyMesh.position.y += yOffset;  // make sure to add yOffset again
+    dummyMesh.position.y += yOffset;
     MondummyMesh.position.copy(monster.position);
     MondummyMesh.position.y += 0.3;
 
-    //level 3 code:
+    //Visual aid to help with debugging of models
     if (flymonster) {
         MondummyMesh2.position.copy(monster2.position);
         MondummyMesh2.position.y += 0.3;
     }
-    //level 3 code ends
-
 
     if (soldierBoxHelper) {
         soldierBoxHelper.update();
@@ -863,27 +852,24 @@ function updateMovement() {
         MonBoxHelper.update();
     }
 
-    //level 3:
     if (MonBoxHelper2) {
         MonBoxHelper2.update();
     }
-    //level 3 ends
 
 
 
     checkCollisionsWithCollectibles();
 
-// At the end of your movement updates:
+    //Checks if player collides with portal
     if (dummyMesh && portalDummyMesh) {
         let soldierBox = new THREE.Box3().setFromObject(dummyMesh);
         let portalBox = new THREE.Box3().setFromObject(portalDummyMesh);
         if (soldierBox.intersectsBox(portalBox) && portal.visible) {
-            console.log("Soldier collided with portal!");
             gamewon();
         }
     }
 
-//Check if monster is close to soldier, and damage if yes
+    //Check if monster is close to soldier, and damage if yes
     if(getDistance(soldier,monster)<0.45 || (monster2 && getDistance(soldier,monster2) < 0.60)){
 
         if(invunerable>100){
@@ -903,7 +889,6 @@ function updateMovement() {
         }
 
     }
-    console.log(soldier.position);
 }
 
 
