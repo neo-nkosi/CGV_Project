@@ -473,7 +473,7 @@ function loadPortal() {
 }
 
 let coinsNeeded;
-let coins = [];
+let coins = []; 
 let boosts = [];
 let healths = [];
 
@@ -611,24 +611,15 @@ async function initLevel(level) {
         //Set Monster position
         monster.position.set(9.180331758242579,-0.12111884839921798,-0.19535202985285158);
 
-
-
         //Set Portal Position
         portal.position.set(-10.547375410445332,-0.16373699632400585, 8.20728346728963);
         portalDummyMesh.position.copy(portal.position);
         portalDummyMesh.position.z += 1.3;
         portal.rotation.y = Math.PI;
-
-
-
-
     }
 
     createHUD(camera,numCoins,boostFactor,soldierHealth);
     createPainting(scene);
-
-    //blindnessOverlay.style.display = 'flex';
-    //blindnessOverlay.style.opacity = -0.0889 * (soldierHealth) + 0.8889;
 
     isGamePaused = false;
     animate();
@@ -920,16 +911,10 @@ function updateMovement() {
             invunerable=0;
             soldierHealth--;
 
-            //blindnessOverlay.style.opacity=-0.067*(soldierHealth)+0.667;
-
             if(soldierHealth==0){
-                //blindnessOverlay.style.display = 'none';
-                //blindnessOverlay.style.opacity=0;
                 console.log("Player should be dead");
                 gamelost();
             }
-
-            //console.log(blindnessOverlay);
 
             updateHUDHP(soldierHealth);
             animate();
