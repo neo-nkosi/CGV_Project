@@ -179,7 +179,11 @@ let redDot;
 scene.add(minimapCamera);
 scene.add(camera);
 //creating a redDot to track palyer position
-const material = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
+const material = new THREE.MeshPhongMaterial({
+  color: 0xff0000, // Red color for the top
+  emissive: 0x000000, // Black color for the bottom
+  flatShading: true, // For a more flat appearance
+});
 const radius = 0.2;
 const segments = 32; // The number of segments in the sphere
 const rings = 32; // The number of ringsin the sphere
@@ -1597,7 +1601,7 @@ const clock = new THREE.Clock();
      updateHealthEffect(healthParticleSystemForSoldier);
      updateHealthEffect(healthParticleSystemForCamera);
 
-     redDot.position.set(soldier.position.x+1.6, 4, soldier.position.z+0.9);
+     redDot.position.set(soldier.position.x+1.9, 4, soldier.position.z+1.6);
      minimapCamera.position.set(soldier.position.x+15, 30, soldier.position.z+12);
      minimapCamera.lookAt(soldier.position.x+15, 1, soldier.position.z+12);
     renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
