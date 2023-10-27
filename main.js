@@ -1205,7 +1205,7 @@ function findPath() {
                 const direction = distance.normalize();
 
                 // Set monster speed (adjust the 0.05 value to your preference)
-                const speed = 0.021;
+                const speed = 0.001;
 
                 // Update the monster's position
                 monster.position.add(direction.multiplyScalar(speed));
@@ -1234,6 +1234,37 @@ function findPath() {
 
 
 //level 3 monster movement begins here:
+
+const roamingWaypoints = [
+    new THREE.Vector3(12.3, 0, 23.3),
+    new THREE.Vector3(12.3, 0, 7.3),
+    new THREE.Vector3(-7.3, -0.6, 7.3),
+    new THREE.Vector3(-7.3, 0, 23.3)
+];
+let currentRoamIndex = 0;
+
+
+function roam() {
+    let targetPos = roamingWaypoints[currentRoamIndex];
+    const distance13 = targetPos.clone().sub(monster2.position);
+
+    // If the dragon is close enough to the waypoint
+    if (distance13.lengthSq() < 0.3) {
+        currentRoamIndex = (currentRoamIndex + 1) % roamingWaypoints.length; // Go to the next waypoint in a loop
+        targetPos = roamingWaypoints[currentRoamIndex]; // New target position
+        distance13.copy(targetPos.clone().sub(monster2.position)); // Update distance
+    }
+
+    const direction13 = distance13.normalize();
+    const speed = 0.026;
+
+    monster2.position.add(direction13.multiplyScalar(speed));
+    monster2.lookAt(monster2.position.clone().add(direction13));
+
+    flymonster.position.x = monster2.position.x;
+    flymonster.position.z = monster2.position.z;
+    flymonster.lookAt(flymonster.position.clone().add(direction13));
+}
 
 const skymeshLoader = new GLTFLoader();
 const skypathfinding = new Pathfinding();
@@ -1342,9 +1373,12 @@ function flyfindPath() {
 
             }
         }
+
         // }
 
     }
+
+    roam();
 }
 
 //level 3 monster movement code ends here
