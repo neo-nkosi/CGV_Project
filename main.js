@@ -4,14 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {createHUD, removeHUD, updateHUDCoin, updateHUDHP, updateHUDSpeed} from './hud';
 import {checkMovement} from "./collisionCheck";
 import {Vector3} from "three";
-import {
-    animateCollectibles,
-    checkCollisionsWithBoosts,
-    checkCollisionsWithCoins, checkCollisionsWithHealths,
-    createBoost,
-    createCoin,
-    createHealth
-} from './collectables.js';
+import {animateCollectibles, checkCollisionsWithBoosts, checkCollisionsWithCoins, checkCollisionsWithHealths, createBoost, createCoin, createHealth} from './collectables.js';
 import {Pathfinding, PathfindingHelper} from 'three-pathfinding';
 import {FirstPersonControls} from "three/addons/controls/FirstPersonControls";
 import {createHealthEffect, createBoostEffect, updateHealthEffect, updateBoostSystem} from "./particles";
@@ -22,25 +15,20 @@ import { createPainting } from './branden';
 
 let currentLevel =1;
 if (window.selectedLevel) {
-
-    console.log("Selected level is: " + window.selectedLevel);
     currentLevel = window.selectedLevel;
-} else {
-    // Handle case where no level is selected if necessary
 }
 
 let isGamePaused = false;
 
 window.pauseGame = function() {
-    isGamePaused = true;  // Set the game state to paused
-    // Here, handle anything else you need when the game is paused (e.g., stop sounds, etc.)
+    isGamePaused = true;  // Sets the game state to paused
+
 }
 
 window.resumeGame = function() {
     if (isGamePaused) {
-        isGamePaused = false; // Set the game state to running
-        animate(); // Restart the game loop
-        // Here, handle anything else you need when the game resumes
+        isGamePaused = false; // Sets the game state to running
+        animate(); // Need to restart the animation too
     }
 }
 function gamelost(){
@@ -55,11 +43,10 @@ function gamewon(){
         updateWinScreenWithNextLevel(currentLevel);
     }else{
         // If it's level 3, change the win message and hide the next level button, and show credits button
-        // Check if the objective and modifiers elements already exist
         const existingObjectiveElement = document.querySelector('#win-screen .next-level-objective');
         const existingModifiersElement = document.querySelector('#win-screen .next-level-modifiers');
 
-        // If they exist, remove them
+        // Used to clear out the previous level's objectives and modifiers
         if(existingObjectiveElement) existingObjectiveElement.remove();
         if(existingModifiersElement) existingModifiersElement.remove();
         document.getElementById('win-message').textContent = "Congratulations! You have beat the game!";
@@ -69,24 +56,20 @@ function gamewon(){
     const overlay = document.getElementById('win-screen');
     overlay.style.display = 'flex';
     isGamePaused = true;
-    // Removed timeout function here. The Next Level button will now handle proceeding to the next level
 }
 
 
 window.goToNextLevel = function(){
-    currentLevel++; // Increment the level
+    currentLevel++;
     if (currentLevel <= 3) { // If there are still levels left
-        // Clean up the previous level's objects like coins, boosts, healths, etc.
+        // Clean up the previous level's objects
         clearPreviousLevel();
         // Start the next level
         initLevel(currentLevel);
-    } else {
-        // If there are no more levels, you might want to display a "Game Completed" screen or loop back to the first level
-        console.log("Congratulations! You completed all levels!");
-        // gameCompleted(); // hypothetical function
     }
 }
 
+// Helper function to clear out any assets from the last level (other than the character and monster models as those are repositioned instead)
 function clearPreviousLevel() {
     portal.visible = false;
     removeHUD(camera);
@@ -100,23 +83,21 @@ function clearPreviousLevel() {
 
 
 const retryButton = document.getElementById("retry-button");
-const menuButton = document.getElementById("menu-button");
-const continueButton = document.getElementById("continue-button");
 //const blindnessOverlay = document.getElementById("blindness-overlay");
 
 retryButton.addEventListener('click', async () => {
-    // Handle retry button click
+
     const overlay = document.getElementById('lose-screen');
     overlay.style.display = 'none';
     isGamePaused = true;  // Pause the game while setting up the level
-    // Once everything is loaded, hide the loading screen
+
+    // Hide loading screen after level is ready
     document.getElementById('loading-screen').style.display = 'flex';
     try {
-        await clearPreviousLevel();  // Await any necessary cleanup
-        await initLevel(currentLevel);  // Await level initialization
+        await clearPreviousLevel();
+        await initLevel(currentLevel);  // Initialise the level after cleanup
     } catch (error) {
         console.error('An error occurred during level retry setup:', error);
-        // Handle the error, possibly by showing an error message to the user
     }
 
     isGamePaused = false;  // Unpause the game when setup is complete
@@ -1437,7 +1418,8 @@ particleSystem.position.y += 0.4;
 
 
 let healthModelMesh;
-let healthParticleSystem;
+let healthParticleSystemForSoldier;
+let healthParticleSystemForCamera;
 loader.load('models/miniHealth.glb', (gltf) => {
     gltf.scene.traverse((child) => {
         if (child.isMesh && child.name === "miniHealth") {
@@ -1448,8 +1430,16 @@ loader.load('models/miniHealth.glb', (gltf) => {
     });
 
     if (healthModelMesh) {
-        healthParticleSystem = createHealthEffect(healthModelMesh);
-        healthParticleSystem.position.y += 0.6;
+
+        healthParticleSystemForSoldier = createHealthEffect(healthModelMesh);
+        healthParticleSystemForSoldier.name = 'healthParticleSystemForSoldier';
+        healthParticleSystemForSoldier.position.y += 0.6;
+
+        healthParticleSystemForCamera = healthParticleSystemForSoldier.clone();
+        healthParticleSystemForCamera.name = 'healthParticleSystemForCamera';
+        healthParticleSystemForCamera.position.y -=1;
+        healthParticleSystemForCamera.scale.set(0.8,0.8,0.8);
+
         console.log("Health particles created");
     } else {
         console.error("miniHealth mesh not found in the GLTF model!");
@@ -1512,17 +1502,20 @@ function checkCollisionsWithCollectibles() {
     if (result.isHealthCollected) {  // Assuming there's a flag like this when health is increased
         if (healthTimeout) {  // Similar to the boostTimeout for consistency
             clearTimeout(healthTimeout);
-            soldier.remove(healthParticleSystem);
+            soldier.remove(healthParticleSystemForSoldier);
+            camera.remove(healthParticleSystemForCamera);
             healthTimeout = null;
         }
 
         // Add the health particle system when health is increased
-        soldier.add(healthParticleSystem);
+        soldier.add(healthParticleSystemForSoldier);
+        camera.add(healthParticleSystemForCamera);
 
         // Set a timeout to remove the particle system after some time
         healthTimeout = setTimeout(() => {
-            soldier.remove(healthParticleSystem);
-        }, 8000); // adjust the duration as needed
+            soldier.remove(healthParticleSystemForSoldier);
+            camera.remove(healthParticleSystemForCamera);
+        }, 8000);
     }
 }
 
@@ -1653,9 +1646,24 @@ const clock = new THREE.Clock();
          orbitControls.update();
      }
 
+     if (!firstPersonView){
+         let soldierParticleSystem = soldier.getObjectByName('healthParticleSystemForSoldier');
+         let cameraParticleSystem = camera.getObjectByName('healthParticleSystemForCamera');
+         if (soldierParticleSystem) soldierParticleSystem.visible = true;
+         if (cameraParticleSystem) cameraParticleSystem.visible = false;
+     }
+     else{
+         let soldierParticleSystem = soldier.getObjectByName('healthParticleSystemForSoldier');
+         let cameraParticleSystem = camera.getObjectByName('healthParticleSystemForCamera');
+         if (soldierParticleSystem) soldierParticleSystem.visible = false;
+         if (cameraParticleSystem) cameraParticleSystem.visible = true;
+     }
+
+
      // Update the particle systems:
      updateBoostSystem(particleSystem);
-     updateHealthEffect(healthParticleSystem);
+     updateHealthEffect(healthParticleSystemForSoldier);
+     updateHealthEffect(healthParticleSystemForCamera);
 
      redDot.position.set(soldier.position.x+1.6, 3.5, soldier.position.z+0.9);
      minimapCamera.position.set(soldier.position.x+15, 30, soldier.position.z+12); // Adjust the height as needed
