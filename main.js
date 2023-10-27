@@ -80,14 +80,16 @@ function clearPreviousLevel() {
     animate();
 
     // Clear the timeouts
-    clearTimeout(healthTimeout);
-    clearTimeout(boostTimeout);
+    //clearTimeout(healthTimeout);
+    //clearTimeout(boostTimeout);
 
     // Remove the particle systems
     soldier.remove(healthParticleSystemForSoldier);
     camera.remove(healthParticleSystemForCamera);
     soldier.remove(boostParticleSystemForSoldier);
     camera.remove(boostParticleSystemForCamera);
+
+    scene.remove(fireModel);
 }
 
 
@@ -1444,7 +1446,8 @@ function checkCollisionsWithCollectibles() {
     if (result.initiateBoost) {
         if (boostTimeout) {
             clearTimeout(boostTimeout);
-            soldier.remove(particleSystem);
+            soldier.remove(boostParticleSystemForSoldier);
+            camera.remove(boostParticleSystemForCamera);
             boostTimeout = null;
         }
 
