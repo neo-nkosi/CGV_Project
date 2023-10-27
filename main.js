@@ -577,7 +577,7 @@ function updateMovement() {
     dummyBox.setFromObject(dummyMesh);
     MonBox.setFromObject(MondummyMesh);
 
-    var moveDistance = 0.015 * boostFactor;
+    var moveDistance = 0.035 * boostFactor;
 
     if (isSlowedDown) {
         moveDistance= 0.005;  // slow the original speed
@@ -869,7 +869,7 @@ let navmesh;
 let groupId;
 let navpath;
 scene.add(pathfindinghelper);
-loader.load("navmesh/blendernavmesh4.glb", function(gltf){
+loader.load("navmesh/blendernavmesh1.glb", function(gltf){
 meshfloor = gltf.scene;
 meshfloor.position.set(0, 0, 0);
 meshfloor.scale.set(1, 1, 1);
@@ -900,14 +900,15 @@ function findPath() {
 
         //for (let i = 0; i < pathfinding.zones["villaHouse"].groups.length; i++) {
         groupId = pathfinding.getGroup('villaHouse', monsterPos);
-        //console.log("Group Id:", groupId);
+        console.log("Group Id:", groupId);
         const closest = pathfinding.getClosestNode(monsterPos, 'villaHouse', groupId);
-        //console.log("closest node:", closest);
+        console.log("closest node:", closest);
         const closest2 = pathfinding.getClosestNode(target, 'villaHouse', groupId);
-        //console.log("closest node 2:", closest2);
+        console.log("target:", target);
         if (closest) {
+
             navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
-            //console.log("nav path :", navpath);
+            console.log("nav path :", navpath);
             if (navpath && navpath.length > 0) {
                 pathfindinghelper.reset();
                 pathfindinghelper.setPlayerPosition(monster.position);
@@ -921,7 +922,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() < 0.75) {
+                if (distance.length() < 0.35) {
 
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
