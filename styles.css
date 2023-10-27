@@ -1,6 +1,6 @@
 
 body, html {
-    height: 100%; /* Ensure the full height is taken by the body */
+    height: 100%;
     margin: 0;
 }
 
@@ -10,7 +10,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Add this to center content vertically */
+    justify-content: center;
 }
 header {
     color: white;
@@ -28,8 +28,8 @@ header h2 {
     font-size: 1.4em;
 }
 #level-select, #intermediate-screen {
-    width: 100%; /* Full width */
-    height: 100vh; /* Full viewport height */
+    width: 100%;
+    height: 100vh;
     display: none;
     flex-direction: column;
     align-items: center;
@@ -39,25 +39,25 @@ header h2 {
 
 #additional-buttons-container {
     display: flex;
-    justify-content: center; /* Align the buttons to the center */
-    gap: 10px; /* Optional: if you want some space between the buttons */
+    justify-content: center;
+    gap: 10px;
     margin-top: 10px;
 }
 
 #additional-buttons-container button {
-    flex: 1; /* Optional: if you want the buttons to take up the same amount of space */
+    flex: 1;
 }
 
 
 #start-screen {
-    width: 100%; /* Full width */
-    height: 100vh; /* Full viewport height */
+    width: 100%;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    position: relative; /* Add this to position child elements with respect to this container */
-    overflow: hidden; /* Hide any overflow */
+    position: relative;
+    overflow: hidden;
 }
 
 .backgroundVideo {
@@ -66,7 +66,7 @@ header h2 {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover; /* This will ensure the video covers the entire container */
+    object-fit: cover;
     z-index: -1; /* This ensures the video stays behind other content */
 }
 
@@ -91,7 +91,6 @@ button {
     margin-bottom: 10px;
     padding: 10px 20px;
     font-size: 1em;
-
 }
 
 
@@ -135,12 +134,11 @@ button {
 #portalSpawn-screen {
     display: none;
     flex-direction: column;
-    position: fixed; /* Ensure the pause screen is on top */
+    position: fixed;
     width: 100%;
     height: 100%;
     top: 0;
     left: 0;
-    /*background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
     color: white;
     font-size: 2em;
     align-items: center;
@@ -150,7 +148,7 @@ button {
 #win-screen {
     display: none;
     flex-direction: column;
-    position: fixed; /* Ensure the pause screen is on top */
+    position: fixed;
     width: 100%;
     height: 100%;
     top: 0;
@@ -172,7 +170,7 @@ button {
 #lose-screen {
     display: none;
     flex-direction: column;
-    position: fixed; /* Ensure the pause screen is on top */
+    position: fixed;
     width: 100%;
     height: 100%;
     top: 0;
@@ -190,12 +188,12 @@ button {
     align-items: center;
     justify-content: center;
     background-color: black;
-    position: fixed;  /* make it fixed */
-    top: 0;           /* place it at the top */
-    left: 0;          /* place it at the left */
-    width: 100%;      /* full width */
-    height: 100%;     /* full height */
-    z-index: 1000;    /* place it above other content */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
 }
 #controls-screen img {
     filter: invert(100%);
