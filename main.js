@@ -405,6 +405,11 @@ floorTexture.wrapS = THREE.RepeatWrapping;
 floorTexture.wrapT = THREE.RepeatWrapping;
 floorTexture.repeat.set(300, 300);
 
+// wall texture 
+const walltextureLoader = new THREE.TextureLoader();
+const wallTexture = walltextureLoader.load('textures/floor.jpg');
+
+
 // Load the villaHouse model
 loader.load('models/villaHouse.glb', function (gltf) {
     villaHouse = gltf.scene;
@@ -438,9 +443,16 @@ loader.load('models/villaHouse.glb', function (gltf) {
 
     // Iterate through the villa walls and set them to cast shadows
     villaHouse.traverse((child) => {
-        if (child.isMesh && child !== floor) {
-            child.castShadow = true;
-            child.receiveShadow = true; // Make sure they can receive shadows
+        if (child.isMesh && child.name.startsWith("Cube")) {
+            const wallMaterial = new THREE.MeshStandardMaterial({
+                map: wallTexture, 
+                roughness: 4, 
+                metalness: 0.2, 
+            });
+    
+            child.material = wallMaterial;
+            child.receiveShadow = true;
+            child.castShadow = false;
         }
     });
 }, undefined, function (error) {
@@ -455,7 +467,7 @@ let portalMixer;
 let portalDummyMesh;
 let portal;
 function loadPortal() {
-    return new Promise((resolve, reject) => { // Wrap your loader in a promise
+    return new Promise((resolve, reject) => { 
     const portalLoader = new GLTFLoader();
     if (!portal) { // check if portal hasn't been loaded
         portalLoader.load('models/portal.glb', function (gltf) {
@@ -464,7 +476,7 @@ function loadPortal() {
             scene.add(gltf.scene);
 
             // After adding the portal to the scene:
-            portalDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 0.1));  // Adjust the size as necessary
+            portalDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 0.1)); 
             //scene.add(portalDummyMesh);
 
             if (gltf.animations && gltf.animations.length) {
@@ -1088,7 +1100,7 @@ async function loadMonster() {
         resolve(monster); // Resolve the promise with the loaded monster
         }, undefined, (error) => {
                 console.error(error);
-                reject(error); // Reject the promise on error
+                reject(error); 
             });
     });
 }
