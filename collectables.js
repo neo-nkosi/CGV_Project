@@ -1,8 +1,8 @@
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as THREE from "three";
-import {updateHUDCoin, updateHUDHP, updateHUDSpeed} from "./hud";
+import {updateHUDCoin, updateHUDHP} from "./hud";
 
-//Coin
+// Creates a single coin and makes it brighter
 export function createCoin(x, y, z, scene, coins) {
     const iconLoader = new GLTFLoader();
 
@@ -12,39 +12,29 @@ export function createCoin(x, y, z, scene, coins) {
         coin.scale.set(0.02, 0.02, 0.02);
         scene.add(coin);
 
-        // Create a dummy mesh for the coin's BoxHelper
+        // Creates a dummy mesh to help with collision
         let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2);
         let coinDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(iconBoxSize.x, iconBoxSize.y, iconBoxSize.z));
 
-        // Position this mesh at the position of the coin
-        coinDummyMesh.position.copy(coin.position);
-        let coinYOffset = 0;
-
-        coinDummyMesh.position.y += coinYOffset;
-
-        // Create a BoxHelper using this dummy mesh
-        let coinBoxHelper = new THREE.BoxHelper(coinDummyMesh, 0x00ff00);
-
-        // Add the BoxHelper to the scene
-        //scene.add(coinBoxHelper);
+        // Add the mesh as a child of coin to keep the same position
+        coin.add(coinDummyMesh);
 
         if (gltf.animations && gltf.animations.length) {
             const mixer = new THREE.AnimationMixer(coin);
-            const action = mixer.clipAction(gltf.animations[0]); // Assuming you want the first animation
+            const action = mixer.clipAction(gltf.animations[0]);
             action.play();
 
             coins.push({
                 mesh: coin,
                 dummyMesh: coinDummyMesh,
-                boxHelper: coinBoxHelper,
                 collected: false,
                 mixer:mixer,
             });
         }
         coin.traverse((child) => {
             if (child.isMesh) {
-                child.material.emissive.set(0xffff00); // Yellow emissive color
-                child.material.emissiveIntensity = 0.3; // Controls the brightness of the coin
+                child.material.emissive.set(0xffff00);
+                child.material.emissiveIntensity = 0.3;  // Used to make the coin brighter
             }
         });
 
@@ -53,44 +43,45 @@ export function createCoin(x, y, z, scene, coins) {
     });
 }
 
-// Boost
+// Creates a single boost and makes it brighter
 export function createBoost(x, y, z, scene, boosts) {
     const iconLoader = new GLTFLoader();
 
     iconLoader.load('models/speed.glb', function (gltf) {
         let boost = gltf.scene;
         boost.position.set(x, y, z);
-        boost.scale.set(0.02, 0.02, 0.02);  // Adjust scale if needed
+        boost.scale.set(0.02, 0.02, 0.02);
         scene.add(boost);
 
         let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2);
         let boostDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(iconBoxSize.x, iconBoxSize.y, iconBoxSize.z));
-        boostDummyMesh.position.copy(boost.position);
-        let boostYOffset = 0;
 
-        boostDummyMesh.position.y += boostYOffset;
+        boost.add(boostDummyMesh);
 
-        let boostBoxHelper = new THREE.BoxHelper(boostDummyMesh, 0x00ff00);
-        //scene.add(boostBoxHelper);
         if (gltf.animations && gltf.animations.length) {
             const mixer = new THREE.AnimationMixer(boost);
-            const action = mixer.clipAction(gltf.animations[1]); // Assuming you want the first animation
+            const action = mixer.clipAction(gltf.animations[1]);
             action.play();
 
             boosts.push({
                 mesh: boost,
                 dummyMesh: boostDummyMesh,
-                boxHelper: boostBoxHelper,
                 collected: false,
                 mixer: mixer
             });
         }
+        boost.traverse((child) => {
+            if (child.isMesh) {
+                child.material.emissive.set(0xffff00);
+                child.material.emissiveIntensity = 0.2;  // Used to make the boost brighter
+            }
+        });
     }, undefined, function (error) {
         console.error(error);
     });
 }
 
-// Health
+// Creates a single health and makes it brighter
 export function createHealth(x, y, z, scene, healths) {
     const iconLoader = new GLTFLoader();
 
@@ -102,23 +93,16 @@ export function createHealth(x, y, z, scene, healths) {
 
         let iconBoxSize = new THREE.Vector3(0.2, 0.2, 0.2);
         let healthDummyMesh = new THREE.Mesh(new THREE.BoxGeometry(iconBoxSize.x, iconBoxSize.y, iconBoxSize.z));
-        healthDummyMesh.position.copy(health.position);
-        let healthYOffset = 0;
-
-        healthDummyMesh.position.y += healthYOffset;
-
-        let healthBoxHelper = new THREE.BoxHelper(healthDummyMesh, 0x00ff00);
-        //scene.add(healthBoxHelper);
+        health.add(healthDummyMesh);
 
         if (gltf.animations && gltf.animations.length) {
             const mixer = new THREE.AnimationMixer(health);
-            const action = mixer.clipAction(gltf.animations[0]); // Assuming you want the first animation
+            const action = mixer.clipAction(gltf.animations[0]);
             action.play();
 
             healths.push({
                 mesh: health,
                 dummyMesh: healthDummyMesh,
-                boxHelper: healthBoxHelper,
                 collected: false,
                 mixer: mixer
             });
@@ -136,8 +120,10 @@ export function createHealth(x, y, z, scene, healths) {
     });
 }
 
+// Checks for collision between the character and the coins
+
 export function checkCollisionsWithCoins(scene, dummyMesh, coins, numCoins, coinsNeeded) {
-    var allCoinsCollected = false;
+    let allCoinsCollected = false;
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
 
     // Check collision with coins
@@ -145,15 +131,15 @@ export function checkCollisionsWithCoins(scene, dummyMesh, coins, numCoins, coin
         let coin = coins[i];
         const coinBoundingBox = new THREE.Box3().setFromObject(coin.dummyMesh);
         if (soldierBoundingBox.intersectsBox(coinBoundingBox) && !coin.collected) {
-            console.log("Collision between character and coin");
             numCoins+=1;
             coin.mesh.visible = false;
             coin.collected = true;
             updateHUDCoin(numCoins);
 
+            // Clean up and memory management
             disposeCollectible(coin, scene);
             // Remove the coin from the array since it's collected
-            coins.splice(i, 1); // remove the coin from the array
+            coins.splice(i, 1);
 
             // Load the portal if all level coins have been collected
             if (numCoins === coinsNeeded) {
@@ -168,23 +154,20 @@ export function checkCollisionsWithCoins(scene, dummyMesh, coins, numCoins, coin
     };
 }
 
+// Checks for collision between the character and the boost
 export function checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor) {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
     let newBoostFactor = boostFactor;
     let initiateBoost = false;
 
-    // Check collision with boosts
     for (let i = boosts.length - 1; i >= 0; i--) {
         let boost = boosts[i];
         const boostBoundingBox = new THREE.Box3().setFromObject(boost.dummyMesh);
         if (soldierBoundingBox.intersectsBox(boostBoundingBox) && !boost.collected) {
-            console.log("Collision between character and boost");
             initiateBoost = true;
-
             boost.mesh.visible = false;
             boost.collected = true;
 
-            // Clean up and memory management
             disposeCollectible(boost, scene);
 
             // Remove the boost from the array
@@ -198,23 +181,19 @@ export function checkCollisionsWithBoosts(scene, dummyMesh, boosts, boostFactor)
         initiateBoost
     };
 }
-
+// Checks for collision between the character and the health
 export function checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth) {
     const soldierBoundingBox = new THREE.Box3().setFromObject(dummyMesh);
     let isHealthCollected = false;
-    // Check collision with healths
     for (let i = healths.length - 1; i >= 0; i--) {
         let health = healths[i];
         const healthBoundingBox = new THREE.Box3().setFromObject(health.dummyMesh);
         if (soldierBoundingBox.intersectsBox(healthBoundingBox) && !health.collected) {
-            console.log("Collision between character and health");
-            soldierHealth += 1; // Adjust effect as needed
+            soldierHealth += 1;
             health.mesh.visible = false;
             health.collected = true;
-            //blindnessOverlay.style.opacity=-0.0889*(soldierHealth)+0.8889; // Update blindness overlay
             updateHUDHP(soldierHealth);
 
-            // Clean up and memory management
             disposeCollectible(health, scene);
 
             // Remove the health from the array
@@ -230,7 +209,7 @@ export function checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHea
     };
 }
 
-// Helper function to dispose of geometry, material, and remove from scene
+// Function disposes of everything related to collectables once they are collected
 function disposeCollectible(collectible, scene) {
     scene.remove(collectible.mesh);
 
@@ -251,6 +230,7 @@ function disposeCollectible(collectible, scene) {
     }
 }
 
+// Used to make collectables rotate
 export function animateCollectibles(coins, boosts, healths, updateSpeed) {
     for (const coin of coins) {
         if (coin.mixer) {
