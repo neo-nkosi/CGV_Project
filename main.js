@@ -202,7 +202,8 @@ function toggleFirstPersonView() {
 
     if (firstPersonView) {
         // Adjust camera's 
-        camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z);
+        camera.position.set(soldier.position.x, soldier.position.y + 0.6, soldier.position.z+0.3);
+        soldier.visible = false;
         // Turn on the light
         spotlight.intensity = 6;
 
@@ -224,6 +225,8 @@ function toggleFirstPersonView() {
         camera.add(spotlight);
         camera.add(spotlight.target)
     } else {
+        soldier.visible = true;
+
         // Turn off the light
         spotlight.intensity = 0;
         // If not in first-person view,
@@ -1599,6 +1602,7 @@ const clock = new THREE.Clock();
                  if (isRunning){
                      bobAmount /= 1.5;
                  }
+
 
                  console.log(bobAmount)
              }
