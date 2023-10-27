@@ -1302,7 +1302,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() < 0.1) {
+                if (distance.lengthSq() < 0.2) {
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
                         navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
