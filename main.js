@@ -1413,9 +1413,13 @@ function flyfindPath() {
 //level 3 monster movement code ends here
 
 
-const particleSystem = createBoostEffect();
-particleSystem.position.y += 0.4;
+const boostParticleSystemForSoldier = createBoostEffect();
+boostParticleSystemForSoldier.name = 'boostParticleSystemForSoldier';
+boostParticleSystemForSoldier.position.y += 0.4;
 
+const boostParticleSystemForCamera = boostParticleSystemForSoldier.clone();
+boostParticleSystemForCamera.name = 'boostParticleSystemForCamera';
+boostParticleSystemForCamera.position.y -= 0.5;
 
 let healthModelMesh;
 let healthParticleSystemForSoldier;
@@ -1478,7 +1482,8 @@ function checkCollisionsWithCollectibles() {
         }
 
         // Add the particle system when the boost is initiated
-        soldier.add(particleSystem);
+        soldier.add(boostParticleSystemForSoldier);
+        camera.add(boostParticleSystemForCamera);
         // Adjust boost effect as needed
         boostFactor += 1;
         updateHUDSpeed(boostFactor);
@@ -1487,13 +1492,10 @@ function checkCollisionsWithCollectibles() {
         boostTimeout = setTimeout(() => {
             boostFactor -= 1; // adjust as necessary
             updateHUDSpeed(boostFactor);
-            soldier.remove(particleSystem);
+            soldier.remove(boostParticleSystemForSoldier);
+            camera.remove(boostParticleSystemForCamera);
         }, 12000); // duration of the boost effect
     }
-
-    //if (boostFactor > 1){
-    //    createSparks(dummyMesh.position);
-    //}
 
     result = checkCollisionsWithHealths(scene, dummyMesh, healths, soldierHealth);
     healths = result.healths;
@@ -1515,7 +1517,7 @@ function checkCollisionsWithCollectibles() {
         healthTimeout = setTimeout(() => {
             soldier.remove(healthParticleSystemForSoldier);
             camera.remove(healthParticleSystemForCamera);
-        }, 8000);
+        }, 5000);
     }
 }
 
@@ -1651,17 +1653,29 @@ const clock = new THREE.Clock();
          let cameraParticleSystem = camera.getObjectByName('healthParticleSystemForCamera');
          if (soldierParticleSystem) soldierParticleSystem.visible = true;
          if (cameraParticleSystem) cameraParticleSystem.visible = false;
+
+         let soldierBoostSystem = soldier.getObjectByName('boostParticleSystemForSoldier');
+         let cameraBoostSystem = camera.getObjectByName('boostParticleSystemForCamera');
+         if (soldierBoostSystem) soldierBoostSystem.visible = true;
+         if (cameraBoostSystem) cameraBoostSystem.visible = false;
      }
      else{
          let soldierParticleSystem = soldier.getObjectByName('healthParticleSystemForSoldier');
          let cameraParticleSystem = camera.getObjectByName('healthParticleSystemForCamera');
          if (soldierParticleSystem) soldierParticleSystem.visible = false;
          if (cameraParticleSystem) cameraParticleSystem.visible = true;
+
+         let soldierBoostSystem = soldier.getObjectByName('boostParticleSystemForSoldier');
+         let cameraBoostSystem = camera.getObjectByName('boostParticleSystemForCamera');
+         if (soldierBoostSystem) soldierBoostSystem.visible = false;
+         if (cameraBoostSystem) cameraBoostSystem.visible = true;
      }
 
 
      // Update the particle systems:
-     updateBoostSystem(particleSystem);
+     updateBoostSystem(boostParticleSystemForSoldier);
+     updateBoostSystem(boostParticleSystemForCamera);
+
      updateHealthEffect(healthParticleSystemForSoldier);
      updateHealthEffect(healthParticleSystemForCamera);
 
