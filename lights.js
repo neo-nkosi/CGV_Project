@@ -15,7 +15,7 @@ const createLights = (scene) => {
 
   // Directional light 2 (blue light)
   const directionalLight2 = new THREE.DirectionalLight("blue", 0.2);
-  directionalLight2.position.set(-100, 10, 40);
+  directionalLight2.position.set(-100, 10, 400);
   // Configure other directional light properties here
   scene.add(directionalLight2);
 
