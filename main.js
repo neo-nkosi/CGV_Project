@@ -714,6 +714,22 @@ function updateBobbing(deltaTime) {
 }
 let isMoving;
 
+let fireModel; // to store the fire model
+let fireMixer;
+const fireLoader = new GLTFLoader();
+fireLoader.load('models/fire.glb', (gltf) => {
+    fireModel = gltf.scene;
+    fireModel.scale.set(0.1,0.07,0.1);
+    fireModel.visible = false; // initially, set it to invisible
+
+    fireMixer = new THREE.AnimationMixer(fireModel);
+    gltf.animations.forEach((clip) => {
+        fireMixer.clipAction(clip).play();
+    });
+
+    scene.add(fireModel);
+});
+
 function updateMovement() {
     // Calculate the direction in which the camera is looking.
     const cameraDirection = new THREE.Vector3();
@@ -916,6 +932,20 @@ function updateMovement() {
             console.log("Player damaged");
             invunerable=0;
             soldierHealth--;
+
+            if( (monster2 && getDistance(soldier,monster2) < 0.65)) {
+                if (fireModel) {
+                    fireModel.position.copy(soldier.position); // position the fire at the player's position
+                    fireModel.position.x += 0.2;
+                    fireModel.position.y -= 0.3;
+                    fireModel.visible = true;
+                    console.log(fireModel.position);
+                    // Hide the fire after 3 seconds (or adjust the time as needed)
+                    setTimeout(() => {
+                        fireModel.visible = false;
+                    }, 8000);
+                }
+            }
 
             if(soldierHealth==0){
                 console.log("Player should be dead");
@@ -1324,7 +1354,7 @@ function flyfindPath() {
 
                 const direction = distance.normalize();
                 // Dragon speed
-                const speed = 0.026;
+                const speed = 0.024;
 
                 monster2.position.add(direction.multiplyScalar(speed));
                 monster2.lookAt(monster2.position.clone().add(direction));
@@ -1587,6 +1617,24 @@ const clock = new THREE.Clock();
          let cameraBoostSystem = camera.getObjectByName('boostParticleSystemForCamera');
          if (soldierBoostSystem) soldierBoostSystem.visible = false;
          if (cameraBoostSystem) cameraBoostSystem.visible = true;
+     }
+
+     if (fireModel && !firstPersonView) {
+         if (fireMixer) fireMixer.update(0.01);
+         fireModel.position.copy(soldier.position);
+         fireModel.position.x +=0.2;
+         fireModel.position.y -=0.3;
+
+         // Rotate around y-axis
+         fireModel.rotation.y = 0.5;
+     } else if(fireModel){
+         if (fireMixer) fireMixer.update(0.01);
+         fireModel.position.copy(soldier.position);
+         fireModel.position.x +=0.4;
+         fireModel.position.y -=2.5;
+         fireModel.scale.set(0.2,0.3,0.2);
+         // Rotate around y-axis
+         fireModel.rotation.y = 0.5;
      }
 
 
