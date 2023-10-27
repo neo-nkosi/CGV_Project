@@ -181,7 +181,11 @@ let redDot;
 scene.add(minimapCamera);
 scene.add(camera);
 //creating a redDot to track palyer position
-const material = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
+const material = new THREE.MeshPhongMaterial({
+  color: 0xff0000, // Red color for the top
+  emissive: 0x000000, // Black color for the bottom
+  flatShading: true, // For a more flat appearance
+});
 const radius = 0.2;
 const segments = 32; // The number of segments in the sphere
 const rings = 32; // The number of ringsin the sphere
@@ -1232,9 +1236,45 @@ gltf.scene.traverse(node =>{
 
 let dummyBox = new THREE.Box3();
 let MonBox = new THREE.Box3();
+
+// Variables to hold the last known position and the time it was recorded.
+let lastKnownPosition = null;
+let lastPositionUpdateTimestamp = null;
+const thresholdDistance = 0.3;  // Small threshold to detect effective static bug
+
+
 function findPath() {
 
     if (pursuing) {
+
+        // If lastKnownPosition is null, initialize it
+        if (!lastKnownPosition) {
+            lastKnownPosition = monster.position.clone();
+            lastPositionUpdateTimestamp = Date.now();
+        }
+
+        // Calculate the elapsed time since the last position check
+        let elapsedTime = (Date.now() - lastPositionUpdateTimestamp) / 1000;
+
+        // Calculate the distance moved by the monster
+        let distanceMoved = monster.position.clone().sub(lastKnownPosition).length();
+
+        // If the monster has effectively not moved much for more than 2 seconds, adjust its position
+        if (elapsedTime > 2 && distanceMoved < thresholdDistance) {
+            if (navpath && navpath[1]) {
+                monster.position.set(navpath[1].x - 0.65, navpath[1].y, navpath[1].z - 0.65);
+            } else if (navpath && navpath[2]) {
+                monster.position.set(navpath[2].x -0.65, navpath[2].y, navpath[2].z -0.65);
+            }
+            // Reset the last known position and timestamp
+            lastKnownPosition = monster.position.clone();
+            lastPositionUpdateTimestamp = Date.now();
+        } else if (distanceMoved >= thresholdDistance) {
+            // Update lastKnownPosition and reset the timer if the monster has moved beyond the threshold
+            lastKnownPosition = monster.position.clone();
+            lastPositionUpdateTimestamp = Date.now();
+        }
+
 
         //sets target position and agent position:
         let target = soldier.position.clone();
@@ -1262,7 +1302,7 @@ function findPath() {
                 const distance = targetPos.clone().sub(monster.position);
 
                 // If the monster is close enough to the target position
-                if (distance.lengthSq() < 0.6) {
+                if (distance.lengthSq() < 0.1) {
                     navpath.shift(); // Go to the next waypoint
                     if (navpath.length === 0) {
                         navpath = pathfinding.findPath(closest.centroid, target, "villaHouse", groupId);
@@ -1324,6 +1364,7 @@ gltf.scene.traverse(node =>{
 //dragon movement logic(almost identical to monster movement logic):
 let skyDummyBox = new THREE.Box3();
 let skyMonBox = new THREE.Box3();
+
 function flyfindPath() {
 
     if (pursuing) {
@@ -1648,7 +1689,7 @@ const clock = new THREE.Clock();
      updateHealthEffect(healthParticleSystemForSoldier);
      updateHealthEffect(healthParticleSystemForCamera);
 
-     redDot.position.set(soldier.position.x+1.6, 4, soldier.position.z+0.9);
+     redDot.position.set(soldier.position.x+1.9, 4, soldier.position.z+1.6);
      minimapCamera.position.set(soldier.position.x+15, 30, soldier.position.z+12);
      minimapCamera.lookAt(soldier.position.x+15, 1, soldier.position.z+12);
     renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
