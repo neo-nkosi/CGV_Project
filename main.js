@@ -640,8 +640,6 @@ let isJumping = false; // Tells us if the character has initiated a jump
 // Animation function
 var cameraPosition;
 
-let isJumping = false; // This will tell us if the character has initiated a jump
-
 
 function getCameraPositionBehindSoldier(soldier, distanceBehind) {
     const forwardDirection = new THREE.Vector3();
