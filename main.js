@@ -1033,7 +1033,6 @@ monsterloader.load('monster models/Monster warrior/MW Smashing gltf/MW Smashing 
 });
 
 
-//level 3 monster codes:
 
 //second monster for sky monster logic:
 const monsterloader2 = new GLTFLoader();
@@ -1126,13 +1125,6 @@ async function loadFlyingMonster() {
         })
     ]);
 }
-
-
-
-
-
-
-//level 3 monster code ends
 
 
 const pathfinding = new Pathfinding();
@@ -1236,10 +1228,6 @@ function findPath() {
 
     }
 }
-
-
-
-//level 3 monster movement begins here:
 
 const skymeshLoader = new GLTFLoader();
 const skypathfinding = new Pathfinding();
@@ -1353,9 +1341,6 @@ function flyfindPath() {
     }
 }
 
-//level 3 monster movement code ends here
-
-
 const boostParticleSystemForSoldier = createBoostEffect();
 boostParticleSystemForSoldier.name = 'boostParticleSystemForSoldier';
 boostParticleSystemForSoldier.position.y += 0.4;
@@ -1371,7 +1356,7 @@ loader.load('models/miniHealth.glb', (gltf) => {
     gltf.scene.traverse((child) => {
         if (child.isMesh && child.name === "miniHealth") {
             healthModelMesh = child;
-            const scaleFactor = 0.0001; // Adjust this value as needed
+            const scaleFactor = 0.0001;
             healthModelMesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
         }
     });
@@ -1396,7 +1381,8 @@ loader.load('models/miniHealth.glb', (gltf) => {
 
 
 
-// Define a variable to keep track of the active boost timeout
+// Variable to keep track of the active boost and health (particle) timeout
+
 let boostTimeout = null;
 let healthTimeout = null;
 
@@ -1433,7 +1419,7 @@ function checkCollisionsWithCollectibles() {
 
         // Set a timeout to revert the boostFactor
         boostTimeout = setTimeout(() => {
-            boostFactor -= 1; // adjust as necessary
+            boostFactor -= 1;
             updateHUDSpeed(boostFactor);
             soldier.remove(boostParticleSystemForSoldier);
             camera.remove(boostParticleSystemForCamera);
@@ -1444,8 +1430,8 @@ function checkCollisionsWithCollectibles() {
     healths = result.healths;
     soldierHealth = result.soldierHealth;
 
-    if (result.isHealthCollected) {  // Assuming there's a flag like this when health is increased
-        if (healthTimeout) {  // Similar to the boostTimeout for consistency
+    if (result.isHealthCollected) {
+        if (healthTimeout) {
             clearTimeout(healthTimeout);
             soldier.remove(healthParticleSystemForSoldier);
             camera.remove(healthParticleSystemForCamera);
@@ -1456,7 +1442,7 @@ function checkCollisionsWithCollectibles() {
         soldier.add(healthParticleSystemForSoldier);
         camera.add(healthParticleSystemForCamera);
 
-        // Set a timeout to remove the particle system after some time
+        // Set a timeout to remove the particle system
         healthTimeout = setTimeout(() => {
             soldier.remove(healthParticleSystemForSoldier);
             camera.remove(healthParticleSystemForCamera);
@@ -1624,7 +1610,7 @@ const clock = new THREE.Clock();
      updateHealthEffect(healthParticleSystemForCamera);
 
      redDot.position.set(soldier.position.x+1.6, 4, soldier.position.z+0.9);
-     minimapCamera.position.set(soldier.position.x+15, 30, soldier.position.z+12); // Adjust the height as needed
+     minimapCamera.position.set(soldier.position.x+15, 30, soldier.position.z+12);
      minimapCamera.lookAt(soldier.position.x+15, 1, soldier.position.z+12);
     renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
     renderer.render(scene, camera);
